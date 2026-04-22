@@ -34,37 +34,70 @@ async function submit() {
 </script>
 
 <template>
-  <div class="container-apple py-20 md:py-28">
-    <div class="mx-auto max-w-2xl">
-      <div class="text-xs uppercase tracking-widest text-accent">{{ t('contact.eyebrow') }}</div>
-      <h1 class="heading-section mt-2">{{ t('contact.title') }}</h1>
-      <p class="mt-4 text-ink-600 dark:text-ink-400">{{ t('contact.subtitle') }}</p>
+  <div class="container-premium py-32 md:py-48 bg-background">
+    <div class="mx-auto max-w-4xl">
+      <div class="grid lg:grid-cols-2 gap-20">
+        <div class="animate-fade-up">
+          <div class="inline-flex items-center gap-3 mb-6">
+            <span class="h-[1px] w-8 bg-gold"></span>
+            <span class="text-xs uppercase tracking-[0.4em] text-gold font-bold">
+              {{ t('contact.eyebrow') }}
+            </span>
+          </div>
+          <h1 class="heading-section text-text-primary mb-8">{{ t('contact.title') }}</h1>
+          <p class="text-xl text-text-secondary font-light leading-relaxed mb-12">{{ t('contact.subtitle') }}</p>
+          
+          <div class="space-y-8">
+            <div class="flex items-start gap-4">
+              <div class="w-12 h-12 rounded-full border border-gold/20 flex items-center justify-center shrink-0">
+                <Icon name="heroicons:envelope" class="w-6 h-6 text-gold" />
+              </div>
+              <div>
+                <div class="text-[10px] uppercase tracking-widest text-text-secondary font-bold mb-1">Email</div>
+                <div class="text-text-primary">contact@orgue-vivant.fr</div>
+              </div>
+            </div>
+            <div class="flex items-start gap-4">
+              <div class="w-12 h-12 rounded-full border border-gold/20 flex items-center justify-center shrink-0">
+                <Icon name="heroicons:map-pin" class="w-6 h-6 text-gold" />
+              </div>
+              <div>
+                <div class="text-[10px] uppercase tracking-widest text-text-secondary font-bold mb-1">Bureau</div>
+                <div class="text-text-primary">Lille, France</div>
+              </div>
+            </div>
+          </div>
+        </div>
 
-      <form class="mt-10 space-y-5" @submit.prevent="submit">
-        <div>
-          <label class="label" for="name">{{ t('contact.name') }}</label>
-          <input id="name" v-model="form.name" type="text" required class="input">
-        </div>
-        <div>
-          <label class="label" for="email">{{ t('contact.email') }}</label>
-          <input id="email" v-model="form.email" type="email" required class="input">
-        </div>
-        <div>
-          <label class="label" for="message">{{ t('contact.message') }}</label>
-          <textarea id="message" v-model="form.message" required rows="6" class="input resize-none" />
-        </div>
+        <div class="card-premium p-8 md:p-12 bg-surface animate-fade-up">
+          <form class="space-y-6" @submit.prevent="submit">
+            <div>
+              <label class="text-[10px] uppercase tracking-widest text-text-secondary font-bold mb-2 block" for="name">{{ t('contact.name') }}</label>
+              <input id="name" v-model="form.name" type="text" required class="w-full bg-background border border-white/5 rounded-xl px-6 py-4 text-text-primary focus:border-gold focus:outline-none transition-all">
+            </div>
+            <div>
+              <label class="text-[10px] uppercase tracking-widest text-text-secondary font-bold mb-2 block" for="email">{{ t('contact.email') }}</label>
+              <input id="email" v-model="form.email" type="email" required class="w-full bg-background border border-white/5 rounded-xl px-6 py-4 text-text-primary focus:border-gold focus:outline-none transition-all">
+            </div>
+            <div>
+              <label class="text-[10px] uppercase tracking-widest text-text-secondary font-bold mb-2 block" for="message">{{ t('contact.message') }}</label>
+              <textarea id="message" v-model="form.message" required rows="5" class="w-full bg-background border border-white/5 rounded-xl px-6 py-4 text-text-primary focus:border-gold focus:outline-none transition-all resize-none" />
+            </div>
 
-        <div v-if="error" class="rounded-xl bg-red-50 px-4 py-3 text-sm text-red-700 dark:bg-red-900/30 dark:text-red-300">
-          {{ error }}
-        </div>
-        <div v-if="status === 'success'" class="rounded-xl bg-emerald-50 px-4 py-3 text-sm text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-300">
-          {{ t('contact.success') }}
-        </div>
+            <div v-if="error" class="rounded-xl bg-red-500/10 border border-red-500/20 px-6 py-4 text-sm text-red-400">
+              {{ error }}
+            </div>
+            <div v-if="status === 'success'" class="rounded-xl bg-gold/10 border border-gold/20 px-6 py-4 text-sm text-gold">
+              {{ t('contact.success') }}
+            </div>
 
-        <button type="submit" :disabled="status === 'sending'" class="btn-primary">
-          {{ status === 'sending' ? t('contact.sending') : t('contact.send') }}
-        </button>
-      </form>
+            <button type="submit" :disabled="status === 'sending'" class="btn-premium-primary w-full !h-14">
+              <Icon v-if="status === 'sending'" name="heroicons:arrow-path" class="w-5 h-5 animate-spin mr-2" />
+              {{ status === 'sending' ? t('contact.sending') : t('contact.send') }}
+            </button>
+          </form>
+        </div>
+      </div>
     </div>
   </div>
 </template>

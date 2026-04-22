@@ -16,6 +16,16 @@ export default {
         display: ['Fraunces', 'Georgia', 'serif']
       },
       colors: {
+        background: '#0B0B0C',
+        surface: '#121214',
+        'text-primary': '#F6F2EA',
+        'text-secondary': '#B8B5AE',
+        gold: {
+          DEFAULT: '#C6A56A',
+          light: '#D4B98B',
+          dark: '#A6864A'
+        },
+        border: 'rgba(255,255,255,0.08)',
         ink: {
           50: '#fafafa',
           100: '#f4f4f5',
@@ -30,9 +40,9 @@ export default {
           950: '#09090b'
         },
         accent: {
-          DEFAULT: '#a16207',
-          light: '#d4a24c',
-          dark: '#713f12'
+          DEFAULT: '#C6A56A',
+          light: '#D4B98B',
+          dark: '#A6864A'
         }
       },
       letterSpacing: {

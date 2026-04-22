@@ -4,42 +4,70 @@ const year = new Date().getFullYear()
 </script>
 
 <template>
-  <footer class="border-t border-ink-100 bg-ink-50/50 py-16 dark:border-ink-800 dark:bg-ink-950">
-    <div class="container-apple grid gap-12 md:grid-cols-4">
-      <div class="md:col-span-2">
-        <div class="font-display text-2xl tracking-tight">
-          Orgue<span class="text-accent">·</span>Vivant
+  <footer class="bg-surface border-t border-white/5 pt-20 pb-10">
+    <div class="container-premium">
+      <div class="grid gap-16 md:grid-cols-4 lg:grid-cols-5">
+        <div class="md:col-span-2">
+          <NuxtLink to="/" class="font-display text-3xl tracking-tight text-text-primary">
+            Orgue<span class="text-gold">·</span>Vivant
+          </NuxtLink>
+          <p class="mt-6 max-w-sm text-text-secondary font-light leading-relaxed">
+            {{ t('footer.tagline') }}
+          </p>
+          <div class="mt-10 flex gap-6">
+            <a href="#" class="text-text-secondary hover:text-gold transition-colors" aria-label="Instagram">
+              <Icon name="mdi:instagram" class="w-6 h-6" />
+            </a>
+            <a href="#" class="text-text-secondary hover:text-gold transition-colors" aria-label="Facebook">
+              <Icon name="mdi:facebook" class="w-6 h-6" />
+            </a>
+            <a href="#" class="text-text-secondary hover:text-gold transition-colors" aria-label="YouTube">
+              <Icon name="mdi:youtube" class="w-6 h-6" />
+            </a>
+          </div>
         </div>
-        <p class="mt-3 max-w-sm text-sm text-ink-600 dark:text-ink-400">
-          {{ t('footer.tagline') }}
-        </p>
-        <NewsletterSignup class="mt-6" />
+
+        <div>
+          <div class="mb-6 text-[10px] font-bold uppercase tracking-[0.3em] text-gold">
+            {{ t('footer.navigation') }}
+          </div>
+          <ul class="space-y-4 text-sm">
+            <li><NuxtLink to="/concerts" class="text-text-secondary hover:text-text-primary transition-colors">{{ t('nav.concerts') }}</NuxtLink></li>
+            <li><NuxtLink to="/about" class="text-text-secondary hover:text-text-primary transition-colors">{{ t('nav.about') }}</NuxtLink></li>
+            <li><NuxtLink to="/contact" class="text-text-secondary hover:text-text-primary transition-colors">{{ t('nav.contact') }}</NuxtLink></li>
+          </ul>
+        </div>
+
+        <div>
+          <div class="mb-6 text-[10px] font-bold uppercase tracking-[0.3em] text-gold">
+            Lieux
+          </div>
+          <ul class="space-y-4 text-sm text-text-secondary">
+            <li>{{ t('locations.saint_maurice') }}</li>
+            <li>{{ t('locations.saint_etienne') }}</li>
+          </ul>
+        </div>
+
+        <div>
+          <div class="mb-6 text-[10px] font-bold uppercase tracking-[0.3em] text-gold">
+            {{ t('footer.legal') }}
+          </div>
+          <ul class="space-y-4 text-sm">
+            <li><NuxtLink to="/legal" class="text-text-secondary hover:text-text-primary transition-colors">{{ t('footer.legalMentions') }}</NuxtLink></li>
+            <li><NuxtLink to="/privacy" class="text-text-secondary hover:text-text-primary transition-colors">{{ t('footer.privacy') }}</NuxtLink></li>
+            <li><NuxtLink to="/admin" class="text-text-secondary/50 hover:text-text-primary transition-colors text-xs">{{ t('footer.admin') }}</NuxtLink></li>
+          </ul>
+        </div>
       </div>
 
-      <div>
-        <div class="mb-4 text-xs font-semibold uppercase tracking-widest text-ink-500">
-          {{ t('footer.navigation') }}
+      <div class="mt-20 pt-10 border-t border-white/5 flex flex-col md:flex-row justify-between items-center gap-6">
+        <div class="text-[10px] uppercase tracking-widest text-text-secondary/60">
+          © {{ year }} Orgue Vivant — {{ t('footer.rights') }}
         </div>
-        <ul class="space-y-2 text-sm">
-          <li><NuxtLink to="/concerts">{{ t('nav.concerts') }}</NuxtLink></li>
-          <li><NuxtLink to="/about">{{ t('nav.about') }}</NuxtLink></li>
-          <li><NuxtLink to="/contact">{{ t('nav.contact') }}</NuxtLink></li>
-        </ul>
-      </div>
-
-      <div>
-        <div class="mb-4 text-xs font-semibold uppercase tracking-widest text-ink-500">
-          {{ t('footer.legal') }}
+        <div class="text-[10px] uppercase tracking-widest text-text-secondary/40">
+          Design by Premium Studio
         </div>
-        <ul class="space-y-2 text-sm">
-          <li><NuxtLink to="/legal">{{ t('footer.legalMentions') }}</NuxtLink></li>
-          <li><NuxtLink to="/privacy">{{ t('footer.privacy') }}</NuxtLink></li>
-          <li><NuxtLink to="/admin">{{ t('footer.admin') }}</NuxtLink></li>
-        </ul>
       </div>
-    </div>
-    <div class="container-apple mt-12 border-t border-ink-100 pt-6 text-xs text-ink-500 dark:border-ink-800">
-      © {{ year }} Orgue Vivant — {{ t('footer.rights') }}
     </div>
   </footer>
 </template>
