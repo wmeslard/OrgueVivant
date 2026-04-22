@@ -21,12 +21,15 @@ watch(() => route.fullPath, () => { open.value = false })
 </script>
 
 <template>
-  <header 
+  <header
     class="fixed top-0 left-0 right-0 z-50 transition-all duration-500 ease-apple"
-    :class="[
-      isScrolled ? 'h-[72px] md:h-[84px] glass' : 'h-[80px] md:h-[100px] bg-transparent'
-    ]"
+    :class="isScrolled ? 'h-[72px] md:h-[84px] bg-background/80 backdrop-blur-xl' : 'h-[80px] md:h-[100px] bg-transparent'"
   >
+    <!-- Border: fades in independently, more discreet than toggling the full class -->
+    <div
+      class="absolute bottom-0 left-0 right-0 h-px bg-white/8 transition-opacity duration-700"
+      :class="isScrolled ? 'opacity-100' : 'opacity-0'"
+    />
     <div class="container-premium flex h-full items-center justify-between">
       <NuxtLink to="/" class="group flex items-center gap-2 font-display text-2xl tracking-tight">
         <span class="transition-colors duration-300 group-hover:text-gold">Orgue</span>

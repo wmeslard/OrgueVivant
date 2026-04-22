@@ -23,17 +23,19 @@
     "eyebrow": "2026 Season",
     "heroTitle1": "Organ music,",
     "heroTitle2": "alive in Lille.",
-    "heroSubtitle": "Concerts, recitals and improvisations in the Saint-Maurice and Saint-Étienne churches, at the heart of downtown Lille.",
+    "heroSubtitle": "Concerts, recitals and improvisations in the Saint‑Maurice and Saint‑Étienne churches, at the heart of downtown Lille.",
     "ctaConcerts": "See concerts",
     "ctaAbout": "Our mission",
     "upcomingEyebrow": "Coming up",
     "upcomingTitle": "Upcoming concerts",
-    "viewAll": "All concerts →",
+    "viewAll": "All concerts",
     "noUpcoming": "No concerts scheduled yet. Please check back soon.",
     "newsEyebrow": "News",
     "newsTitle": "Latest news",
     "ctaTitle": "Let the great organs carry you away.",
-    "ctaSubtitle": "Free admission to most concerts. Full programme online."
+    "ctaSubtitle": "Free admission to most concerts. Full programme online.",
+    "nextConcert": "Next concert",
+    "scrollHint": "Scroll"
   },
   "news": {
     "item1": { "title": "New season announced", "body": "The 2026 season opens with a series of outstanding recitals." },
@@ -46,7 +48,8 @@
     "subtitle": "Find here every scheduled concert, as well as archives from previous seasons.",
     "upcoming": "Upcoming",
     "past": "Past",
-    "empty": "No concerts to display."
+    "empty": "No concerts to display.",
+    "discover": "Discover"
   },
   "modal": {
     "close": "Close",
@@ -55,6 +58,7 @@
     "instruments": "Instruments",
     "duration": "Duration",
     "price": "Price",
+    "book": "Book now",
     "free": "Free entry",
     "paid": "Paid",
     "moreInfo": "More information",
@@ -65,8 +69,8 @@
     "title": "Orgue Vivant",
     "intro": "Orgue Vivant is a community initiative to keep organ music alive in downtown Lille. We organise free or low-cost concerts, open to everyone.",
     "church": "Building",
-    "stMaurice": "Built from the 14th to the 19th century, Saint-Maurice is a gem of Lille's Flamboyant Gothic style. Its Cavaillé-Coll grand organ resonates at the heart of the city.",
-    "stEtienne": "Saint-Étienne, the former Jesuit chapel, hosts a historical organ remarkable for its classical French voicing.",
+    "stMaurice": "The grand organ of Saint-Maurice was built in 1877 by the Maison Delmotte of Tournai, housed in a carved oak case crafted in 1878 by Lille cabinetmaker Charles Buisine-Rigot. The instrument underwent a major reconstruction in 1961 by Jean Pascal, who refounded approximately 85% of the organ while preserving the original case. With 48 stops across three manuals and pedal, four Barker machines, and a window console with 12 programmable combinations, it offers an exceptionally rich tonal palette. Its pitch is set at 435 Hz in equal temperament.",
+    "stEtienne": "The gallery organ of Saint-Étienne is one of the most precious instruments in northern France. Built in 1840 by Daublaine-Callinet — a partnership between Louis Callinet and André Marie Daublaine — it was profoundly reworked in 1886 by master builder Aristide Cavaillé-Coll, then again in 1901 by Charles Mutin. Listed as a historical monument since 1980, this 42-stop instrument across three manuals and pedal bears witness to the evolution of French Romantic organ building. With its Barker machine on the Grand-Orgue and a pitch of 440 Hz, it remains a remarkably expressive instrument.",
     "missionTitle": "Our mission",
     "mission": "Make organ music accessible, support the next generation of organists, and showcase Lille's musical heritage."
   },

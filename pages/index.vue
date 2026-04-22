@@ -1,7 +1,17 @@
 <script setup lang="ts">
+import type { Concert } from '~/composables/useConcerts'
+
 const { t, locale } = useI18n()
 const { upcoming, pending, fetchConcerts } = useConcerts()
 await fetchConcerts()
+
+const scrollY = ref(0)
+onMounted(() => {
+  const handler = () => { scrollY.value = window.scrollY }
+  window.addEventListener('scroll', handler, { passive: true })
+  onBeforeUnmount(() => window.removeEventListener('scroll', handler))
+})
+const scrollIndicatorOpacity = computed(() => Math.max(0, 0.3 - scrollY.value / 120))
 
 const preview = computed(() => upcoming.value.slice(0, 3))
 const nextConcert = computed(() => upcoming.value[0] || null)
@@ -32,16 +42,18 @@ const formatDate = (dateStr: string) => {
   <div>
     <!-- HERO SECTION ULTRA PREMIUM -->
     <section class="relative min-h-screen flex items-center overflow-hidden pt-20">
-      <!-- Background Immersif -->
+      <!-- Background — tuyaux d'orgue, sobre et immersif -->
       <div class="absolute inset-0 z-0">
-        <div class="absolute inset-0 bg-background/80 z-10"></div>
-        <div class="absolute inset-0 bg-gradient-to-tr from-background via-transparent to-gold/10 z-10"></div>
-        <img 
-          src="https://images.unsplash.com/photo-1548777123-e216912df7d8?q=80&w=2070&auto=format&fit=crop" 
-          alt="Orgue" 
-          class="w-full h-full object-cover scale-110 blur-sm brightness-50"
+        <img
+          src="https://images.unsplash.com/photo-1507838153414-b4b713384a76?auto=format&fit=crop&w=2000&q=80"
+          alt="Tuyaux d'orgue"
+          class="w-full h-full object-cover object-center brightness-[0.25]"
+          fetchpriority="high"
         />
-        <div class="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/asfalt-dark.png')] opacity-20 z-10"></div>
+        <!-- Gradient sombre en bas pour fondre avec les sections -->
+        <div class="absolute inset-0 bg-gradient-to-b from-background/40 via-transparent to-background z-10" />
+        <!-- Lueur gold très subtile en haut à droite -->
+        <div class="absolute -top-32 right-0 w-[600px] h-[600px] rounded-full bg-gold/5 blur-[120px] z-10" />
       </div>
 
       <div class="container-premium relative z-20 w-full">
@@ -54,7 +66,7 @@ const formatDate = (dateStr: string) => {
               </span>
             </div>
             
-            <h1 class="heading-hero text-text-primary">
+            <h1 class="heading-hero text-text-primary leading-[1.05]">
               {{ t('home.heroTitle1') }}<br>
               <span class="italic font-display text-gold opacity-90">{{ t('home.heroTitle2') }}</span>
             </h1>
@@ -67,18 +79,21 @@ const formatDate = (dateStr: string) => {
               <NuxtLink to="/concerts" class="btn-premium-primary">
                 {{ t('home.ctaConcerts') }}
               </NuxtLink>
-              <NuxtLink v-if="nextConcert" @click="selected = nextConcert" class="btn-premium-secondary cursor-pointer">
-                {{ t('home.nextConcert') || 'Prochain concert' }}
-              </NuxtLink>
+              <button v-if="nextConcert" class="btn-premium-secondary cursor-pointer" @click="selected = nextConcert">
+                {{ t('home.nextConcert') }}
+              </button>
             </div>
           </div>
         </div>
       </div>
 
       <!-- Scroll Indicator -->
-      <div class="absolute bottom-10 left-1/2 -translate-x-1/2 flex flex-col items-center gap-4 animate-bounce opacity-30">
-        <span class="text-[10px] uppercase tracking-widest text-text-secondary">Scroll</span>
-        <div class="h-10 w-[1px] bg-text-secondary"></div>
+      <div
+        class="absolute bottom-32 left-1/2 -translate-x-1/2 flex flex-col items-center gap-3 animate-gentle-bob pointer-events-none"
+        :style="{ opacity: scrollIndicatorOpacity }"
+      >
+        <span class="text-[10px] uppercase tracking-widest text-text-secondary">{{ t('home.scrollHint') }}</span>
+        <div class="h-8 w-px bg-text-secondary" />
       </div>
     </section>
 
@@ -118,13 +133,14 @@ const formatDate = (dateStr: string) => {
                 <span>{{ nextConcert.artists }}</span>
               </div>
             </div>
-            <div class="flex flex-wrap gap-4">
-              <button @click="selected = nextConcert" class="btn-premium-primary !h-12 !px-8">
-                {{ t('modal.moreInfo') }}
+            <div class="grid grid-cols-1 sm:flex sm:flex-wrap items-stretch gap-4">
+              <button @click="selected = nextConcert" class="btn-premium-primary !h-14 !px-8">
+                <span class="text-gold text-2xl leading-none">+</span>
+                <span>{{ t('modal.moreInfo') }}</span>
               </button>
-              <button class="btn-premium-secondary !h-12 !px-8 flex items-center gap-2">
-                <Icon name="heroicons:calendar" class="w-5 h-5" />
-                {{ t('modal.addToCalendar') }}
+              <button class="btn-premium-secondary !h-14 !px-8">
+                <Icon name="heroicons:calendar" class="w-5 h-5 text-gold" />
+                <span>{{ t('modal.addToCalendar') }}</span>
               </button>
             </div>
           </div>
@@ -199,7 +215,7 @@ const formatDate = (dateStr: string) => {
     <section class="relative py-48 overflow-hidden">
       <div class="absolute inset-0 z-0">
         <img 
-          src="https://images.unsplash.com/photo-1515600406036-7c9b5f0e8d3a?q=80&w=2070&auto=format&fit=crop" 
+          src="/img/eglise-st-maurice.jpg"
           alt="Eglise" 
           class="w-full h-full object-cover brightness-[0.3]"
         />

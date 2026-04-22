@@ -23,17 +23,19 @@
     "eyebrow": "Saison 2026",
     "heroTitle1": "La musique d'orgue,",
     "heroTitle2": "vivante à Lille.",
-    "heroSubtitle": "Concerts, récitals et improvisations dans les églises Saint-Maurice et Saint-Étienne, au cœur du centre-ville.",
+    "heroSubtitle": "Concerts, récitals et improvisations dans les églises Saint‑Maurice et Saint‑Étienne, au cœur du centre-ville.",
     "ctaConcerts": "Voir les concerts",
     "ctaAbout": "Notre mission",
     "upcomingEyebrow": "Prochainement",
     "upcomingTitle": "Concerts à venir",
-    "viewAll": "Tous les concerts →",
+    "viewAll": "Tous les concerts",
     "noUpcoming": "Aucun concert programmé pour l'instant. Revenez bientôt.",
     "newsEyebrow": "Actualités",
     "newsTitle": "Dernières nouvelles",
     "ctaTitle": "Laissez-vous porter par les grandes orgues.",
-    "ctaSubtitle": "Entrée libre pour la plupart des concerts. Programme complet en ligne."
+    "ctaSubtitle": "Entrée libre pour la plupart des concerts. Programme complet en ligne.",
+    "nextConcert": "Prochain concert",
+    "scrollHint": "Défiler"
   },
   "news": {
     "item1": { "title": "Nouvelle saison dévoilée", "body": "La saison 2026 s'ouvre avec une série de récitals exceptionnels." },
@@ -46,7 +48,8 @@
     "subtitle": "Retrouvez ici l'ensemble des concerts programmés, ainsi que les archives des saisons précédentes.",
     "upcoming": "À venir",
     "past": "Archives",
-    "empty": "Aucun concert à afficher."
+    "empty": "Aucun concert à afficher.",
+    "discover": "Découvrir"
   },
   "modal": {
     "close": "Fermer",
@@ -55,6 +58,7 @@
     "instruments": "Instruments",
     "duration": "Durée",
     "price": "Tarif",
+    "book": "Réserver",
     "free": "Entrée libre",
     "paid": "Payant",
     "moreInfo": "Plus d'informations",
@@ -65,8 +69,8 @@
     "title": "Orgue Vivant",
     "intro": "Orgue Vivant est une initiative citoyenne pour faire vivre la musique d'orgue dans le centre de Lille. Nous organisons des concerts gratuits ou à petit prix, ouverts à toutes et à tous.",
     "church": "Édifice",
-    "stMaurice": "Construite du XIVᵉ au XIXᵉ siècle, l'église Saint-Maurice est un joyau du gothique flamboyant lillois. Son grand orgue Cavaillé-Coll résonne au cœur du centre-ville.",
-    "stEtienne": "L'église Saint-Étienne, ancienne chapelle des Jésuites, abrite un orgue historique remarquable pour sa sonorité française classique.",
+    "stMaurice": "Le grand orgue de Saint-Maurice a été construit en 1877 par la Maison Delmotte de Tournai, dans un buffet de chêne sculpté réalisé en 1878 par l'ébéniste lillois Charles Buisine-Rigot. L'instrument a fait l'objet d'une reconstruction majeure en 1961 par Jean Pascal, qui a refondé près de 85 % de l'orgue tout en préservant le buffet d'origine. Doté de 48 jeux répartis sur trois claviers et pédalier, avec quatre machines Barker et une console à fenêtre dotée de 12 combinaisons programmables, il offre une palette sonore d'une richesse exceptionnelle. Son diapason est fixé à 435 Hz, en tempérament égal.",
+    "stEtienne": "L'orgue de tribune de Saint-Étienne est l'un des instruments les plus précieux du Nord de la France. Construit en 1840 par Daublaine-Callinet — fruit de l'association de Louis Callinet et d'André Marie Daublaine —, il a été profondément remanié en 1886 par le maître Aristide Cavaillé-Coll, puis en 1901 par Charles Mutin. Classé monument historique depuis 1980, cet instrument de 42 jeux sur trois claviers et pédalier témoigne de l'évolution de la facture d'orgue romantique française. Avec sa machine Barker au Grand-Orgue et son diapason à 440 Hz, il demeure un outil d'interprétation d'une souplesse remarquable.",
     "missionTitle": "Notre mission",
     "mission": "Rendre la musique d'orgue accessible, soutenir la jeune génération d'organistes et faire rayonner le patrimoine musical de Lille."
   },

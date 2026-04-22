@@ -15,10 +15,6 @@ const formattedDate = computed(() => {
   })
 })
 
-const shareUrl = computed(() => {
-  if (!import.meta.client || !props.concert) return ''
-  return `${window.location.origin}/concerts?id=${props.concert.id}`
-})
 
 function onKey(e: KeyboardEvent) {
   if (e.key === 'Escape') emit('close')
@@ -42,16 +38,16 @@ onBeforeUnmount(() => window.removeEventListener('keydown', onKey))
       class="fixed inset-0 z-[100] overflow-y-auto bg-background/95 backdrop-blur-xl"
       @click.self="$emit('close')"
     >
-      <div class="flex min-h-full items-start justify-center p-4 md:items-center md:p-12">
+      <div class="flex min-h-full items-start justify-center p-4 md:items-center md:p-12" @click.self="$emit('close')">
         <div
           class="relative w-full max-w-5xl overflow-hidden rounded-[32px] bg-surface border border-white/10 shadow-2xl"
         >
           <button
-            class="absolute right-6 top-6 z-20 rounded-full bg-background/50 p-3 text-text-primary backdrop-blur hover:bg-gold hover:text-background transition-all duration-300"
+            class="absolute right-6 top-6 z-20 flex h-10 w-10 items-center justify-center rounded-full bg-background/50 text-text-primary backdrop-blur hover:bg-gold hover:text-background transition-all duration-300"
             :aria-label="t('modal.close')"
             @click="$emit('close')"
           >
-            <Icon name="heroicons:x-mark" class="w-6 h-6" />
+            <Icon name="heroicons:x-mark" class="h-5 w-5" />
           </button>
 
           <div class="flex flex-col lg:flex-row">
@@ -104,7 +100,7 @@ onBeforeUnmount(() => window.removeEventListener('keydown', onKey))
                   </p>
                 </div>
 
-                <div class="pt-8 flex flex-wrap items-center gap-6">
+                <div class="pt-8 grid grid-cols-1 sm:flex sm:flex-wrap items-stretch gap-6">
                   <a
                     v-if="concert.external_link"
                     :href="concert.external_link"
@@ -112,14 +108,12 @@ onBeforeUnmount(() => window.removeEventListener('keydown', onKey))
                     rel="noopener"
                     class="btn-premium-primary !h-14 !px-10"
                   >
-                    Réserver
+                    {{ t('modal.book') }}
                   </a>
-                  <button class="btn-premium-secondary !h-14 !px-10 flex items-center gap-3" @click="downloadIcs(concert)">
+                  <button class="btn-premium-secondary !h-14 !px-10" @click="downloadIcs(concert)">
                     <Icon name="heroicons:calendar" class="w-5 h-5 text-gold" />
-                    {{ t('modal.addToCalendar') }}
+                    <span>{{ t('modal.addToCalendar') }}</span>
                   </button>
-                  <div class="flex-1"></div>
-                  <SocialShare :title="concert.title" :url="shareUrl" />
                 </div>
               </div>
             </div>
