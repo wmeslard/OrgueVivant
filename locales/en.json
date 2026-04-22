@@ -1,0 +1,150 @@
+{
+  "nav": {
+    "home": "Home",
+    "concerts": "Concerts",
+    "about": "About",
+    "contact": "Contact",
+    "menu": "Menu"
+  },
+  "common": {
+    "loading": "Loading…"
+  },
+  "locations": {
+    "saint_maurice": "Saint-Maurice Church",
+    "saint_etienne": "Saint-Étienne Church"
+  },
+  "seo": {
+    "homeDesc": "Organ concerts in the heart of Lille — Saint-Maurice & Saint-Étienne churches.",
+    "concertsDesc": "All upcoming and past organ concerts in Lille.",
+    "aboutDesc": "Discover Orgue Vivant and the Saint-Maurice and Saint-Étienne churches.",
+    "contactDesc": "Get in touch with the Orgue Vivant team."
+  },
+  "home": {
+    "eyebrow": "2026 Season",
+    "heroTitle1": "Organ music,",
+    "heroTitle2": "alive in Lille.",
+    "heroSubtitle": "Concerts, recitals and improvisations in the Saint-Maurice and Saint-Étienne churches, at the heart of downtown Lille.",
+    "ctaConcerts": "See concerts",
+    "ctaAbout": "Our mission",
+    "upcomingEyebrow": "Coming up",
+    "upcomingTitle": "Upcoming concerts",
+    "viewAll": "All concerts →",
+    "noUpcoming": "No concerts scheduled yet. Please check back soon.",
+    "newsEyebrow": "News",
+    "newsTitle": "Latest news",
+    "ctaTitle": "Let the great organs carry you away.",
+    "ctaSubtitle": "Free admission to most concerts. Full programme online."
+  },
+  "news": {
+    "item1": { "title": "New season announced", "body": "The 2026 season opens with a series of outstanding recitals." },
+    "item2": { "title": "Organ restoration", "body": "Restoration work on the great organ is coming to an end this spring." },
+    "item3": { "title": "Conservatoire partnership", "body": "Young organists from the conservatoire perform every month." }
+  },
+  "concerts": {
+    "eyebrow": "Programme",
+    "title": "All concerts",
+    "subtitle": "Find here every scheduled concert, as well as archives from previous seasons.",
+    "upcoming": "Upcoming",
+    "past": "Past",
+    "empty": "No concerts to display."
+  },
+  "modal": {
+    "close": "Close",
+    "location": "Venue",
+    "artists": "Artists",
+    "instruments": "Instruments",
+    "duration": "Duration",
+    "price": "Price",
+    "free": "Free entry",
+    "paid": "Paid",
+    "moreInfo": "More information",
+    "addToCalendar": "Add to calendar"
+  },
+  "about": {
+    "eyebrow": "About",
+    "title": "Orgue Vivant",
+    "intro": "Orgue Vivant is a community initiative to keep organ music alive in downtown Lille. We organise free or low-cost concerts, open to everyone.",
+    "church": "Building",
+    "stMaurice": "Built from the 14th to the 19th century, Saint-Maurice is a gem of Lille's Flamboyant Gothic style. Its Cavaillé-Coll grand organ resonates at the heart of the city.",
+    "stEtienne": "Saint-Étienne, the former Jesuit chapel, hosts a historical organ remarkable for its classical French voicing.",
+    "missionTitle": "Our mission",
+    "mission": "Make organ music accessible, support the next generation of organists, and showcase Lille's musical heritage."
+  },
+  "contact": {
+    "eyebrow": "Contact",
+    "title": "Get in touch",
+    "subtitle": "For any question about concerts, partnerships or press.",
+    "name": "Name",
+    "email": "Email",
+    "message": "Message",
+    "send": "Send",
+    "sending": "Sending…",
+    "success": "Message sent. Thank you!",
+    "errorRequired": "All fields are required.",
+    "errorEmail": "Invalid email.",
+    "errorGeneric": "Something went wrong. Please try again."
+  },
+  "newsletter": {
+    "placeholder": "Your email",
+    "cta": "Subscribe",
+    "thanks": "Thanks for subscribing!"
+  },
+  "footer": {
+    "tagline": "Organ concerts in downtown Lille.",
+    "navigation": "Navigation",
+    "legal": "Information",
+    "legalMentions": "Legal notice",
+    "privacy": "Privacy",
+    "admin": "Admin",
+    "rights": "All rights reserved."
+  },
+  "cookies": {
+    "message": "We only use cookies strictly necessary for the site to function.",
+    "accept": "Accept",
+    "decline": "Decline",
+    "learnMore": "Learn more"
+  },
+  "legal": {
+    "editor": "Publisher: Orgue Vivant Association, Lille, France.",
+    "hosting": "Hosting: Vercel Inc., 440 N Barranca Ave #4133, Covina, CA 91723, USA.",
+    "contact": "Contact: contact{'@'}orgue-vivant.fr",
+    "intellectual": "All site content is protected by copyright."
+  },
+  "privacy": {
+    "intro": "This policy describes how we handle your personal data, in compliance with GDPR.",
+    "dataTitle": "Data collected",
+    "data": "We only collect information you submit via the contact form (name, email, message).",
+    "cookiesTitle": "Cookies",
+    "cookies": "Only technical cookies are used (language and theme preference).",
+    "rightsTitle": "Your rights",
+    "rights": "You may access, rectify or delete your data. Contact us at contact{'@'}orgue-vivant.fr."
+  },
+  "admin": {
+    "eyebrow": "Administration",
+    "loginTitle": "Sign in",
+    "password": "Password",
+    "signIn": "Sign in",
+    "dashboard": "Dashboard",
+    "new": "New concert",
+    "editing": "Editing",
+    "edit": "Edit",
+    "delete": "Delete",
+    "save": "Save",
+    "cancel": "Cancel",
+    "logout": "Log out",
+    "confirmDelete": "Delete this concert?",
+    "fields": {
+      "title": "Title",
+      "date": "Date",
+      "time": "Time",
+      "location": "Venue",
+      "artists": "Artists",
+      "instruments": "Instruments",
+      "description": "Description",
+      "imageUrl": "Image URL",
+      "duration": "Duration",
+      "price": "Price",
+      "externalLink": "External link"
+    }
+  }
+}

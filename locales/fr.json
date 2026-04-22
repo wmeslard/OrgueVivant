@@ -1,0 +1,150 @@
+{
+  "nav": {
+    "home": "Accueil",
+    "concerts": "Concerts",
+    "about": "À propos",
+    "contact": "Contact",
+    "menu": "Menu"
+  },
+  "common": {
+    "loading": "Chargement…"
+  },
+  "locations": {
+    "saint_maurice": "Église Saint-Maurice",
+    "saint_etienne": "Église Saint-Étienne"
+  },
+  "seo": {
+    "homeDesc": "Concerts d'orgues dans le centre ville de Lille — Saint-Maurice & Saint-Étienne.",
+    "concertsDesc": "Tous les concerts d'orgues à venir et passés à Lille.",
+    "aboutDesc": "Découvrez Orgue Vivant et les églises Saint-Maurice et Saint-Étienne.",
+    "contactDesc": "Contactez l'équipe d'Orgue Vivant."
+  },
+  "home": {
+    "eyebrow": "Saison 2026",
+    "heroTitle1": "La musique d'orgue,",
+    "heroTitle2": "vivante à Lille.",
+    "heroSubtitle": "Concerts, récitals et improvisations dans les églises Saint-Maurice et Saint-Étienne, au cœur du centre-ville.",
+    "ctaConcerts": "Voir les concerts",
+    "ctaAbout": "Notre mission",
+    "upcomingEyebrow": "Prochainement",
+    "upcomingTitle": "Concerts à venir",
+    "viewAll": "Tous les concerts →",
+    "noUpcoming": "Aucun concert programmé pour l'instant. Revenez bientôt.",
+    "newsEyebrow": "Actualités",
+    "newsTitle": "Dernières nouvelles",
+    "ctaTitle": "Laissez-vous porter par les grandes orgues.",
+    "ctaSubtitle": "Entrée libre pour la plupart des concerts. Programme complet en ligne."
+  },
+  "news": {
+    "item1": { "title": "Nouvelle saison dévoilée", "body": "La saison 2026 s'ouvre avec une série de récitals exceptionnels." },
+    "item2": { "title": "Restauration de l'orgue", "body": "Les travaux de restauration du grand orgue s'achèvent ce printemps." },
+    "item3": { "title": "Partenariat conservatoire", "body": "Les jeunes organistes du conservatoire en concert chaque mois." }
+  },
+  "concerts": {
+    "eyebrow": "Programme",
+    "title": "Tous les concerts",
+    "subtitle": "Retrouvez ici l'ensemble des concerts programmés, ainsi que les archives des saisons précédentes.",
+    "upcoming": "À venir",
+    "past": "Archives",
+    "empty": "Aucun concert à afficher."
+  },
+  "modal": {
+    "close": "Fermer",
+    "location": "Lieu",
+    "artists": "Artistes",
+    "instruments": "Instruments",
+    "duration": "Durée",
+    "price": "Tarif",
+    "free": "Entrée libre",
+    "paid": "Payant",
+    "moreInfo": "Plus d'informations",
+    "addToCalendar": "Ajouter au calendrier"
+  },
+  "about": {
+    "eyebrow": "À propos",
+    "title": "Orgue Vivant",
+    "intro": "Orgue Vivant est une initiative citoyenne pour faire vivre la musique d'orgue dans le centre de Lille. Nous organisons des concerts gratuits ou à petit prix, ouverts à toutes et à tous.",
+    "church": "Édifice",
+    "stMaurice": "Construite du XIVᵉ au XIXᵉ siècle, l'église Saint-Maurice est un joyau du gothique flamboyant lillois. Son grand orgue Cavaillé-Coll résonne au cœur du centre-ville.",
+    "stEtienne": "L'église Saint-Étienne, ancienne chapelle des Jésuites, abrite un orgue historique remarquable pour sa sonorité française classique.",
+    "missionTitle": "Notre mission",
+    "mission": "Rendre la musique d'orgue accessible, soutenir la jeune génération d'organistes et faire rayonner le patrimoine musical de Lille."
+  },
+  "contact": {
+    "eyebrow": "Contact",
+    "title": "Écrivez-nous",
+    "subtitle": "Pour toute question concernant les concerts, les partenariats ou la presse.",
+    "name": "Nom",
+    "email": "Email",
+    "message": "Message",
+    "send": "Envoyer",
+    "sending": "Envoi…",
+    "success": "Message envoyé. Merci !",
+    "errorRequired": "Tous les champs sont requis.",
+    "errorEmail": "Email invalide.",
+    "errorGeneric": "Une erreur est survenue. Merci de réessayer."
+  },
+  "newsletter": {
+    "placeholder": "Votre email",
+    "cta": "S'inscrire",
+    "thanks": "Merci pour votre inscription !"
+  },
+  "footer": {
+    "tagline": "Concerts d'orgues dans le centre ville de Lille.",
+    "navigation": "Navigation",
+    "legal": "Informations",
+    "legalMentions": "Mentions légales",
+    "privacy": "Confidentialité",
+    "admin": "Espace admin",
+    "rights": "Tous droits réservés."
+  },
+  "cookies": {
+    "message": "Nous utilisons uniquement des cookies strictement nécessaires au bon fonctionnement du site.",
+    "accept": "Accepter",
+    "decline": "Refuser",
+    "learnMore": "En savoir plus"
+  },
+  "legal": {
+    "editor": "Éditeur : Association Orgue Vivant, Lille, France.",
+    "hosting": "Hébergement : Vercel Inc., 440 N Barranca Ave #4133, Covina, CA 91723, USA.",
+    "contact": "Contact : contact{'@'}orgue-vivant.fr",
+    "intellectual": "L'ensemble du contenu du site est protégé par le droit d'auteur."
+  },
+  "privacy": {
+    "intro": "Cette politique décrit comment nous traitons vos données personnelles, conformément au RGPD.",
+    "dataTitle": "Données collectées",
+    "data": "Nous collectons uniquement les informations que vous nous transmettez via le formulaire de contact (nom, email, message).",
+    "cookiesTitle": "Cookies",
+    "cookies": "Seuls des cookies techniques sont utilisés (préférence de langue et de thème).",
+    "rightsTitle": "Vos droits",
+    "rights": "Vous disposez d'un droit d'accès, de rectification et de suppression de vos données. Contactez-nous à contact{'@'}orgue-vivant.fr."
+  },
+  "admin": {
+    "eyebrow": "Administration",
+    "loginTitle": "Connexion",
+    "password": "Mot de passe",
+    "signIn": "Se connecter",
+    "dashboard": "Tableau de bord",
+    "new": "Nouveau concert",
+    "editing": "Modification",
+    "edit": "Modifier",
+    "delete": "Supprimer",
+    "save": "Enregistrer",
+    "cancel": "Annuler",
+    "logout": "Déconnexion",
+    "confirmDelete": "Supprimer ce concert ?",
+    "fields": {
+      "title": "Titre",
+      "date": "Date",
+      "time": "Heure",
+      "location": "Lieu",
+      "artists": "Artistes",
+      "instruments": "Instruments",
+      "description": "Description",
+      "imageUrl": "URL de l'image",
+      "duration": "Durée",
+      "price": "Tarif",
+      "externalLink": "Lien externe"
+    }
+  }
+}
