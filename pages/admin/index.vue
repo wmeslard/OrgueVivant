@@ -119,7 +119,10 @@ async function logout() {
         </div>
         <div class="md:col-span-2">
           <label class="label">{{ t('admin.fields.imageUrl') }}</label>
-          <input v-model="editing.image_url" type="url" class="input">
+          <ImageUpload
+            :model-value="editing.image_url || null"
+            @update:model-value="editing.image_url = $event"
+          />
         </div>
         <div class="md:col-span-2">
           <label class="label">{{ t('admin.fields.description') }}</label>
