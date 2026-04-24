@@ -87,6 +87,7 @@ export default defineNuxtConfig({
   runtimeConfig: {
     resendApiKey: process.env.RESEND_API_KEY,
     myMemoryEmail: process.env.MYMEMORY_EMAIL,
+    supabaseServiceRoleKey: process.env.SUPABASE_SERVICE_ROLE_KEY,
     contactTo: process.env.CONTACT_TO || 'contact@orgue-vivant.fr',
     contactFrom: process.env.CONTACT_FROM || 'contact@orgue-vivant.fr',
     public: {

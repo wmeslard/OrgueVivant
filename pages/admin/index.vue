@@ -6,6 +6,9 @@ definePageMeta({ middleware: 'auth' })
 const { t } = useI18n()
 const supabase = useSupabaseClient()
 const user = useSupabaseUser()
+const isSuperAdmin = computed(() =>
+  (user.value?.app_metadata as Record<string, unknown>)?.role === 'super_admin'
+)
 const { all, fetchConcerts, createConcert, updateConcert, deleteConcert } = useConcerts()
 
 await fetchConcerts()
@@ -83,7 +86,9 @@ async function logout() {
         <p v-if="user" class="mt-2 text-sm text-ink-500">{{ user.email }}</p>
       </div>
       <div class="flex gap-2">
-        <button class="btn-primary" @click="newOne">{{ t('admin.new') }}</button>
+        <NuxtLink v-if="isSuperAdmin" to="/admin/users" class="btn-ghost">
+          Gestion des comptes
+        </NuxtLink>
         <button class="btn-ghost" @click="logout">{{ t('admin.logout') }}</button>
       </div>
     </header>
@@ -147,15 +152,22 @@ async function logout() {
         </div>
       </div>
       <div v-if="error" class="mt-4 text-sm text-red-600">{{ error }}</div>
-      <div class="mt-6 flex gap-2">
+      <div class="mt-6 flex justify-end gap-2">
+        <button type="button" class="btn-ghost" @click="cancel">{{ t('admin.cancel') }}</button>
         <button type="submit" class="btn-primary" :disabled="saving">
           {{ saving ? '…' : t('admin.save') }}
         </button>
-        <button type="button" class="btn-ghost" @click="cancel">{{ t('admin.cancel') }}</button>
       </div>
     </form>
 
     <!-- List -->
+    <button
+      v-if="!editing"
+      class="mb-4 text-sm text-gold hover:text-gold/70 transition-colors"
+      @click="newOne"
+    >
+      + Ajouter un concert
+    </button>
     <div class="overflow-hidden rounded-2xl border border-ink-200 dark:border-ink-800">
       <table class="w-full text-left text-sm">
         <thead class="bg-ink-50 text-xs uppercase tracking-wider text-ink-500 dark:bg-ink-900">
@@ -179,5 +191,6 @@ async function logout() {
         </tbody>
       </table>
     </div>
+
   </div>
 </template>
