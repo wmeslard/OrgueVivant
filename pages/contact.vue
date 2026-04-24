@@ -34,9 +34,9 @@ async function submit() {
 </script>
 
 <template>
-  <div class="container-premium py-32 md:py-48 bg-background">
+  <div class="container-premium py-16 md:py-24 bg-background">
     <div class="mx-auto max-w-4xl">
-      <div class="grid lg:grid-cols-2 gap-20">
+      <div class="grid lg:grid-cols-2 gap-12">
         <div class="animate-fade-up">
           <div class="inline-flex items-center gap-3 mb-6">
             <span class="h-[1px] w-8 bg-gold"></span>
@@ -44,10 +44,10 @@ async function submit() {
               {{ t('contact.eyebrow') }}
             </span>
           </div>
-          <h1 class="heading-section text-text-primary mb-8">{{ t('contact.title') }}</h1>
-          <p class="text-xl text-text-secondary font-light leading-relaxed mb-12">{{ t('contact.subtitle') }}</p>
-          
-          <div class="space-y-8">
+          <h1 class="heading-section text-text-primary mb-5">{{ t('contact.title') }}</h1>
+          <p class="text-xl text-text-secondary font-light leading-relaxed mb-8">{{ t('contact.subtitle') }}</p>
+
+          <div class="space-y-5">
             <div class="flex items-start gap-4">
               <div class="w-12 h-12 rounded-full border border-gold/20 flex items-center justify-center shrink-0">
                 <Icon name="heroicons:envelope" class="w-6 h-6 text-gold" />

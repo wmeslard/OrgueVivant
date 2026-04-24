@@ -14,15 +14,15 @@ function submit() {
 
 <template>
   <div class="w-full">
-    <form v-if="!sent" class="flex flex-col gap-4 sm:flex-row" @submit.prevent="submit">
+    <form v-if="!sent" class="flex flex-col gap-3 sm:flex-row" @submit.prevent="submit">
       <input
         v-model="email"
         type="email"
         required
         :placeholder="t('newsletter.placeholder')"
-        class="h-[54px] w-full flex-1 rounded-full border border-white/10 bg-white/5 px-6 text-sm text-text-primary placeholder-text-secondary/50 focus:border-gold focus:outline-none focus:ring-1 focus:ring-gold/20 transition-all"
+        class="h-[54px] min-w-0 flex-1 rounded-full border border-text-primary/10 bg-text-primary/5 px-6 text-sm text-text-primary placeholder-text-secondary/50 focus:border-gold focus:outline-none focus:ring-1 focus:ring-gold/20 transition-all"
       >
-      <button type="submit" class="btn-premium-primary whitespace-nowrap">
+      <button type="submit" class="btn-premium-primary !w-auto whitespace-nowrap shrink-0">
         {{ t('newsletter.cta') }}
       </button>
     </form>

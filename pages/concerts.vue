@@ -27,8 +27,8 @@ useHead({
 </script>
 
 <template>
-  <div class="container-premium py-32 md:py-48 bg-background min-h-screen">
-    <header class="mb-20 animate-fade-up">
+  <div class="container-premium py-16 md:py-24 bg-background min-h-screen">
+    <header class="mb-10 animate-fade-up">
       <div class="inline-flex items-center gap-3 mb-6">
         <span class="h-[1px] w-8 bg-gold"></span>
         <span class="text-xs uppercase tracking-[0.4em] text-gold font-bold">

@@ -18,6 +18,14 @@ onMounted(() => {
 })
 
 watch(() => route.fullPath, () => { open.value = false })
+
+watch(open, (val) => {
+  if (import.meta.client) document.body.style.overflow = val ? 'hidden' : ''
+})
+
+onBeforeUnmount(() => {
+  if (import.meta.client) document.body.style.overflow = ''
+})
 </script>
 
 <template>
@@ -68,22 +76,25 @@ watch(() => route.fullPath, () => { open.value = false })
       </div>
     </div>
 
-    <!-- Mobile Menu -->
+  </header>
+
+  <!-- Mobile Menu — téléporté hors du header pour éviter le bug de stacking context causé par backdrop-filter -->
+  <Teleport to="body">
     <Transition
-      enter-active-class="transition ease-apple duration-500"
-      enter-from-class="opacity-0 translate-y-[-20px]"
-      enter-to-class="opacity-100 translate-y-0"
-      leave-active-class="transition ease-apple duration-400"
-      leave-from-class="opacity-100 translate-y-0"
-      leave-to-class="opacity-0 translate-y-[-20px]"
+      enter-active-class="transition ease-apple duration-400"
+      enter-from-class="opacity-0"
+      enter-to-class="opacity-100"
+      leave-active-class="transition ease-apple duration-300"
+      leave-from-class="opacity-100"
+      leave-to-class="opacity-0"
     >
-      <div v-if="open" class="fixed inset-0 top-0 z-[-1] bg-background/95 backdrop-blur-2xl lg:hidden">
+      <div v-if="open" class="fixed inset-0 z-[49] bg-background/95 backdrop-blur-2xl lg:hidden">
         <nav class="flex h-full flex-col items-center justify-center gap-8 text-center">
           <NuxtLink
             v-for="item in nav"
             :key="item.to"
             :to="item.to"
-            class="font-display text-4xl text-text-primary"
+            class="font-display text-4xl text-text-primary transition-colors duration-300 hover:text-gold"
             @click="open = false"
           >
             {{ item.label }}
@@ -95,5 +106,5 @@ watch(() => route.fullPath, () => { open.value = false })
         </nav>
       </div>
     </Transition>
-  </header>
+  </Teleport>
 </template>
