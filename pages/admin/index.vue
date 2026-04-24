@@ -31,6 +31,16 @@ async function save() {
   if (!editing.value) return
   saving.value = true; error.value = ''
   try {
+    if (editing.value.external_link) {
+      try {
+        const u = new URL(editing.value.external_link)
+        if (u.protocol !== 'http:' && u.protocol !== 'https:') {
+          throw new Error('Lien externe invalide (http/https uniquement)')
+        }
+      } catch {
+        throw new Error('Lien externe invalide')
+      }
+    }
     if (editing.value.description) {
       const { translated } = await $fetch<{ translated: string }>('/api/translate', {
         method: 'POST',

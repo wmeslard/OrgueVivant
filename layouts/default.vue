@@ -8,6 +8,8 @@
       <slot />
     </main>
     <AppFooter />
-    <CookieBanner />
+    <ClientOnly>
+      <CookieBanner />
+    </ClientOnly>
   </div>
 </template>

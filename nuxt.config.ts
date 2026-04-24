@@ -12,8 +12,22 @@ export default defineNuxtConfig({
     '@nuxtjs/i18n',
     '@nuxtjs/supabase',
     '@nuxtjs/sitemap',
-    '@nuxt/icon'
+    '@nuxt/icon',
+    '@nuxtjs/google-fonts'
   ],
+
+  googleFonts: {
+    families: {
+      Fraunces: {
+        wght: [300, 400, 500, 600, 700],
+        ital: [300, 400, 500, 600, 700]
+      },
+      Inter: [300, 400, 500, 600, 700]
+    },
+    display: 'swap',
+    download: true,
+    inject: true
+  },
 
   css: ['~/assets/css/main.css'],
 
@@ -34,9 +48,7 @@ export default defineNuxtConfig({
       ],
       link: [
         { rel: 'icon', type: 'image/svg+xml', href: '/favicon.svg' },
-        { rel: 'preconnect', href: 'https://fonts.googleapis.com' },
-        { rel: 'preconnect', href: 'https://fonts.gstatic.com', crossorigin: '' },
-        { rel: 'stylesheet', href: 'https://fonts.googleapis.com/css2?family=Fraunces:ital,wght@0,300..700;1,300..700&family=Inter:wght@300;400;500;600;700&display=swap' },
+        { rel: 'preload', as: 'image', href: '/img/hero-tuyaux-orgue.jpg', fetchpriority: 'high' },
         { rel: 'preload', as: 'image', href: '/img/eglise-st-maurice.jpg' }
       ]
     }
@@ -95,6 +107,19 @@ export default defineNuxtConfig({
 
   nitro: {
     preset: 'vercel'
+  },
+
+  routeRules: {
+    '/**': {
+      headers: {
+        'X-Frame-Options': 'SAMEORIGIN',
+        'X-Content-Type-Options': 'nosniff',
+        'Referrer-Policy': 'strict-origin-when-cross-origin',
+        'Permissions-Policy': 'camera=(), microphone=(), geolocation=()',
+        'Strict-Transport-Security': 'max-age=31536000; includeSubDomains',
+        'Content-Security-Policy': "frame-ancestors 'self'; object-src 'none'; base-uri 'self'"
+      }
+    }
   },
 
   compatibilityDate: '2024-11-01'

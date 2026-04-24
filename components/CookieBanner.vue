@@ -1,7 +1,12 @@
 <script setup lang="ts">
 const { t } = useI18n()
 const accepted = useCookie<string | null>('ov_cookie_consent', { maxAge: 60 * 60 * 24 * 365 })
-const visible = computed(() => accepted.value !== 'accepted' && accepted.value !== 'declined')
+const ready = ref(false)
+const visible = computed(() => ready.value && accepted.value !== 'accepted' && accepted.value !== 'declined')
+
+onMounted(() => {
+  setTimeout(() => { ready.value = true }, 800)
+})
 
 function accept() { accepted.value = 'accepted' }
 function decline() { accepted.value = 'declined' }

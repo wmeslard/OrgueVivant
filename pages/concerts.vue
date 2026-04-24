@@ -3,7 +3,7 @@ import type { Concert } from '~/composables/useConcerts'
 
 const { t } = useI18n()
 const { upcoming, past, pending, fetchConcerts } = useConcerts()
-await fetchConcerts()
+await useLazyAsyncData('concerts', () => fetchConcerts(), { server: false })
 
 const tab = ref<'upcoming' | 'past'>('upcoming')
 const selected = ref<Concert | null>(null)

@@ -1,6 +1,29 @@
+import { serverSupabaseUser } from '#supabase/server'
+
+const hits = new Map<string, { count: number; reset: number }>()
+const WINDOW_MS = 60_000
+const MAX_PER_WINDOW = 10
+const MAX_TEXT_LENGTH = 5000
+
 export default defineEventHandler(async (event) => {
+  const user = await serverSupabaseUser(event).catch(() => null)
+  if (!user) throw createError({ statusCode: 401, statusMessage: 'Unauthorized' })
+
+  const now = Date.now()
+  const key = user.id
+  const entry = hits.get(key)
+  if (!entry || now > entry.reset) {
+    hits.set(key, { count: 1, reset: now + WINDOW_MS })
+  } else {
+    if (entry.count >= MAX_PER_WINDOW)
+      throw createError({ statusCode: 429, statusMessage: 'Too many requests' })
+    entry.count++
+  }
+
   const { text } = await readBody<{ text: string }>(event)
   if (!text?.trim()) return { translated: '' }
+  if (text.length > MAX_TEXT_LENGTH)
+    throw createError({ statusCode: 400, statusMessage: 'Text too long' })
 
   const config = useRuntimeConfig()
   const email = config.myMemoryEmail

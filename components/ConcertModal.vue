@@ -13,6 +13,17 @@ const description = computed(() => {
   return props.concert.description
 })
 
+const safeExternalLink = computed(() => {
+  const raw = props.concert?.external_link
+  if (!raw) return ''
+  try {
+    const u = new URL(raw)
+    return u.protocol === 'http:' || u.protocol === 'https:' ? u.toString() : ''
+  } catch {
+    return ''
+  }
+})
+
 const formattedDate = computed(() => {
   if (!props.concert) return ''
   const d = new Date(`${props.concert.date}T${props.concert.time || '20:00'}`)
@@ -125,10 +136,10 @@ onBeforeUnmount(() => window.removeEventListener('keydown', onKey))
             <!-- Actions -->
             <div class="pt-2 flex flex-wrap gap-3">
               <a
-                v-if="concert.external_link"
-                :href="concert.external_link"
+                v-if="safeExternalLink"
+                :href="safeExternalLink"
                 target="_blank"
-                rel="noopener"
+                rel="noopener noreferrer"
                 class="btn-premium-primary !h-11 !w-auto !px-7"
               >
                 {{ t('modal.book') }}

@@ -3,7 +3,9 @@ import type { Concert } from '~/composables/useConcerts'
 
 const { t, locale } = useI18n()
 const { upcoming, pending, fetchConcerts } = useConcerts()
-await fetchConcerts()
+const { pending: concertsPending } = await useLazyAsyncData('concerts', () => fetchConcerts(), {
+  server: false
+})
 
 const preview = computed(() => upcoming.value.slice(0, 3))
 const nextConcert = computed(() => upcoming.value[0] || null)
@@ -15,6 +17,7 @@ useHead({
     { name: 'description', content: t('seo.homeDesc') }
   ],
   link: [
+    { rel: 'preload', as: 'image', href: '/img/hero-tuyaux-orgue.jpg', fetchpriority: 'high' },
     { rel: 'preload', as: 'image', href: '/img/eglise-st-maurice.jpg' }
   ]
 })
@@ -40,10 +43,12 @@ const formatDate = (dateStr: string) => {
       <!-- Background — tuyaux d'orgue, sobre et immersif -->
       <div class="absolute inset-0 z-0">
         <img
-          src="https://images.unsplash.com/photo-1507838153414-b4b713384a76?auto=format&fit=crop&w=2000&q=80"
+          src="/img/hero-tuyaux-orgue.jpg"
           alt="Tuyaux d'orgue"
           class="w-full h-full object-cover object-center brightness-[0.25]"
           fetchpriority="high"
+          loading="eager"
+          decoding="async"
         />
         <!-- Gradient sombre en bas pour fondre avec les sections -->
         <div class="absolute inset-0 bg-gradient-to-b from-background/40 via-transparent to-background z-10" />
@@ -97,7 +102,7 @@ const formatDate = (dateStr: string) => {
         <div class="card-premium group flex flex-col md:flex-row items-stretch min-h-[400px]">
           <div class="md:w-1/2 overflow-hidden relative">
             <img 
-              :src="nextConcert.image_url || 'https://images.unsplash.com/photo-1548777123-e216912df7d8?q=80&w=1000'" 
+              :src="nextConcert.image_url || '/img/concert-fallback.jpg'"
               :alt="nextConcert.title"
               class="w-full h-full object-cover transition-transform duration-1000 group-hover:scale-105"
             />
