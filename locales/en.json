@@ -35,7 +35,20 @@
     "ctaTitle": "Let the great organs carry you away.",
     "ctaSubtitle": "Free admission to most concerts. Full programme online.",
     "nextConcert": "Next concert",
-    "scrollHint": "Scroll"
+    "scrollHint": "Scroll",
+    "upcomingSubtitle": "Explore the 2026 season programme. Timeless moments at the heart of Lille's heritage.",
+    "feature1Title": "Free entry",
+    "feature1Body": "Music for everyone. Most of our concerts are free to encourage discovery.",
+    "feature2Title": "Heritage venues",
+    "feature2Body": "Discover the Saint-Maurice and Saint-Étienne churches in a new light, carried by the sound of the organ.",
+    "feature3Title": "A rare experience",
+    "feature3Body": "A moment of serenity and raw emotion. The king of instruments in all its majesty.",
+    "heritageTitle": "When organs awaken the stone.",
+    "heritageBody": "Beyond concerts, it is a millennial dialogue between architecture and music that we offer you. Each note resonates through Lille's history, offering a timeless parenthesis at the heart of the city.",
+    "newsletterTitle": "Receive the programme before anyone else.",
+    "newsletterSubtitle": "Dates, behind-the-scenes, guest artists and news. Join our circle of enthusiasts.",
+    "newsletterConsent": "By subscribing, you agree to our privacy policy.",
+    "readMore": "Read more"
   },
   "news": {
     "item1": { "title": "New season announced", "body": "The 2026 season opens with a series of outstanding recitals." },

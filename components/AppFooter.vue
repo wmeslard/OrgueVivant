@@ -65,7 +65,7 @@ const year = new Date().getFullYear()
           © {{ year }} Orgue Vivant — {{ t('footer.rights') }}
         </div>
         <div class="text-[10px] uppercase tracking-widest text-text-secondary/40">
-          Design by Premium Studio
+          Design by William Meslard
         </div>
       </div>
     </div>

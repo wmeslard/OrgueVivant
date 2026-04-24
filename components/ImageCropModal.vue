@@ -80,6 +80,7 @@ function confirm() {
           <p class="text-sm font-light text-text-secondary">Ratio 4:5 — 800 × 1000 px</p>
         </div>
         <button
+          type="button"
           class="flex h-9 w-9 items-center justify-center rounded-full bg-surface hover:bg-gold hover:text-background transition-all duration-300"
           @click="$emit('cancel')"
         >
@@ -123,10 +124,10 @@ function confirm() {
 
       <!-- Footer compact -->
       <div class="flex items-center justify-end gap-3 px-6 py-3 border-t border-text-primary/10 shrink-0">
-        <button class="btn-premium-secondary !h-10 !w-auto !px-5 !text-sm" @click="$emit('cancel')">
+        <button type="button" class="btn-premium-secondary !h-10 !w-auto !px-5 !text-sm" @click="$emit('cancel')">
           Annuler
         </button>
-        <button class="btn-premium-primary !h-10 !w-auto !px-6 !text-sm" @click="confirm">
+        <button type="button" class="btn-premium-primary !h-10 !w-auto !px-6 !text-sm" @click="confirm">
           Rogner et enregistrer
         </button>
       </div>

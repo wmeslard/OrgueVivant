@@ -31,6 +31,13 @@ async function save() {
   if (!editing.value) return
   saving.value = true; error.value = ''
   try {
+    if (editing.value.description) {
+      const { translated } = await $fetch<{ translated: string }>('/api/translate', {
+        method: 'POST',
+        body: { text: editing.value.description }
+      })
+      editing.value.description_en = translated
+    }
     if (editing.value.id) {
       await updateConcert(editing.value.id, editing.value)
     } else {

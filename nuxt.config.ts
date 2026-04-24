@@ -36,7 +36,8 @@ export default defineNuxtConfig({
         { rel: 'icon', type: 'image/svg+xml', href: '/favicon.svg' },
         { rel: 'preconnect', href: 'https://fonts.googleapis.com' },
         { rel: 'preconnect', href: 'https://fonts.gstatic.com', crossorigin: '' },
-        { rel: 'stylesheet', href: 'https://fonts.googleapis.com/css2?family=Fraunces:ital,wght@0,300..700;1,300..700&family=Inter:wght@300;400;500;600;700&display=swap' }
+        { rel: 'stylesheet', href: 'https://fonts.googleapis.com/css2?family=Fraunces:ital,wght@0,300..700;1,300..700&family=Inter:wght@300;400;500;600;700&display=swap' },
+        { rel: 'preload', as: 'image', href: '/img/eglise-st-maurice.jpg' }
       ]
     }
   },
@@ -73,6 +74,7 @@ export default defineNuxtConfig({
 
   runtimeConfig: {
     resendApiKey: process.env.RESEND_API_KEY,
+    myMemoryEmail: process.env.MYMEMORY_EMAIL,
     contactTo: process.env.CONTACT_TO || 'contact@orgue-vivant.fr',
     contactFrom: process.env.CONTACT_FROM || 'contact@orgue-vivant.fr',
     public: {

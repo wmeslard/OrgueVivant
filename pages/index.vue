@@ -13,6 +13,9 @@ useHead({
   title: 'Orgue Vivant — Concerts d\'orgues à Lille',
   meta: [
     { name: 'description', content: t('seo.homeDesc') }
+  ],
+  link: [
+    { rel: 'preload', as: 'image', href: '/img/eglise-st-maurice.jpg' }
   ]
 })
 
@@ -139,7 +142,7 @@ const formatDate = (dateStr: string) => {
           <div class="max-w-2xl">
             <h2 class="heading-section mb-6">{{ t('home.upcomingTitle') }}</h2>
             <p class="text-text-secondary text-lg font-light">
-              Découvrez la programmation de la saison 2026. Des moments suspendus au cœur du patrimoine lillois.
+              {{ t('home.upcomingSubtitle') }}
             </p>
           </div>
           <NuxtLink to="/concerts" class="group flex items-center gap-3 text-gold tracking-widest text-sm font-bold uppercase">
@@ -174,41 +177,38 @@ const formatDate = (dateStr: string) => {
             <div class="w-16 h-16 rounded-full border border-gold/20 flex items-center justify-center mb-5 transition-colors group-hover:bg-gold/5">
               <Icon name="heroicons:musical-note" class="w-10 h-10 text-gold" />
             </div>
-            <h3 class="font-display text-2xl mb-4 text-text-primary">Entrée libre</h3>
-            <p class="text-text-secondary font-light">La musique pour tous. La plupart de nos concerts sont en accès libre pour favoriser la découverte.</p>
+            <h3 class="font-display text-2xl mb-4 text-text-primary">{{ t('home.feature1Title') }}</h3>
+            <p class="text-text-secondary font-light">{{ t('home.feature1Body') }}</p>
           </div>
           <div class="flex flex-col items-center text-center group">
             <div class="w-16 h-16 rounded-full border border-gold/20 flex items-center justify-center mb-5 transition-colors group-hover:bg-gold/5">
               <Icon name="heroicons:building-library" class="w-10 h-10 text-gold" />
             </div>
-            <h3 class="font-display text-2xl mb-4 text-text-primary">Lieux patrimoniaux</h3>
-            <p class="text-text-secondary font-light">Découvrez les églises Saint-Maurice et Saint-Étienne sous un nouveau jour, portées par le son de l'orgue.</p>
+            <h3 class="font-display text-2xl mb-4 text-text-primary">{{ t('home.feature2Title') }}</h3>
+            <p class="text-text-secondary font-light">{{ t('home.feature2Body') }}</p>
           </div>
           <div class="flex flex-col items-center text-center group">
             <div class="w-16 h-16 rounded-full border border-gold/20 flex items-center justify-center mb-5 transition-colors group-hover:bg-gold/5">
               <Icon name="heroicons:sparkles" class="w-10 h-10 text-gold" />
             </div>
-            <h3 class="font-display text-2xl mb-4 text-text-primary">Expérience rare</h3>
-            <p class="text-text-secondary font-light">Un moment de sérénité et d'émotion brute. L'instrument-roi dans toute sa majesté.</p>
+            <h3 class="font-display text-2xl mb-4 text-text-primary">{{ t('home.feature3Title') }}</h3>
+            <p class="text-text-secondary font-light">{{ t('home.feature3Body') }}</p>
           </div>
         </div>
       </div>
     </section>
 
     <!-- SECTION PATRIMOINE / STORYTELLING -->
-    <section class="relative py-24 overflow-hidden">
-      <div class="absolute inset-0 z-0">
-        <img 
-          src="/img/eglise-st-maurice.jpg"
-          alt="Eglise" 
-          class="w-full h-full object-cover brightness-[0.3]"
-        />
-      </div>
+    <section
+      class="relative py-24 bg-cover bg-center bg-no-repeat bg-black"
+      style="background-image: url('/img/eglise-st-maurice.jpg')"
+    >
+      <div class="absolute inset-0 z-0 bg-black/70" />
       <div class="container-premium relative z-10">
         <div class="max-w-3xl">
-          <h2 class="heading-section text-white mb-5">Quand les orgues réveillent la pierre.</h2>
+          <h2 class="heading-section text-white mb-5">{{ t('home.heritageTitle') }}</h2>
           <p class="text-xl text-text-secondary font-light mb-8 leading-relaxed">
-            Au-delà des concerts, c'est un dialogue millénaire entre l'architecture et la musique que nous vous proposons. Chaque note résonne dans l'histoire de Lille, offrant une parenthèse hors du temps au cœur de la ville.
+            {{ t('home.heritageBody') }}
           </p>
           <NuxtLink to="/about" class="btn-premium-primary">
             {{ t('home.ctaAbout') }}
@@ -218,7 +218,7 @@ const formatDate = (dateStr: string) => {
     </section>
 
     <!-- SECTION ACTUALITÉS -->
-    <section class="py-16 bg-background">
+    <section class="py-16 bg-background will-change-transform">
       <div class="container-premium">
         <div class="mb-10">
           <h2 class="heading-section">{{ t('home.newsTitle') }}</h2>
@@ -229,7 +229,7 @@ const formatDate = (dateStr: string) => {
             <h3 class="font-display text-2xl font-light mb-3 text-text-primary group-hover:text-gold transition-colors duration-300">{{ n.title }}</h3>
             <p class="text-text-secondary font-light mb-5 flex-1 leading-relaxed">{{ n.body }}</p>
             <NuxtLink to="#" class="text-xs uppercase tracking-widest text-text-primary flex items-center gap-2 group/link">
-              Lire la suite
+              {{ t('home.readMore') }}
               <Icon name="heroicons:chevron-right" class="w-4 h-4 transition-transform group-hover/link:translate-x-1" />
             </NuxtLink>
           </article>
@@ -242,15 +242,15 @@ const formatDate = (dateStr: string) => {
       <div class="container-premium">
         <div class="card-premium p-8 md:p-12 bg-surface flex flex-col items-center text-center">
           <h2 class="font-display text-3xl md:text-4xl font-light mb-4 text-text-primary max-w-2xl">
-            Recevez la programmation en avant-première.
+            {{ t('home.newsletterTitle') }}
           </h2>
           <p class="text-text-secondary text-lg font-light mb-8 max-w-xl">
-            Dates, coulisses, artistes invités et nouveautés. Rejoignez notre cercle de passionnés.
+            {{ t('home.newsletterSubtitle') }}
           </p>
           <div class="w-full max-w-md">
             <NewsletterSignup />
             <p class="mt-6 text-[10px] text-text-secondary/50 uppercase tracking-widest">
-              En vous inscrivant, vous acceptez notre politique de confidentialité.
+              {{ t('home.newsletterConsent') }}
             </p>
           </div>
         </div>

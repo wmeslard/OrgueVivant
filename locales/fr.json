@@ -35,7 +35,20 @@
     "ctaTitle": "Laissez-vous porter par les grandes orgues.",
     "ctaSubtitle": "Entrée libre pour la plupart des concerts. Programme complet en ligne.",
     "nextConcert": "Prochain concert",
-    "scrollHint": "Défiler"
+    "scrollHint": "Défiler",
+    "upcomingSubtitle": "Découvrez la programmation de la saison 2026. Des moments suspendus au cœur du patrimoine lillois.",
+    "feature1Title": "Entrée libre",
+    "feature1Body": "La musique pour tous. La plupart de nos concerts sont en accès libre pour favoriser la découverte.",
+    "feature2Title": "Lieux patrimoniaux",
+    "feature2Body": "Découvrez les églises Saint-Maurice et Saint-Étienne sous un nouveau jour, portées par le son de l'orgue.",
+    "feature3Title": "Expérience rare",
+    "feature3Body": "Un moment de sérénité et d'émotion brute. L'instrument-roi dans toute sa majesté.",
+    "heritageTitle": "Quand les orgues réveillent la pierre.",
+    "heritageBody": "Au-delà des concerts, c'est un dialogue millénaire entre l'architecture et la musique que nous vous proposons. Chaque note résonne dans l'histoire de Lille, offrant une parenthèse hors du temps au cœur de la ville.",
+    "newsletterTitle": "Recevez la programmation en avant-première.",
+    "newsletterSubtitle": "Dates, coulisses, artistes invités et nouveautés. Rejoignez notre cercle de passionnés.",
+    "newsletterConsent": "En vous inscrivant, vous acceptez notre politique de confidentialité.",
+    "readMore": "Lire la suite"
   },
   "news": {
     "item1": { "title": "Nouvelle saison dévoilée", "body": "La saison 2026 s'ouvre avec une série de récitals exceptionnels." },

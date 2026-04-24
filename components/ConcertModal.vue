@@ -7,6 +7,12 @@ const emit = defineEmits<{ (e: 'close'): void }>()
 const { locale, t } = useI18n()
 const { downloadIcs } = useIcs()
 
+const description = computed(() => {
+  if (!props.concert) return ''
+  if (locale.value === 'en' && props.concert.description_en) return props.concert.description_en
+  return props.concert.description
+})
+
 const formattedDate = computed(() => {
   if (!props.concert) return ''
   const d = new Date(`${props.concert.date}T${props.concert.time || '20:00'}`)
@@ -110,9 +116,9 @@ onBeforeUnmount(() => window.removeEventListener('keydown', onKey))
             </div>
 
             <!-- Description -->
-            <div v-if="concert.description">
+            <div v-if="description">
               <p class="text-sm leading-relaxed text-text-secondary font-light">
-                {{ concert.description }}
+                {{ description }}
               </p>
             </div>
 
