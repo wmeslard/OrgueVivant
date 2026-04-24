@@ -82,48 +82,48 @@ const formatDate = (dateStr: string) => {
     </section>
 
     <!-- SECTION PROCHAIN CONCERT -->
-    <section v-if="nextConcert" class="relative z-30 pt-6 pb-6">
+    <section v-if="nextConcert" class="relative z-30 pt-10 pb-10">
       <div class="container-premium">
-        <div class="mb-5 flex items-center gap-4">
+        <div class="mb-10 flex items-center gap-4">
           <h2 class="text-xs uppercase tracking-[0.3em] text-text-secondary font-bold">
             {{ t('home.upcomingEyebrow') }}
           </h2>
           <div class="h-[1px] flex-1 bg-white/5"></div>
         </div>
 
-        <div class="card-premium group flex flex-col md:flex-row items-stretch">
-          <div class="md:w-2/5 overflow-hidden relative max-h-[200px] md:max-h-none">
-            <img
-              :src="nextConcert.image_url || 'https://images.unsplash.com/photo-1548777123-e216912df7d8?q=80&w=1000'"
+        <div class="card-premium group flex flex-col md:flex-row items-stretch min-h-[400px]">
+          <div class="md:w-1/2 overflow-hidden relative">
+            <img 
+              :src="nextConcert.image_url || 'https://images.unsplash.com/photo-1548777123-e216912df7d8?q=80&w=1000'" 
               :alt="nextConcert.title"
               class="w-full h-full object-cover transition-transform duration-1000 group-hover:scale-105"
             />
             <div class="absolute inset-0 bg-gradient-to-r from-surface via-transparent to-transparent hidden md:block"></div>
           </div>
-          <div class="md:w-3/5 p-6 md:p-8 flex flex-col justify-center">
-            <div class="text-gold font-bold tracking-widest text-sm mb-2">
+          <div class="md:w-1/2 p-7 md:p-10 flex flex-col justify-center">
+            <div class="text-gold font-bold tracking-widest text-sm mb-3">
               {{ formatDate(nextConcert.date) }} — {{ nextConcert.time }}
             </div>
-            <h2 class="font-display text-2xl md:text-3xl font-light mb-3 text-text-primary">
+            <h2 class="font-display text-3xl md:text-4xl lg:text-5xl font-light mb-4 text-text-primary">
               {{ nextConcert.title }}
             </h2>
-            <div class="flex flex-col gap-2 text-text-secondary mb-4">
+            <div class="flex flex-col gap-3 text-text-secondary mb-6">
               <div class="flex items-center gap-3">
-                <Icon name="heroicons:map-pin" class="w-4 h-4 text-gold" />
+                <Icon name="heroicons:map-pin" class="w-5 h-5 text-gold" />
                 <span>{{ t(`locations.${nextConcert.location}`) }}</span>
               </div>
               <div v-if="nextConcert.artists" class="flex items-center gap-3">
-                <Icon name="heroicons:user" class="w-4 h-4 text-gold" />
+                <Icon name="heroicons:user" class="w-5 h-5 text-gold" />
                 <span>{{ nextConcert.artists }}</span>
               </div>
             </div>
-            <div class="flex flex-wrap gap-3">
-              <button @click="selected = nextConcert" class="btn-premium-primary !h-11 !px-6">
-                <span class="text-gold text-xl leading-none">+</span>
+            <div class="grid grid-cols-1 sm:flex sm:flex-wrap items-stretch gap-4">
+              <button @click="selected = nextConcert" class="btn-premium-primary !h-14 !px-8">
+                <span class="text-gold text-2xl leading-none">+</span>
                 <span>{{ t('modal.moreInfo') }}</span>
               </button>
-              <button class="btn-premium-secondary !h-11 !px-6">
-                <Icon name="heroicons:calendar" class="w-4 h-4 text-gold" />
+              <button class="btn-premium-secondary !h-14 !px-8">
+                <Icon name="heroicons:calendar" class="w-5 h-5 text-gold" />
                 <span>{{ t('modal.addToCalendar') }}</span>
               </button>
             </div>
