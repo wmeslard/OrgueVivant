@@ -7,6 +7,7 @@ const isScrolled = ref(false)
 const nav = computed(() => [
   { to: '/', label: t('nav.home') },
   { to: '/concerts', label: t('nav.concerts') },
+  { to: '/news', label: t('nav.news') },
   { to: '/about', label: t('nav.about') },
   { to: '/contact', label: t('nav.contact') }
 ])

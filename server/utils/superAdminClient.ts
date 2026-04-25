@@ -2,6 +2,14 @@ import { createClient } from '@supabase/supabase-js'
 import { serverSupabaseUser } from '#supabase/server'
 import type { H3Event } from 'h3'
 
+export async function requireAdmin(event: H3Event) {
+  const user = await serverSupabaseUser(event).catch(() => null)
+  if (!user) throw createError({ statusCode: 401, statusMessage: 'Unauthorized' })
+  const role = (user.app_metadata as Record<string, unknown>)?.role
+  if (role !== 'admin' && role !== 'super_admin') throw createError({ statusCode: 403, statusMessage: 'Forbidden' })
+  return user
+}
+
 export async function requireSuperAdmin(event: H3Event) {
   const user = await serverSupabaseUser(event).catch(() => null)
   if (!user) throw createError({ statusCode: 401, statusMessage: 'Unauthorized' })

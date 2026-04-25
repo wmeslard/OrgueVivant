@@ -1,15 +1,18 @@
 <script setup lang="ts">
 import type { Concert } from '~/composables/useConcerts'
+import type { NewsItem } from '~/composables/useNews'
 
 const { t, locale } = useI18n()
 const { upcoming, pending, fetchConcerts } = useConcerts()
-const { pending: concertsPending } = await useLazyAsyncData('concerts', () => fetchConcerts(), {
-  server: false
-})
+const { latest, fetchNews } = useNews()
+
+await useLazyAsyncData('concerts', () => fetchConcerts(), { server: false })
+await useLazyAsyncData('news-home', () => fetchNews(), { server: false })
 
 const preview = computed(() => upcoming.value.slice(0, 3))
 const nextConcert = computed(() => upcoming.value[0] || null)
 const selected = ref<Concert | null>(null)
+const selectedNews = ref<NewsItem | null>(null)
 
 useHead({
   title: 'Orgue Vivant — Concerts d\'orgues à Lille',
@@ -22,17 +25,28 @@ useHead({
   ]
 })
 
-const news = computed(() => [
-  { date: '2026-04-01', title: t('news.item1.title'), body: t('news.item1.body') },
-  { date: '2026-03-15', title: t('news.item2.title'), body: t('news.item2.body') },
-  { date: '2026-02-20', title: t('news.item3.title'), body: t('news.item3.body') }
-])
-
 const formatDate = (dateStr: string) => {
   const d = new Date(dateStr)
   return d.toLocaleDateString(locale.value === 'fr' ? 'fr-FR' : 'en-US', {
     day: 'numeric', month: 'long', year: 'numeric'
   })
+}
+
+function getTitle(n: NewsItem) {
+  return locale.value === 'en' && n.title_en ? n.title_en : n.title
+}
+
+function rawBody(n: NewsItem) {
+  return locale.value === 'en' && n.body_en ? n.body_en : n.body
+}
+
+function getBody(n: NewsItem) {
+  const text = rawBody(n)
+  return text.length > 150 ? text.slice(0, 150).trimEnd() + '…' : text
+}
+
+function needsMore(n: NewsItem) {
+  return rawBody(n).length > 150
 }
 </script>
 
@@ -174,8 +188,81 @@ const formatDate = (dateStr: string) => {
       </div>
     </section>
 
+    <!-- SECTION PATRIMOINE / STORYTELLING -->
+    <div class="py-16 bg-background">
+      <section
+        class="relative py-40 bg-cover bg-center bg-no-repeat bg-black"
+        style="background-image: url('/img/eglise-st-maurice.jpg')"
+      >
+        <div class="absolute inset-0 z-0 bg-black/70" />
+        <div class="container-premium relative z-10">
+          <div class="max-w-3xl">
+            <h2 class="heading-section text-white mb-5">{{ t('home.heritageTitle') }}</h2>
+            <p class="text-xl text-text-secondary font-light mb-8 leading-relaxed">
+              {{ t('home.heritageBody') }}
+            </p>
+            <NuxtLink to="/about" class="btn-premium-primary">
+              {{ t('home.ctaAbout') }}
+            </NuxtLink>
+          </div>
+        </div>
+      </section>
+    </div>
+
+    <!-- SECTION ACTUALITÉS -->
+    <section class="py-16 bg-background will-change-transform">
+      <div class="container-premium">
+        <div class="flex flex-col md:flex-row md:items-end justify-between mb-10 gap-6">
+          <h2 class="heading-section">{{ t('home.newsTitle') }}</h2>
+          <NuxtLink to="/news" class="group flex items-center gap-3 text-gold tracking-widest text-sm font-bold uppercase">
+            {{ t('home.viewAllNews') }}
+            <Icon name="heroicons:arrow-right" class="w-5 h-5 transition-transform group-hover:translate-x-2" />
+          </NuxtLink>
+        </div>
+        <div class="grid gap-8 md:grid-cols-3">
+          <article
+            v-for="n in latest"
+            :key="n.id"
+            class="group flex flex-col h-full border-b border-white/5 pb-6 transition-colors hover:border-gold/30 cursor-pointer"
+            @click="selectedNews = n"
+          >
+            <time class="text-[10px] uppercase tracking-[0.3em] text-gold mb-3 font-bold">{{ formatDate(n.published_at) }}</time>
+            <h3 class="font-display text-2xl font-light mb-3 text-text-primary group-hover:text-gold transition-colors duration-300">{{ getTitle(n) }}</h3>
+            <p class="text-text-secondary font-light mb-5 flex-1 leading-relaxed">{{ getBody(n) }}</p>
+            <span
+              v-if="needsMore(n)"
+              class="text-xs uppercase tracking-widest text-text-primary flex items-center gap-2"
+            >
+              {{ t('home.readMore') }}
+              <Icon name="heroicons:chevron-right" class="w-4 h-4 transition-transform group-hover:translate-x-1" />
+            </span>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <!-- NEWSLETTER PREMIUM -->
+    <section class="py-16">
+      <div class="container-premium">
+        <div class="card-premium p-8 md:p-12 bg-surface flex flex-col items-center text-center">
+          <h2 class="font-display text-3xl md:text-4xl font-light mb-4 text-text-primary max-w-4xl">
+            {{ t('home.newsletterTitle') }}
+          </h2>
+          <p class="text-text-secondary text-lg font-light mb-8 max-w-2xl">
+            {{ t('home.newsletterSubtitle') }}
+          </p>
+          <div class="w-full max-w-lg">
+            <NewsletterSignup />
+            <p class="mt-6 text-[10px] text-text-secondary/50 uppercase tracking-widest">
+              {{ t('home.newsletterConsent') }}
+            </p>
+          </div>
+        </div>
+      </div>
+    </section>
+
     <!-- SECTION POURQUOI VENIR -->
-    <section class="py-16 bg-surface/30">
+    <section class="py-16 pb-32 bg-surface/30">
       <div class="container-premium">
         <div class="grid md:grid-cols-3 gap-10">
           <div class="flex flex-col items-center text-center group">
@@ -203,65 +290,7 @@ const formatDate = (dateStr: string) => {
       </div>
     </section>
 
-    <!-- SECTION PATRIMOINE / STORYTELLING -->
-    <section
-      class="relative py-24 bg-cover bg-center bg-no-repeat bg-black"
-      style="background-image: url('/img/eglise-st-maurice.jpg')"
-    >
-      <div class="absolute inset-0 z-0 bg-black/70" />
-      <div class="container-premium relative z-10">
-        <div class="max-w-3xl">
-          <h2 class="heading-section text-white mb-5">{{ t('home.heritageTitle') }}</h2>
-          <p class="text-xl text-text-secondary font-light mb-8 leading-relaxed">
-            {{ t('home.heritageBody') }}
-          </p>
-          <NuxtLink to="/about" class="btn-premium-primary">
-            {{ t('home.ctaAbout') }}
-          </NuxtLink>
-        </div>
-      </div>
-    </section>
-
-    <!-- SECTION ACTUALITÉS -->
-    <section class="py-16 bg-background will-change-transform">
-      <div class="container-premium">
-        <div class="mb-10">
-          <h2 class="heading-section">{{ t('home.newsTitle') }}</h2>
-        </div>
-        <div class="grid gap-8 md:grid-cols-3">
-          <article v-for="n in news" :key="n.title" class="group flex flex-col h-full border-b border-white/5 pb-6 transition-colors hover:border-gold/30">
-            <time class="text-[10px] uppercase tracking-[0.3em] text-gold mb-3 font-bold">{{ n.date }}</time>
-            <h3 class="font-display text-2xl font-light mb-3 text-text-primary group-hover:text-gold transition-colors duration-300">{{ n.title }}</h3>
-            <p class="text-text-secondary font-light mb-5 flex-1 leading-relaxed">{{ n.body }}</p>
-            <NuxtLink to="#" class="text-xs uppercase tracking-widest text-text-primary flex items-center gap-2 group/link">
-              {{ t('home.readMore') }}
-              <Icon name="heroicons:chevron-right" class="w-4 h-4 transition-transform group-hover/link:translate-x-1" />
-            </NuxtLink>
-          </article>
-        </div>
-      </div>
-    </section>
-
-    <!-- NEWSLETTER PREMIUM -->
-    <section class="py-16 border-t border-white/5">
-      <div class="container-premium">
-        <div class="card-premium p-8 md:p-12 bg-surface flex flex-col items-center text-center">
-          <h2 class="font-display text-3xl md:text-4xl font-light mb-4 text-text-primary max-w-2xl">
-            {{ t('home.newsletterTitle') }}
-          </h2>
-          <p class="text-text-secondary text-lg font-light mb-8 max-w-xl">
-            {{ t('home.newsletterSubtitle') }}
-          </p>
-          <div class="w-full max-w-md">
-            <NewsletterSignup />
-            <p class="mt-6 text-[10px] text-text-secondary/50 uppercase tracking-widest">
-              {{ t('home.newsletterConsent') }}
-            </p>
-          </div>
-        </div>
-      </div>
-    </section>
-
 <ConcertModal :concert="selected" @close="selected = null" />
+<NewsModal :news="selectedNews" @close="selectedNews = null" />
   </div>
 </template>

@@ -2,6 +2,7 @@
   "nav": {
     "home": "Accueil",
     "concerts": "Concerts",
+    "news": "Actualités",
     "about": "À propos",
     "contact": "Contact",
     "menu": "Menu"
@@ -16,6 +17,7 @@
   "seo": {
     "homeDesc": "Concerts d'orgues dans le centre ville de Lille — Saint-Maurice & Saint-Étienne.",
     "concertsDesc": "Tous les concerts d'orgues à venir et passés à Lille.",
+    "newsDesc": "Toutes les actualités et annonces d'Orgue Vivant — concerts, restaurations, partenariats.",
     "aboutDesc": "Découvrez Orgue Vivant et les églises Saint-Maurice et Saint-Étienne.",
     "contactDesc": "Contactez l'équipe d'Orgue Vivant."
   },
@@ -32,6 +34,7 @@
     "noUpcoming": "Aucun concert programmé pour l'instant. Revenez bientôt.",
     "newsEyebrow": "Actualités",
     "newsTitle": "Dernières nouvelles",
+    "viewAllNews": "Toutes les actualités",
     "ctaTitle": "Laissez-vous porter par les grandes orgues.",
     "ctaSubtitle": "Entrée libre pour la plupart des concerts. Programme complet en ligne.",
     "nextConcert": "Prochain concert",
@@ -51,9 +54,12 @@
     "readMore": "Lire la suite"
   },
   "news": {
-    "item1": { "title": "Nouvelle saison dévoilée", "body": "La saison 2026 s'ouvre avec une série de récitals exceptionnels." },
-    "item2": { "title": "Restauration de l'orgue", "body": "Les travaux de restauration du grand orgue s'achèvent ce printemps." },
-    "item3": { "title": "Partenariat conservatoire", "body": "Les jeunes organistes du conservatoire en concert chaque mois." }
+    "eyebrow": "Actualités",
+    "title": "Toutes les actualités",
+    "subtitle": "Retrouvez ici toutes les nouvelles de la saison, les annonces et les temps forts de l'association.",
+    "upcoming": "À venir",
+    "past": "Archives",
+    "empty": "Aucune actualité à afficher."
   },
   "concerts": {
     "eyebrow": "Programme",
@@ -104,7 +110,8 @@
   "newsletter": {
     "placeholder": "Votre email",
     "cta": "S'inscrire",
-    "thanks": "Merci pour votre inscription !"
+    "thanks": "Merci pour votre inscription !",
+    "error": "Une erreur est survenue. Veuillez réessayer."
   },
   "footer": {
     "tagline": "Concerts d'orgues dans le centre ville de Lille.",
@@ -142,14 +149,20 @@
     "password": "Mot de passe",
     "signIn": "Se connecter",
     "dashboard": "Tableau de bord",
+    "concerts": "Concerts",
+    "news": "Actualités",
     "new": "Nouveau concert",
     "editing": "Modification",
+    "newNews": "Nouvelle actualité",
+    "editingNews": "Modification",
     "edit": "Modifier",
     "delete": "Supprimer",
     "save": "Enregistrer",
     "cancel": "Annuler",
     "logout": "Déconnexion",
     "confirmDelete": "Supprimer ce concert ?",
+    "confirmDeleteNews": "Supprimer cette actualité ?",
+    "optional": "facultatif",
     "fields": {
       "title": "Titre",
       "date": "Date",
@@ -158,10 +171,15 @@
       "artists": "Artistes",
       "instruments": "Instruments",
       "description": "Description",
-      "imageUrl": "URL de l'image",
+      "body": "Contenu",
+      "imageUrl": "Image",
       "duration": "Durée",
       "price": "Tarif",
-      "externalLink": "Lien externe"
+      "externalLink": "Lien externe",
+      "publishedAt": "Date de publication",
+      "author": "Auteur",
+      "authorPlaceholder": "ex. Marie Dupont",
+      "actions": "Actions"
     }
   }
 }

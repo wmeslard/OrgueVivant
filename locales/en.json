@@ -2,6 +2,7 @@
   "nav": {
     "home": "Home",
     "concerts": "Concerts",
+    "news": "News",
     "about": "About",
     "contact": "Contact",
     "menu": "Menu"
@@ -16,6 +17,7 @@
   "seo": {
     "homeDesc": "Organ concerts in the heart of Lille — Saint-Maurice & Saint-Étienne churches.",
     "concertsDesc": "All upcoming and past organ concerts in Lille.",
+    "newsDesc": "All news and announcements from Orgue Vivant — concerts, restorations, partnerships.",
     "aboutDesc": "Discover Orgue Vivant and the Saint-Maurice and Saint-Étienne churches.",
     "contactDesc": "Get in touch with the Orgue Vivant team."
   },
@@ -32,6 +34,7 @@
     "noUpcoming": "No concerts scheduled yet. Please check back soon.",
     "newsEyebrow": "News",
     "newsTitle": "Latest news",
+    "viewAllNews": "All news",
     "ctaTitle": "Let the great organs carry you away.",
     "ctaSubtitle": "Free admission to most concerts. Full programme online.",
     "nextConcert": "Next concert",
@@ -51,9 +54,12 @@
     "readMore": "Read more"
   },
   "news": {
-    "item1": { "title": "New season announced", "body": "The 2026 season opens with a series of outstanding recitals." },
-    "item2": { "title": "Organ restoration", "body": "Restoration work on the great organ is coming to an end this spring." },
-    "item3": { "title": "Conservatoire partnership", "body": "Young organists from the conservatoire perform every month." }
+    "eyebrow": "News",
+    "title": "All news",
+    "subtitle": "Find here all the season's news, announcements and highlights from the association.",
+    "upcoming": "Upcoming",
+    "past": "Archives",
+    "empty": "No news to display."
   },
   "concerts": {
     "eyebrow": "Programme",
@@ -104,7 +110,8 @@
   "newsletter": {
     "placeholder": "Your email",
     "cta": "Subscribe",
-    "thanks": "Thanks for subscribing!"
+    "thanks": "Thanks for subscribing!",
+    "error": "Something went wrong. Please try again."
   },
   "footer": {
     "tagline": "Organ concerts in downtown Lille.",
@@ -142,14 +149,20 @@
     "password": "Password",
     "signIn": "Sign in",
     "dashboard": "Dashboard",
+    "concerts": "Concerts",
+    "news": "News",
     "new": "New concert",
     "editing": "Editing",
+    "newNews": "New article",
+    "editingNews": "Editing",
     "edit": "Edit",
     "delete": "Delete",
     "save": "Save",
     "cancel": "Cancel",
     "logout": "Log out",
     "confirmDelete": "Delete this concert?",
+    "confirmDeleteNews": "Delete this article?",
+    "optional": "optional",
     "fields": {
       "title": "Title",
       "date": "Date",
@@ -158,10 +171,15 @@
       "artists": "Artists",
       "instruments": "Instruments",
       "description": "Description",
-      "imageUrl": "Image URL",
+      "body": "Content",
+      "imageUrl": "Image",
       "duration": "Duration",
       "price": "Price",
-      "externalLink": "External link"
+      "externalLink": "External link",
+      "publishedAt": "Publication date",
+      "author": "Author",
+      "authorPlaceholder": "e.g. Marie Dupont",
+      "actions": "Actions"
     }
   }
 }

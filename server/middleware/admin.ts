@@ -15,7 +15,7 @@ export default defineEventHandler(async (event) => {
 
     const role = (user.app_metadata as Record<string, unknown>)?.role
     if (role !== 'admin' && role !== 'super_admin') return sendRedirect(event, '/admin/login', 302)
-    if (path.startsWith('/admin/users') && role !== 'super_admin') return sendRedirect(event, '/admin', 302)
+    if (path.startsWith('/admin/users') && role !== 'super_admin') return sendRedirect(event, '/admin/concerts', 302)
   } catch {
     return sendRedirect(event, '/admin/login', 302)
   }
