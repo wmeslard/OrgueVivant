@@ -5,7 +5,11 @@ const siteUrl = useRuntimeConfig().public.siteUrl
 useHead({
   title: `${t('nav.about')} — Orgue Vivant`,
   meta: [{ name: 'description', content: t('seo.aboutDesc') }],
-  link: [{ rel: 'canonical', href: `${siteUrl}/about` }]
+  link: [
+    { rel: 'canonical', href: `${siteUrl}/about` },
+    { rel: 'preload', as: 'image', href: '/img/orgue-st-maurice.webp', type: 'image/webp' },
+    { rel: 'preload', as: 'image', href: '/img/orgue-st-etienne.webp', type: 'image/webp' },
+  ]
 })
 
 useSeoMeta({
@@ -16,6 +20,13 @@ useSeoMeta({
   ogType: 'website',
   twitterCard: 'summary_large_image'
 })
+
+const loadedCount = ref(0)
+const imagesReady = computed(() => loadedCount.value >= 2)
+
+function onImageLoad() {
+  loadedCount.value++
+}
 </script>
 
 <template>
@@ -38,8 +49,19 @@ useSeoMeta({
         rel="noopener noreferrer"
         class="card-premium group block hover:border-gold/30 transition-colors"
       >
-        <div class="aspect-[16/9] overflow-hidden">
-          <img src="/img/orgue-st-maurice.jpg" alt="Saint-Maurice" class="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105">
+        <div class="aspect-[16/9] overflow-hidden bg-ink-900">
+          <picture>
+            <source srcset="/img/orgue-st-maurice.webp" type="image/webp">
+            <img
+              src="/img/orgue-st-maurice.jpg"
+              alt="Orgue de Saint-Maurice de Lille"
+              fetchpriority="high"
+              loading="eager"
+              class="w-full h-full object-cover transition-all duration-700 group-hover:scale-105"
+              :class="imagesReady ? 'opacity-100' : 'opacity-0'"
+              @load="onImageLoad"
+            >
+          </picture>
         </div>
         <div class="p-7">
           <div class="text-[10px] uppercase tracking-[0.3em] text-gold mb-2 font-bold">{{ t('about.church') }}</div>
@@ -57,8 +79,19 @@ useSeoMeta({
         rel="noopener noreferrer"
         class="card-premium group block hover:border-gold/30 transition-colors"
       >
-        <div class="aspect-[16/9] overflow-hidden">
-          <img src="/img/orgue-st-etienne.jpg" alt="Saint-Étienne" class="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105">
+        <div class="aspect-[16/9] overflow-hidden bg-ink-900">
+          <picture>
+            <source srcset="/img/orgue-st-etienne.webp" type="image/webp">
+            <img
+              src="/img/orgue-st-etienne.jpg"
+              alt="Orgue de Saint-Étienne de Lille"
+              fetchpriority="high"
+              loading="eager"
+              class="w-full h-full object-cover transition-all duration-700 group-hover:scale-105"
+              :class="imagesReady ? 'opacity-100' : 'opacity-0'"
+              @load="onImageLoad"
+            >
+          </picture>
         </div>
         <div class="p-7">
           <div class="text-[10px] uppercase tracking-[0.3em] text-gold mb-2 font-bold">{{ t('about.church') }}</div>
