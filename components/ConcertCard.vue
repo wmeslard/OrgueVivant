@@ -36,6 +36,7 @@ const formattedFullDate = computed(() => {
         :src="concert.image_url"
         :alt="concert.title"
         loading="lazy"
+        decoding="async"
         class="h-full w-full object-cover transition-transform duration-700 ease-apple group-hover:scale-110"
       >
       <div v-else class="flex h-full w-full items-center justify-center bg-surface text-white/10">

@@ -3,7 +3,7 @@ import type { Concert } from '~/composables/useConcerts'
 
 const { t } = useI18n()
 const { upcoming, past, pending, fetchConcerts } = useConcerts()
-await useLazyAsyncData('concerts', () => fetchConcerts())
+await callOnce('concerts', fetchConcerts)
 
 const tab = ref<'upcoming' | 'past'>('upcoming')
 const selected = ref<Concert | null>(null)
@@ -112,6 +112,6 @@ useSeoMeta({
       />
     </div>
 
-    <ConcertModal :concert="selected" @close="selected = null" />
+    <LazyConcertModal :concert="selected" @close="selected = null" />
   </div>
 </template>

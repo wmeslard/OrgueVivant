@@ -6,8 +6,8 @@ const { t, locale } = useI18n()
 const { upcoming, pending, fetchConcerts } = useConcerts()
 const { latest, fetchNews } = useNews()
 
-await useLazyAsyncData('concerts', () => fetchConcerts())
-await useLazyAsyncData('news-home', () => fetchNews())
+await callOnce('concerts', fetchConcerts)
+await callOnce('news-home', fetchNews)
 
 const preview = computed(() => upcoming.value.slice(0, 3))
 const nextConcert = computed(() => upcoming.value[0] || null)
@@ -127,9 +127,11 @@ function needsMore(n: NewsItem) {
 
         <div class="card-premium group flex flex-col md:flex-row items-stretch min-h-[400px]">
           <div class="md:w-1/2 overflow-hidden relative">
-            <img 
+            <img
               :src="nextConcert.image_url || '/img/concert-fallback.jpg'"
               :alt="nextConcert.title"
+              loading="eager"
+              decoding="async"
               class="w-full h-full object-cover transition-transform duration-1000 group-hover:scale-105"
             />
             <div class="absolute inset-0 bg-gradient-to-r from-surface via-transparent to-transparent hidden md:block"></div>
@@ -202,11 +204,18 @@ function needsMore(n: NewsItem) {
 
     <!-- SECTION PATRIMOINE / STORYTELLING -->
     <div class="py-16 bg-background">
-      <section
-        class="relative py-40 bg-cover bg-center bg-no-repeat bg-black"
-        style="background-image: url('/img/eglise-st-maurice.jpg')"
-      >
-        <div class="absolute inset-0 z-0 bg-black/70" />
+      <section class="relative py-40 bg-black overflow-hidden">
+        <picture class="absolute inset-0 z-0">
+          <source srcset="/img/eglise-st-maurice.webp" type="image/webp">
+          <img
+            src="/img/eglise-st-maurice.jpg"
+            alt=""
+            loading="lazy"
+            decoding="async"
+            class="w-full h-full object-cover object-center"
+          >
+        </picture>
+        <div class="absolute inset-0 z-[1] bg-black/70" />
         <div class="container-premium relative z-10">
           <div class="max-w-3xl">
             <h2 class="heading-section text-white mb-5">{{ t('home.heritageTitle') }}</h2>
@@ -307,7 +316,7 @@ function needsMore(n: NewsItem) {
       </div>
     </section>
 
-<ConcertModal :concert="selected" @close="selected = null" />
-<NewsModal :news="selectedNews" @close="selectedNews = null" />
+<LazyConcertModal :concert="selected" @close="selected = null" />
+<LazyNewsModal :news="selectedNews" @close="selectedNews = null" />
   </div>
 </template>

@@ -18,16 +18,16 @@ export default defineNuxtConfig({
 
   googleFonts: {
     families: {
-      Fraunces: {
-        wght: [300, 400, 500, 600, 700],
-        ital: [300, 400, 500, 600, 700]
-      },
-      Inter: [300, 400, 500, 600, 700]
+      Fraunces: { wght: [300, 400], ital: [300] },
+      Inter: [400, 500, 600, 700]
     },
     display: 'swap',
     download: true,
-    inject: true
+    inject: true,
+    preload: true,
+    preconnect: true
   },
+
 
   css: ['~/assets/css/main.css'],
 
@@ -48,8 +48,8 @@ export default defineNuxtConfig({
       ],
       link: [
         { rel: 'icon', type: 'image/svg+xml', href: '/favicon.svg' },
-        { rel: 'preload', as: 'image', href: '/img/hero-tuyaux-orgue.jpg', fetchpriority: 'high' },
-        { rel: 'preload', as: 'image', href: '/img/eglise-st-maurice.jpg' }
+        { rel: 'preconnect', href: process.env.SUPABASE_URL ?? 'https://your-project.supabase.co' },
+        { rel: 'dns-prefetch', href: process.env.SUPABASE_URL ?? 'https://your-project.supabase.co' }
       ]
     }
   },
@@ -111,6 +111,16 @@ export default defineNuxtConfig({
   },
 
   routeRules: {
+    // Pages publiques : ISR (servi depuis CDN, regénéré toutes les heures)
+    '/':         { isr: 3600 },
+    '/concerts': { isr: 3600 },
+    '/news':     { isr: 3600 },
+    // Pages statiques : pré-rendues une fois au build
+    '/about':    { prerender: true },
+    '/contact':  { prerender: true },
+    // Admin : toujours SSR, jamais mis en cache
+    '/admin/**': { ssr: true, robots: false, headers: { 'Cache-Control': 'no-store' } },
+
     '/**': {
       headers: {
         'X-Frame-Options': 'SAMEORIGIN',

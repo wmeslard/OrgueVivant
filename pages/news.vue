@@ -3,7 +3,7 @@ import type { NewsItem } from '~/composables/useNews'
 
 const { t, locale } = useI18n()
 const { all, pending, fetchNews } = useNews()
-await useLazyAsyncData('news', () => fetchNews())
+await callOnce('news', fetchNews)
 
 const tab = ref<'upcoming' | 'past'>('upcoming')
 const selectedNews = ref<NewsItem | null>(null)
@@ -120,6 +120,8 @@ useSeoMeta({
           <img
             :src="n.image_url"
             :alt="getTitle(n)"
+            loading="lazy"
+            decoding="async"
             class="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
           >
         </div>
@@ -139,6 +141,6 @@ useSeoMeta({
       </article>
     </div>
 
-    <NewsModal :news="selectedNews" @close="selectedNews = null" />
+    <LazyNewsModal :news="selectedNews" @close="selectedNews = null" />
   </div>
 </template>
