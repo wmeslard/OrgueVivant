@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import type { NewsItem } from '~/composables/useNews'
 
-definePageMeta({ middleware: 'auth' })
+definePageMeta({ middleware: 'auth', layout: 'admin' })
 
 const { t } = useI18n()
 const supabase = useSupabaseClient()

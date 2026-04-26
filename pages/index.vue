@@ -6,23 +6,35 @@ const { t, locale } = useI18n()
 const { upcoming, pending, fetchConcerts } = useConcerts()
 const { latest, fetchNews } = useNews()
 
-await useLazyAsyncData('concerts', () => fetchConcerts(), { server: false })
-await useLazyAsyncData('news-home', () => fetchNews(), { server: false })
+await useLazyAsyncData('concerts', () => fetchConcerts())
+await useLazyAsyncData('news-home', () => fetchNews())
 
 const preview = computed(() => upcoming.value.slice(0, 3))
 const nextConcert = computed(() => upcoming.value[0] || null)
 const selected = ref<Concert | null>(null)
 const selectedNews = ref<NewsItem | null>(null)
 
+const siteUrl = useRuntimeConfig().public.siteUrl
+
 useHead({
   title: 'Orgue Vivant — Concerts d\'orgues à Lille',
-  meta: [
-    { name: 'description', content: t('seo.homeDesc') }
-  ],
+  meta: [{ name: 'description', content: t('seo.homeDesc') }],
   link: [
+    { rel: 'canonical', href: siteUrl },
     { rel: 'preload', as: 'image', href: '/img/hero-tuyaux-orgue.jpg', fetchpriority: 'high' },
     { rel: 'preload', as: 'image', href: '/img/eglise-st-maurice.jpg' }
   ]
+})
+
+useSeoMeta({
+  ogTitle: 'Orgue Vivant — Concerts d\'orgues à Lille',
+  ogDescription: t('seo.homeDesc'),
+  ogImage: `${siteUrl}/img/hero-tuyaux-orgue.jpg`,
+  ogUrl: siteUrl,
+  ogType: 'website',
+  twitterCard: 'summary_large_image',
+  twitterTitle: 'Orgue Vivant — Concerts d\'orgues à Lille',
+  twitterImage: `${siteUrl}/img/hero-tuyaux-orgue.jpg`
 })
 
 const formatDate = (dateStr: string) => {
@@ -224,7 +236,12 @@ function needsMore(n: NewsItem) {
             v-for="n in latest"
             :key="n.id"
             class="group flex flex-col h-full border-b border-white/5 pb-6 transition-colors hover:border-gold/30 cursor-pointer"
+            tabindex="0"
+            role="button"
+            aria-haspopup="dialog"
             @click="selectedNews = n"
+            @keydown.enter="selectedNews = n"
+            @keydown.space.prevent="selectedNews = n"
           >
             <time class="text-[10px] uppercase tracking-[0.3em] text-gold mb-3 font-bold">{{ formatDate(n.published_at) }}</time>
             <h3 class="font-display text-2xl font-light mb-3 text-text-primary group-hover:text-gold transition-colors duration-300">{{ getTitle(n) }}</h3>

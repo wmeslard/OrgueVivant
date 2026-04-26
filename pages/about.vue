@@ -1,8 +1,20 @@
 <script setup lang="ts">
 const { t } = useI18n()
+const siteUrl = useRuntimeConfig().public.siteUrl
+
 useHead({
   title: `${t('nav.about')} — Orgue Vivant`,
-  meta: [{ name: 'description', content: t('seo.aboutDesc') }]
+  meta: [{ name: 'description', content: t('seo.aboutDesc') }],
+  link: [{ rel: 'canonical', href: `${siteUrl}/about` }]
+})
+
+useSeoMeta({
+  ogTitle: `${t('nav.about')} — Orgue Vivant`,
+  ogDescription: t('seo.aboutDesc'),
+  ogImage: `${siteUrl}/img/orgue-st-etienne.jpg`,
+  ogUrl: `${siteUrl}/about`,
+  ogType: 'website',
+  twitterCard: 'summary_large_image'
 })
 </script>
 

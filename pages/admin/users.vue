@@ -1,5 +1,5 @@
 <script setup lang="ts">
-definePageMeta({ middleware: 'auth' })
+definePageMeta({ middleware: 'auth', layout: 'admin' })
 
 const user = useSupabaseUser()
 const isSuperAdmin = computed(() =>
@@ -106,7 +106,7 @@ function formatDate(d: string | null) {
       <div class="text-xs uppercase tracking-widest text-gold">Super Admin</div>
       <h1 class="heading-section mt-2">Gestion des comptes</h1>
       <div class="flex items-center gap-3 mt-4">
-        <NuxtLink to="/admin" class="btn-ghost">← Dashboard</NuxtLink>
+        <NuxtLink to="/admin/concerts" class="btn-ghost">← Dashboard</NuxtLink>
       </div>
     </header>
 

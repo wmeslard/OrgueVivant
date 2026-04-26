@@ -11,6 +11,15 @@ const error = ref('')
 const success = ref('')
 const mode = ref<'login' | 'reset'>('login')
 
+const route = useRoute()
+const timeoutReason = computed(() => route.query.reason as string | undefined)
+
+const timeoutMessage = computed(() => {
+  if (timeoutReason.value === 'timeout')          return 'Votre session a expiré après 1 heure d\'inactivité.'
+  if (timeoutReason.value === 'session_expired')  return 'Session expirée après 8 heures de connexion.'
+  return null
+})
+
 onMounted(() => {
   const hash = window.location.hash
   if (hash.includes('type=invite') || hash.includes('type=recovery')) {
@@ -72,6 +81,9 @@ async function sendReset() {
       <div>
         <label class="label">{{ t('admin.password') }}</label>
         <input v-model="password" type="password" required class="input">
+      </div>
+      <div v-if="timeoutMessage" class="rounded-lg bg-amber-500/10 border border-amber-500/20 px-4 py-3 text-sm text-amber-600">
+        {{ timeoutMessage }}
       </div>
       <div v-if="error" class="text-sm text-red-600">{{ error }}</div>
       <button type="submit" class="btn-primary w-full" :disabled="loading">

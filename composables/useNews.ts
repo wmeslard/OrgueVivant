@@ -43,19 +43,15 @@ export function useNews() {
   )
 
   async function createNews(n: Partial<NewsItem>) {
-    const { error } = await supabase.from('news').insert(n)
-    if (error) throw error
+    await $fetch('/api/admin/news', { method: 'POST', body: n })
   }
 
   async function updateNews(id: string, n: Partial<NewsItem>) {
-    const { id: _id, created_at, ...rest } = n as any
-    const { error } = await supabase.from('news').update(rest).eq('id', id)
-    if (error) throw error
+    await $fetch(`/api/admin/news/${id}`, { method: 'PATCH', body: n })
   }
 
   async function deleteNews(id: string) {
-    const { error } = await supabase.from('news').delete().eq('id', id)
-    if (error) throw error
+    await $fetch(`/api/admin/news/${id}`, { method: 'DELETE' })
   }
 
   return { all, pending, latest, fetchNews, createNews, updateNews, deleteNews }

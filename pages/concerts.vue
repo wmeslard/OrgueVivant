@@ -3,7 +3,7 @@ import type { Concert } from '~/composables/useConcerts'
 
 const { t } = useI18n()
 const { upcoming, past, pending, fetchConcerts } = useConcerts()
-await useLazyAsyncData('concerts', () => fetchConcerts(), { server: false })
+await useLazyAsyncData('concerts', () => fetchConcerts())
 
 const tab = ref<'upcoming' | 'past'>('upcoming')
 const selected = ref<Concert | null>(null)
@@ -20,9 +20,48 @@ watchEffect(() => {
   if (found) selected.value = found
 })
 
+const siteUrl = useRuntimeConfig().public.siteUrl
+
+const jsonLd = computed(() => JSON.stringify({
+  '@context': 'https://schema.org',
+  '@type': 'ItemList',
+  name: 'Concerts d\'orgue à Lille — Orgue Vivant',
+  itemListElement: upcoming.value.slice(0, 10).map((c, i) => ({
+    '@type': 'ListItem',
+    position: i + 1,
+    item: {
+      '@type': 'MusicEvent',
+      name: c.title,
+      startDate: `${c.date}T${c.time || '20:00'}:00`,
+      location: {
+        '@type': 'Place',
+        name: c.location === 'saint_maurice' ? 'Église Saint-Maurice de Lille' : 'Église Saint-Étienne de Lille',
+        address: { '@type': 'PostalAddress', addressLocality: 'Lille', addressCountry: 'FR' }
+      },
+      organizer: { '@type': 'Organization', name: 'Orgue Vivant', url: siteUrl },
+      isAccessibleForFree: c.price_type === 'free',
+      eventStatus: 'https://schema.org/EventScheduled',
+      eventAttendanceMode: 'https://schema.org/OfflineEventAttendanceMode',
+      ...(c.image_url && { image: c.image_url }),
+      ...(c.description && { description: c.description })
+    }
+  }))
+}))
+
 useHead({
   title: `${t('nav.concerts')} — Orgue Vivant`,
-  meta: [{ name: 'description', content: t('seo.concertsDesc') }]
+  meta: [{ name: 'description', content: t('seo.concertsDesc') }],
+  link: [{ rel: 'canonical', href: `${siteUrl}/concerts` }],
+  script: [{ type: 'application/ld+json', innerHTML: jsonLd }]
+})
+
+useSeoMeta({
+  ogTitle: `${t('nav.concerts')} — Orgue Vivant`,
+  ogDescription: t('seo.concertsDesc'),
+  ogImage: `${siteUrl}/img/orgue-st-maurice.jpg`,
+  ogUrl: `${siteUrl}/concerts`,
+  ogType: 'website',
+  twitterCard: 'summary_large_image'
 })
 </script>
 

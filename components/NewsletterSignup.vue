@@ -33,6 +33,7 @@ async function submit() {
         type="email"
         required
         :placeholder="t('newsletter.placeholder')"
+        :aria-label="t('newsletter.placeholder')"
         class="min-h-[54px] w-full min-w-0 flex-1 appearance-none rounded-full border border-white/20 bg-text-primary/5 px-6 py-[15px] text-base leading-6 text-text-primary placeholder-text-secondary/50 focus:border-gold focus:outline-none focus:ring-1 focus:ring-gold/20 transition-all box-border"
       >
       <button type="submit" :disabled="loading" class="btn-premium-primary w-full sm:!w-auto whitespace-nowrap shrink-0">

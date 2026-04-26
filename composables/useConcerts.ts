@@ -52,19 +52,15 @@ export function useConcerts() {
   )
 
   async function createConcert(c: Partial<Concert>) {
-    const { error } = await supabase.from('concerts').insert(c)
-    if (error) throw error
+    await $fetch('/api/admin/concerts', { method: 'POST', body: c })
   }
 
   async function updateConcert(id: string, c: Partial<Concert>) {
-    const { id: _id, created_at, ...rest } = c as any
-    const { error } = await supabase.from('concerts').update(rest).eq('id', id)
-    if (error) throw error
+    await $fetch(`/api/admin/concerts/${id}`, { method: 'PATCH', body: c })
   }
 
   async function deleteConcert(id: string) {
-    const { error } = await supabase.from('concerts').delete().eq('id', id)
-    if (error) throw error
+    await $fetch(`/api/admin/concerts/${id}`, { method: 'DELETE' })
   }
 
   return { all, pending, upcoming, past, fetchConcerts, createConcert, updateConcert, deleteConcert }

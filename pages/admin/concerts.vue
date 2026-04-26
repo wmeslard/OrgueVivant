@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import type { Concert } from '~/composables/useConcerts'
 
-definePageMeta({ middleware: 'auth' })
+definePageMeta({ middleware: 'auth', layout: 'admin' })
 
 const { t } = useI18n()
 const supabase = useSupabaseClient()

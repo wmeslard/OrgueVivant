@@ -3,7 +3,7 @@ import type { NewsItem } from '~/composables/useNews'
 
 const { t, locale } = useI18n()
 const { all, pending, fetchNews } = useNews()
-await useLazyAsyncData('news', () => fetchNews(), { server: false })
+await useLazyAsyncData('news', () => fetchNews())
 
 const tab = ref<'upcoming' | 'past'>('upcoming')
 const selectedNews = ref<NewsItem | null>(null)
@@ -48,9 +48,21 @@ const formatDate = (dateStr: string) => {
   })
 }
 
+const siteUrl = useRuntimeConfig().public.siteUrl
+
 useHead({
   title: `${t('nav.news')} — Orgue Vivant`,
-  meta: [{ name: 'description', content: t('seo.newsDesc') }]
+  meta: [{ name: 'description', content: t('seo.newsDesc') }],
+  link: [{ rel: 'canonical', href: `${siteUrl}/news` }]
+})
+
+useSeoMeta({
+  ogTitle: `${t('nav.news')} — Orgue Vivant`,
+  ogDescription: t('seo.newsDesc'),
+  ogImage: `${siteUrl}/img/hero-tuyaux-orgue.jpg`,
+  ogUrl: `${siteUrl}/news`,
+  ogType: 'website',
+  twitterCard: 'summary_large_image'
 })
 </script>
 
@@ -97,7 +109,12 @@ useHead({
         v-for="n in list"
         :key="n.id"
         class="group flex flex-col h-full border-b border-white/5 pb-6 transition-colors hover:border-gold/30 cursor-pointer"
+        tabindex="0"
+        role="button"
+        aria-haspopup="dialog"
         @click="selectedNews = n"
+        @keydown.enter="selectedNews = n"
+        @keydown.space.prevent="selectedNews = n"
       >
         <div v-if="n.image_url" class="mb-4 overflow-hidden rounded-xl h-48 shrink-0">
           <img
