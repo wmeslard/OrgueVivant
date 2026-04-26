@@ -9,7 +9,7 @@ const { latest, fetchNews } = useNews()
 await callOnce('concerts', fetchConcerts)
 await callOnce('news-home', fetchNews)
 
-const preview = computed(() => upcoming.value.slice(0, 3))
+const preview = computed(() => upcoming.value.slice(1, 4))
 const nextConcert = computed(() => upcoming.value[0] || null)
 const selected = ref<Concert | null>(null)
 const selectedNews = ref<NewsItem | null>(null)
