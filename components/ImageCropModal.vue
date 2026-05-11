@@ -31,7 +31,7 @@ watch(() => props.file, async (file) => {
   cropper = new CropperClass(imgRef.value, {
     aspectRatio: 4 / 5,
     viewMode: 1,
-    autoCropArea: 0.95,
+    autoCropArea: 1,
     movable: true,
     zoomable: true,
     rotatable: false,
@@ -50,8 +50,8 @@ onBeforeUnmount(() => {
 function confirm() {
   if (!cropper) return
   const canvas = cropper.getCroppedCanvas({
-    width: 800,
-    height: 1000,
+    width: 1080,
+    height: 1350,
     imageSmoothingEnabled: true,
     imageSmoothingQuality: 'high',
   })
@@ -77,7 +77,7 @@ function confirm() {
         <div class="flex items-center gap-4">
           <p class="text-[10px] uppercase tracking-[0.3em] text-gold font-bold">Recadrage</p>
           <span class="text-text-primary/20">·</span>
-          <p class="text-sm font-light text-text-secondary">Ratio 4:5 — 800 × 1000 px</p>
+          <p class="text-sm font-light text-text-secondary">Ratio 4:5 — 1080 × 1350 px</p>
         </div>
         <button
           type="button"

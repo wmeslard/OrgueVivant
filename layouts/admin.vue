@@ -20,9 +20,10 @@ const formattedCountdown = computed(() => {
   return `${m}:${s.toString().padStart(2, '0')}`
 })
 
-let heartbeat:    ReturnType<typeof setInterval> | null = null
-let tickInterval: ReturnType<typeof setInterval> | null = null
-let channel:      BroadcastChannel               | null = null
+let heartbeat:           ReturnType<typeof setInterval> | null = null
+let tickInterval:        ReturnType<typeof setInterval> | null = null
+let channel:             BroadcastChannel               | null = null
+let visibilityHandler:   (() => void)                   | null = null
 
 // ── Sign-out ──────────────────────────────────────────────────────────────────
 
@@ -48,6 +49,7 @@ function openWarning(remainingMs: number) {
     if (countdown.value <= 0) {
       clearInterval(tickInterval!)
       tickInterval = null
+      doSignOut()
     }
   }, 1000)
 }
@@ -103,8 +105,8 @@ onMounted(() => {
     ? new Date(user.value.last_sign_in_at).getTime()
     : Date.now()
 
-  if (!localStorage.getItem(KEY_SESSION))  localStorage.setItem(KEY_SESSION,  String(signInTime))
-  if (!localStorage.getItem(KEY_ACTIVITY)) localStorage.setItem(KEY_ACTIVITY, String(signInTime))
+  if (!localStorage.getItem(KEY_SESSION)) localStorage.setItem(KEY_SESSION, String(signInTime))
+  localStorage.setItem(KEY_ACTIVITY, String(Date.now()))
 
   if (!checkAbsoluteSession()) return
 
@@ -122,19 +124,19 @@ onMounted(() => {
     }
   }
 
-  document.addEventListener('visibilitychange', () => {
-    if (document.hidden) return
-    tick()
-  })
+  visibilityHandler = () => { if (!document.hidden) tick() }
+  document.addEventListener('visibilitychange', visibilityHandler)
 
   EVENTS.forEach(e => window.addEventListener(e, onActivity, { passive: true }))
   heartbeat = setInterval(tick, HEARTBEAT_MS)
+  tick()
 })
 
 onBeforeUnmount(() => {
   if (heartbeat)    clearInterval(heartbeat)
   if (tickInterval) clearInterval(tickInterval)
   EVENTS.forEach(e => window.removeEventListener(e, onActivity))
+  if (visibilityHandler) document.removeEventListener('visibilitychange', visibilityHandler)
   channel?.close()
 })
 </script>

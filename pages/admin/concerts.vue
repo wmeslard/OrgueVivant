@@ -28,6 +28,10 @@ function blank(): Partial<Concert> {
 
 function newOne() { editing.value = blank() }
 function edit(c: Concert) { editing.value = { ...c } }
+function duplicate(c: Concert) {
+  const { id, created_at, ...rest } = c
+  editing.value = { ...rest }
+}
 function cancel() { editing.value = null; error.value = '' }
 
 async function save() {
@@ -209,6 +213,7 @@ async function logout() {
             <td class="px-4 py-3">{{ c.date }} {{ c.time }}</td>
             <td class="px-4 py-3">{{ t(`locations.${c.location}`) }}</td>
             <td class="px-4 py-3 text-right">
+              <button class="mr-2 text-sm underline" @click="duplicate(c)">{{ t('admin.duplicate') }}</button>
               <button class="mr-2 text-sm underline" @click="edit(c)">{{ t('admin.edit') }}</button>
               <button class="text-sm text-red-600 underline" @click="remove(c)">{{ t('admin.delete') }}</button>
             </td>

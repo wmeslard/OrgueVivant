@@ -66,7 +66,9 @@ export default defineNuxtConfig({
     detectBrowserLanguage: {
       useCookie: true,
       cookieKey: 'i18n_redirected',
-      redirectOn: 'root'
+      cookieSecure: true,
+      redirectOn: 'root',
+      fallbackLocale: 'fr'
     }
   },
 
@@ -118,6 +120,8 @@ export default defineNuxtConfig({
     // Pages statiques : pré-rendues une fois au build
     '/about':    { prerender: true },
     '/contact':  { prerender: true },
+    '/legal':    { prerender: true },
+    '/privacy':  { prerender: true },
     // Admin : toujours SSR, jamais mis en cache
     '/admin/**': { ssr: true, robots: false, headers: { 'Cache-Control': 'no-store' } },
 

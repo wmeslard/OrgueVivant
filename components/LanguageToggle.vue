@@ -1,6 +1,6 @@
 <script setup lang="ts">
-const { locale, locales, setLocale } = useI18n()
-const other = computed(() => (locale.value === 'fr' ? 'en' : 'fr'))
+const { locale, setLocale } = useI18n()
+const other = computed(() => locale.value === 'fr' ? 'en' : 'fr')
 </script>
 
 <template>
