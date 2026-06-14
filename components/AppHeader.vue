@@ -32,7 +32,7 @@ onBeforeUnmount(() => {
 <template>
   <header
     class="fixed top-0 left-0 right-0 z-50 transition-all duration-500 ease-apple"
-    :class="isScrolled ? 'h-[72px] md:h-[84px] bg-background/80 backdrop-blur-xl' : 'h-[80px] md:h-[100px] bg-transparent'"
+    :class="isScrolled ? 'h-[60px] md:h-[72px] bg-background/80 backdrop-blur-xl' : 'h-[64px] md:h-[88px] bg-transparent'"
   >
     <!-- Border: fades in independently, more discreet than toggling the full class -->
     <div
@@ -62,7 +62,6 @@ onBeforeUnmount(() => {
       <div class="flex items-center gap-6">
         <div class="hidden items-center gap-4 md:flex">
           <LanguageToggle />
-          <DarkModeToggle />
         </div>
         
         <button
@@ -78,6 +77,7 @@ onBeforeUnmount(() => {
     </div>
 
   </header>
+  <div id="main-content" />
 
   <!-- Mobile Menu — téléporté hors du header pour éviter le bug de stacking context causé par backdrop-filter -->
   <Teleport to="body">
@@ -102,7 +102,6 @@ onBeforeUnmount(() => {
           </NuxtLink>
           <div class="mt-8 flex gap-6">
             <LanguageToggle />
-            <DarkModeToggle />
           </div>
         </nav>
       </div>

@@ -21,6 +21,7 @@ export default defineNuxtConfig({
       Fraunces: { wght: [300, 400], ital: [300] },
       Inter: [400, 500, 600, 700]
     },
+    subsets: ['latin'],
     display: 'swap',
     download: true,
     inject: true,
@@ -103,8 +104,8 @@ export default defineNuxtConfig({
   },
 
   colorMode: {
-    preference: 'system',
-    fallback: 'light',
+    preference: 'dark',
+    fallback: 'dark',
     classSuffix: ''
   },
 

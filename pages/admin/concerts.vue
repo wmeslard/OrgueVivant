@@ -10,12 +10,23 @@ const isSuperAdmin = computed(() =>
   (user.value?.app_metadata as Record<string, unknown>)?.role === 'super_admin'
 )
 const { all, fetchConcerts, createConcert, updateConcert, deleteConcert } = useConcerts()
+const { show: showToast } = useToast()
 
 await fetchConcerts()
 
 const editing = ref<Partial<Concert> | null>(null)
 const saving = ref(false)
 const error = ref('')
+const search = ref('')
+
+const filtered = computed(() => {
+  const q = search.value.toLowerCase()
+  if (!q) return all.value
+  return all.value.filter(c =>
+    c.title.toLowerCase().includes(q) ||
+    c.artists?.toLowerCase().includes(q)
+  )
+})
 
 function blank(): Partial<Concert> {
   return {
@@ -69,6 +80,7 @@ async function save() {
     }
     editing.value = null
     await fetchConcerts()
+    showToast(t('admin.saved'), { type: 'success' })
   } catch (e: any) {
     error.value = e.message || 'Error'
   } finally {
@@ -76,10 +88,27 @@ async function save() {
   }
 }
 
+let undoTimer: ReturnType<typeof setTimeout> | null = null
+
 async function remove(c: Concert) {
   if (!confirm(t('admin.confirmDelete'))) return
-  await deleteConcert(c.id)
-  await fetchConcerts()
+
+  const snapshot = [...all.value]
+  all.value = all.value.filter(x => x.id !== c.id)
+
+  showToast(t('admin.deleted'), {
+    type: 'info',
+    duration: 5000,
+    undo: () => {
+      if (undoTimer) clearTimeout(undoTimer)
+      all.value = snapshot
+    }
+  })
+
+  undoTimer = setTimeout(async () => {
+    await deleteConcert(c.id)
+    await fetchConcerts()
+  }, 5000)
 }
 
 async function logout() {
@@ -190,13 +219,17 @@ async function logout() {
     </form>
 
     <!-- List -->
-    <button
-      v-if="!editing"
-      class="mb-4 text-sm text-gold hover:text-gold/70 transition-colors"
-      @click="newOne"
-    >
-      + Ajouter un concert
-    </button>
+    <div v-if="!editing" class="mb-4 flex flex-col sm:flex-row items-start sm:items-center gap-3 justify-between">
+      <button class="text-sm text-gold hover:text-gold/70 transition-colors" @click="newOne">
+        + Ajouter un concert
+      </button>
+      <input
+        v-model="search"
+        type="search"
+        :placeholder="t('admin.search')"
+        class="input !py-2 !text-xs max-w-xs"
+      >
+    </div>
     <div class="overflow-hidden rounded-2xl border border-ink-200 dark:border-ink-800">
       <table class="w-full text-left text-sm">
         <thead class="bg-ink-50 text-xs uppercase tracking-wider text-ink-500 dark:bg-ink-900">
@@ -208,7 +241,7 @@ async function logout() {
           </tr>
         </thead>
         <tbody>
-          <tr v-for="c in all" :key="c.id" class="border-t border-ink-100 dark:border-ink-800">
+          <tr v-for="c in filtered" :key="c.id" class="border-t border-ink-100 dark:border-ink-800">
             <td class="px-4 py-3 font-medium">{{ c.title }}</td>
             <td class="px-4 py-3">{{ c.date }} {{ c.time }}</td>
             <td class="px-4 py-3">{{ t(`locations.${c.location}`) }}</td>
@@ -221,5 +254,6 @@ async function logout() {
         </tbody>
       </table>
     </div>
+    <AdminToast />
   </div>
 </template>

@@ -14,15 +14,14 @@ const year = new Date().getFullYear()
           <p class="mt-6 max-w-sm text-text-secondary font-light leading-relaxed">
             {{ t('footer.tagline') }}
           </p>
-          <div class="mt-10 flex gap-6">
-            <a href="#" class="text-text-secondary hover:text-gold transition-colors" aria-label="Instagram">
-              <Icon name="mdi:instagram" class="w-6 h-6" />
-            </a>
-            <a href="#" class="text-text-secondary hover:text-gold transition-colors" aria-label="Facebook">
-              <Icon name="mdi:facebook" class="w-6 h-6" />
-            </a>
-            <a href="#" class="text-text-secondary hover:text-gold transition-colors" aria-label="YouTube">
-              <Icon name="mdi:youtube" class="w-6 h-6" />
+          <div class="mt-10">
+            <a
+              href="/api/calendar.ics"
+              class="inline-flex items-center gap-2 text-xs uppercase tracking-widest text-text-secondary hover:text-gold transition-colors font-medium"
+              download
+            >
+              <Icon name="heroicons:calendar" class="w-4 h-4" />
+              S'abonner au calendrier
             </a>
           </div>
         </div>

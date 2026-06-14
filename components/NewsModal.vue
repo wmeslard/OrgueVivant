@@ -5,6 +5,13 @@ const props = defineProps<{ news: NewsItem | null }>()
 const emit = defineEmits<{ (e: 'close'): void }>()
 
 const { locale } = useI18n()
+const modalRef = ref<HTMLElement>()
+const { activate: trapActivate, deactivate: trapDeactivate } = useFocusTrap(modalRef)
+
+watch(() => props.news, (val) => {
+  if (val) nextTick(trapActivate)
+  else trapDeactivate()
+})
 
 const title = computed(() => {
   if (!props.news) return ''
@@ -58,6 +65,7 @@ onBeforeUnmount(() => window.removeEventListener('keydown', onKey))
       @click.self="$emit('close')"
     >
       <div
+        ref="modalRef"
         class="relative w-full max-w-3xl max-h-[90vh] flex flex-col overflow-hidden rounded-[28px] bg-surface border border-text-primary/10 shadow-2xl"
         @click.stop
       >

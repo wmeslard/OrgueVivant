@@ -68,7 +68,11 @@
     "upcoming": "À venir",
     "past": "Archives",
     "empty": "Aucun concert à afficher.",
-    "discover": "Découvrir"
+    "discover": "Découvrir",
+    "filterAllLocations": "Tous les lieux",
+    "filterAllPrices": "Tous les tarifs",
+    "resetFilters": "Réinitialiser",
+    "noResults": "Aucun concert ne correspond à ces filtres."
   },
   "modal": {
     "close": "Fermer",
@@ -81,7 +85,8 @@
     "free": "Entrée libre",
     "paid": "Payant",
     "moreInfo": "Plus d'informations",
-    "addToCalendar": "Ajouter au calendrier"
+    "addToCalendar": "Ajouter au calendrier",
+    "directions": "Y aller"
   },
   "about": {
     "eyebrow": "À propos",
@@ -159,7 +164,10 @@
     "duplicate": "Dupliquer",
     "delete": "Supprimer",
     "save": "Enregistrer",
+    "saved": "Enregistré !",
+    "deleted": "Supprimé",
     "cancel": "Annuler",
+    "search": "Rechercher…",
     "logout": "Déconnexion",
     "confirmDelete": "Supprimer ce concert ?",
     "confirmDeleteNews": "Supprimer cette actualité ?",

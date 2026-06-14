@@ -25,7 +25,9 @@ export function useIcs() {
   function buildIcs(c: Concert) {
     const dtstart = toIcsDate(c.date, c.time)
     const dtend = addMinutes(c.date, c.time, parseDurationMinutes(c.duration))
-    const loc = c.location === 'saint_maurice' ? 'Église Saint-Maurice, Lille' : 'Église Saint-Étienne, Lille'
+    const loc = c.location === 'saint_maurice'
+      ? 'Église Saint-Maurice de Lille\\, Parvis Saint-Maurice\\, 59800 Lille\\, France'
+      : 'Église Saint-Étienne de Lille\\, 47 Rue de l\'Hôpital Militaire\\, 59000 Lille\\, France'
     return [
       'BEGIN:VCALENDAR',
       'VERSION:2.0',

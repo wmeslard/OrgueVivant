@@ -13,6 +13,12 @@ const description = computed(() => {
   return props.concert.description
 })
 
+const modalRef = ref<HTMLElement>()
+const { activate: trapActivate, deactivate: trapDeactivate } = useFocusTrap(modalRef)
+
+const location = computed(() => props.concert?.location ?? '')
+const { directionsUrl, placeUrl } = useMapsUrls(location)
+
 const safeExternalLink = computed(() => {
   const raw = props.concert?.external_link
   if (!raw) return ''
@@ -30,6 +36,11 @@ const formattedDate = computed(() => {
   return d.toLocaleDateString(locale.value === 'fr' ? 'fr-FR' : 'en-US', {
     weekday: 'long', day: 'numeric', month: 'long', year: 'numeric', hour: '2-digit', minute: '2-digit'
   })
+})
+
+watch(() => props.concert, (val) => {
+  if (val) nextTick(trapActivate)
+  else trapDeactivate()
 })
 
 // Scroll lock
@@ -65,6 +76,7 @@ onBeforeUnmount(() => window.removeEventListener('keydown', onKey))
       @click.self="$emit('close')"
     >
       <div
+        ref="modalRef"
         class="relative w-full max-w-5xl max-h-[90vh] flex flex-col lg:flex-row overflow-hidden rounded-[28px] bg-surface border border-text-primary/10 shadow-2xl"
         @click.stop
       >
@@ -102,7 +114,12 @@ onBeforeUnmount(() => window.removeEventListener('keydown', onKey))
                 <dt class="text-[10px] uppercase tracking-widest text-text-secondary mb-1.5 font-bold">{{ t('modal.location') }}</dt>
                 <dd class="text-text-primary flex items-center gap-2 text-sm">
                   <Icon name="heroicons:map-pin" class="w-4 h-4 text-gold shrink-0" />
-                  {{ t(`locations.${concert.location}`) }}
+                  <a
+                    :href="placeUrl"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    class="hover:text-gold hover:underline underline-offset-2 transition-colors duration-200"
+                  >{{ t(`locations.${concert.location}`) }}</a>
                 </dd>
               </div>
               <div>
@@ -148,6 +165,15 @@ onBeforeUnmount(() => window.removeEventListener('keydown', onKey))
                 <Icon name="heroicons:calendar" class="w-4 h-4 text-gold" />
                 <span>{{ t('modal.addToCalendar') }}</span>
               </button>
+              <a
+                :href="directionsUrl"
+                target="_blank"
+                rel="noopener noreferrer"
+                class="btn-premium-secondary !h-11 !w-auto !px-7 flex items-center gap-2"
+              >
+                <Icon name="heroicons:map-pin" class="w-4 h-4 text-gold" />
+                <span>{{ t('modal.directions') }}</span>
+              </a>
             </div>
           </div>
         </div>

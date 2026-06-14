@@ -68,7 +68,11 @@
     "upcoming": "Upcoming",
     "past": "Past",
     "empty": "No concerts to display.",
-    "discover": "Discover"
+    "discover": "Discover",
+    "filterAllLocations": "All venues",
+    "filterAllPrices": "All prices",
+    "resetFilters": "Reset",
+    "noResults": "No concerts match these filters."
   },
   "modal": {
     "close": "Close",
@@ -81,7 +85,8 @@
     "free": "Free entry",
     "paid": "Paid",
     "moreInfo": "More information",
-    "addToCalendar": "Add to calendar"
+    "addToCalendar": "Add to calendar",
+    "directions": "Get directions"
   },
   "about": {
     "eyebrow": "About",
@@ -159,6 +164,9 @@
     "duplicate": "Duplicate",
     "delete": "Delete",
     "save": "Save",
+    "saved": "Saved!",
+    "deleted": "Deleted",
+    "search": "Search…",
     "cancel": "Cancel",
     "logout": "Log out",
     "confirmDelete": "Delete this concert?",
