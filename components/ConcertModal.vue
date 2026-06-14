@@ -77,12 +77,12 @@ onBeforeUnmount(() => window.removeEventListener('keydown', onKey))
           <Icon name="heroicons:x-mark" class="h-4 w-4" />
         </button>
 
-        <!-- Image -->
-        <div v-if="concert.image_url" class="lg:w-2/5 lg:h-auto shrink-0 overflow-hidden">
+        <!-- Image (desktop uniquement) -->
+        <div v-if="concert.image_url" class="hidden lg:block lg:w-2/5 lg:h-auto shrink-0 overflow-hidden">
           <img
             :src="concert.image_url"
             :alt="concert.title"
-            class="h-48 w-full object-cover lg:h-full"
+            class="h-full w-full object-cover"
           >
         </div>
 
