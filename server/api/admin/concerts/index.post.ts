@@ -1,4 +1,5 @@
 import { requireAdmin, getServiceClient } from '~/server/utils/superAdminClient'
+import { revalidatePublicPages } from '~/server/utils/revalidate'
 
 export default defineEventHandler(async (event) => {
   await requireAdmin(event)
@@ -11,5 +12,6 @@ export default defineEventHandler(async (event) => {
   const client = getServiceClient()
   const { data, error } = await client.from('concerts').insert(body).select().single()
   if (error) throw createError({ statusCode: 500, statusMessage: error.message })
+  await revalidatePublicPages()
   return data
 })

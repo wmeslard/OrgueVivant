@@ -91,6 +91,7 @@ export default defineNuxtConfig({
     resendApiKey: process.env.RESEND_API_KEY,
     myMemoryEmail: process.env.MYMEMORY_EMAIL,
     supabaseServiceRoleKey: process.env.SUPABASE_SERVICE_ROLE_KEY,
+    vercelBypassToken: process.env.VERCEL_BYPASS_TOKEN,
     contactTo: process.env.CONTACT_TO || 'contact@orgue-vivant.fr',
     contactFrom: process.env.CONTACT_FROM || 'contact@orgue-vivant.fr',
     public: {
@@ -110,7 +111,13 @@ export default defineNuxtConfig({
   },
 
   nitro: {
-    preset: 'vercel'
+    preset: 'vercel',
+    vercel: {
+      config: {
+        // Permet la revalidation ISR à la demande (voir server/utils/revalidate.ts)
+        bypassToken: process.env.VERCEL_BYPASS_TOKEN
+      }
+    }
   },
 
   routeRules: {

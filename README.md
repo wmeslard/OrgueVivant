@@ -79,7 +79,8 @@ Without Supabase configured, the concerts page uses realistic mock data so the U
 
 1. Push to GitHub.
 2. In Vercel, **Import Project** → select the repo. Framework is auto-detected as Nuxt.
-3. Set env vars (`SUPABASE_URL`, `SUPABASE_KEY`, `SMTP_*`, `CONTACT_TO`, `SITE_URL`).
+3. Set env vars (`SUPABASE_URL`, `SUPABASE_KEY`, `SUPABASE_SERVICE_ROLE_KEY`, `RESEND_API_KEY`, `CONTACT_TO`, `SITE_URL`, `VERCEL_BYPASS_TOKEN`).
+   `VERCEL_BYPASS_TOKEN` is a random secret (`openssl rand -hex 32`) used for on-demand ISR revalidation: every create/update/delete in the admin purges `/`, `/concerts` and `/news` from the Vercel cache immediately. Without it, public pages refresh at most once an hour.
 4. Deploy. The GitHub Action (`.github/workflows/ci.yml`) runs lint + build on every push; Vercel auto-deploys on push to `main`.
 
 ## Features checklist
