@@ -87,6 +87,11 @@ export default defineNuxtConfig({
     name: 'Orgue Vivant'
   },
 
+  sitemap: {
+    // L'admin est déjà bloqué par robots.txt : ne pas le soumettre non plus au sitemap
+    exclude: ['/_nuxt/**', '/_**', '/admin', '/admin/**', '/auth-setup']
+  },
+
   runtimeConfig: {
     resendApiKey: process.env.RESEND_API_KEY,
     myMemoryEmail: process.env.MYMEMORY_EMAIL,

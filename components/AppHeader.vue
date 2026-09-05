@@ -12,11 +12,19 @@ const nav = computed(() => [
   { to: '/contact', label: t('nav.contact') }
 ])
 
-onMounted(() => {
-  window.addEventListener('scroll', () => {
+// Écouteur passif + throttle rAF : sans ça le handler s'exécute à chaque
+// événement de scroll sur le thread principal et fait saccader le mobile.
+let ticking = false
+function onScroll() {
+  if (ticking) return
+  ticking = true
+  requestAnimationFrame(() => {
     isScrolled.value = window.scrollY > 20
+    ticking = false
   })
-})
+}
+
+onMounted(() => window.addEventListener('scroll', onScroll, { passive: true }))
 
 watch(() => route.fullPath, () => { open.value = false })
 
@@ -25,6 +33,7 @@ watch(open, (val) => {
 })
 
 onBeforeUnmount(() => {
+  window.removeEventListener('scroll', onScroll)
   if (import.meta.client) document.body.style.overflow = ''
 })
 </script>
@@ -89,7 +98,7 @@ onBeforeUnmount(() => {
       leave-from-class="opacity-100"
       leave-to-class="opacity-0"
     >
-      <div v-if="open" class="fixed inset-0 z-[49] bg-background/95 backdrop-blur-2xl lg:hidden">
+      <div v-if="open" class="fixed inset-0 z-[49] bg-background lg:hidden">
         <nav class="flex h-full flex-col items-center justify-center gap-8 text-center">
           <NuxtLink
             v-for="item in nav"

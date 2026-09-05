@@ -7,8 +7,18 @@ useHead({
   meta: [{ name: 'description', content: t('seo.aboutDesc') }],
   link: [
     { rel: 'canonical', href: `${siteUrl}/about` },
-    { rel: 'preload', as: 'image', href: '/img/orgue-st-maurice.webp', type: 'image/webp' },
-    { rel: 'preload', as: 'image', href: '/img/orgue-st-etienne.webp', type: 'image/webp' },
+    {
+      rel: 'preload', as: 'image', type: 'image/webp',
+      href: '/img/orgue-st-maurice-1024.webp',
+      imagesrcset: '/img/orgue-st-maurice-640.webp 640w, /img/orgue-st-maurice-1024.webp 1024w, /img/orgue-st-maurice-1400.webp 1400w',
+      imagesizes: '(min-width: 768px) 50vw, 100vw'
+    },
+    {
+      rel: 'preload', as: 'image', type: 'image/webp',
+      href: '/img/orgue-st-etienne-1125.webp',
+      imagesrcset: '/img/orgue-st-etienne-640.webp 640w, /img/orgue-st-etienne-1125.webp 1125w',
+      imagesizes: '(min-width: 768px) 50vw, 100vw'
+    },
   ]
 })
 
@@ -51,7 +61,11 @@ function onImageLoad() {
       >
         <div class="aspect-[16/9] overflow-hidden bg-ink-900">
           <picture>
-            <source srcset="/img/orgue-st-maurice.webp" type="image/webp">
+            <source
+              type="image/webp"
+              srcset="/img/orgue-st-maurice-640.webp 640w, /img/orgue-st-maurice-1024.webp 1024w, /img/orgue-st-maurice-1400.webp 1400w"
+              sizes="(min-width: 768px) 50vw, 100vw"
+            >
             <img
               src="/img/orgue-st-maurice.jpg"
               alt="Orgue de Saint-Maurice de Lille"
@@ -81,7 +95,11 @@ function onImageLoad() {
       >
         <div class="aspect-[16/9] overflow-hidden bg-ink-900">
           <picture>
-            <source srcset="/img/orgue-st-etienne.webp" type="image/webp">
+            <source
+              type="image/webp"
+              srcset="/img/orgue-st-etienne-640.webp 640w, /img/orgue-st-etienne-1125.webp 1125w"
+              sizes="(min-width: 768px) 50vw, 100vw"
+            >
             <img
               src="/img/orgue-st-etienne.jpg"
               alt="Orgue de Saint-Étienne de Lille"

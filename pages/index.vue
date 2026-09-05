@@ -21,8 +21,17 @@ useHead({
   meta: [{ name: 'description', content: t('seo.homeDesc') }],
   link: [
     { rel: 'canonical', href: siteUrl },
-    { rel: 'preload', as: 'image', href: '/img/hero-tuyaux-orgue.jpg', fetchpriority: 'high' },
-    { rel: 'preload', as: 'image', href: '/img/eglise-st-maurice.jpg' }
+    // Précharge le WebP réellement affiché, à la largeur adaptée à l'écran.
+    // L'image « église » n'est plus préchargée : elle est sous la ligne de flottaison et en lazy.
+    {
+      rel: 'preload',
+      as: 'image',
+      type: 'image/webp',
+      href: '/img/hero-tuyaux-orgue-1080.webp',
+      imagesrcset: '/img/hero-tuyaux-orgue-640.webp 640w, /img/hero-tuyaux-orgue-1080.webp 1080w, /img/hero-tuyaux-orgue-1600.webp 1600w, /img/hero-tuyaux-orgue-2000.webp 2000w',
+      imagesizes: '100vw',
+      fetchpriority: 'high'
+    }
   ]
 })
 
@@ -68,18 +77,28 @@ function needsMore(n: NewsItem) {
     <section class="relative min-h-screen flex items-center overflow-hidden pt-20">
       <!-- Background — tuyaux d'orgue, sobre et immersif -->
       <div class="absolute inset-0 z-0">
-        <img
-          src="/img/hero-tuyaux-orgue.jpg"
-          alt="Tuyaux d'orgue"
-          class="w-full h-full object-cover object-center brightness-[0.25]"
-          fetchpriority="high"
-          loading="eager"
-          decoding="async"
-        />
+        <picture class="block w-full h-full">
+          <source
+            type="image/webp"
+            srcset="/img/hero-tuyaux-orgue-640.webp 640w, /img/hero-tuyaux-orgue-1080.webp 1080w, /img/hero-tuyaux-orgue-1600.webp 1600w, /img/hero-tuyaux-orgue-2000.webp 2000w"
+            sizes="100vw"
+          >
+          <img
+            src="/img/hero-tuyaux-orgue.jpg"
+            alt="Tuyaux d'orgue"
+            class="w-full h-full object-cover object-center brightness-[0.25]"
+            fetchpriority="high"
+            loading="eager"
+            decoding="async"
+          />
+        </picture>
         <!-- Gradient sombre en bas pour fondre avec les sections -->
         <div class="absolute inset-0 bg-gradient-to-b from-background/40 via-transparent to-background z-10" />
         <!-- Lueur gold très subtile en haut à droite -->
-        <div class="absolute -top-32 right-0 w-[600px] h-[600px] rounded-full bg-gold/5 blur-[120px] z-10" />
+        <div
+          class="absolute -top-32 right-0 w-[600px] h-[600px] z-10 pointer-events-none"
+          style="background: radial-gradient(circle, rgba(198,165,106,0.10) 0%, rgba(198,165,106,0) 70%)"
+        />
       </div>
 
       <div class="container-premium relative z-20 w-full">
@@ -130,7 +149,7 @@ function needsMore(n: NewsItem) {
             <img
               :src="nextConcert.image_url || '/img/concert-fallback.jpg'"
               :alt="nextConcert.title"
-              loading="eager"
+              loading="lazy"
               decoding="async"
               class="w-full h-full object-cover transition-transform duration-1000 group-hover:scale-105"
             />
@@ -206,7 +225,11 @@ function needsMore(n: NewsItem) {
     <div class="py-16 bg-background">
       <section class="relative py-40 bg-black overflow-hidden">
         <picture class="absolute inset-0 z-0">
-          <source srcset="/img/eglise-st-maurice.webp" type="image/webp">
+          <source
+            type="image/webp"
+            srcset="/img/eglise-st-maurice-640.webp 640w, /img/eglise-st-maurice-1080.webp 1080w, /img/eglise-st-maurice-1600.webp 1600w"
+            sizes="100vw"
+          >
           <img
             src="/img/eglise-st-maurice.jpg"
             alt=""
