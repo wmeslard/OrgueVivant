@@ -78,8 +78,18 @@ function stayConnected() {
 
 // ── Heartbeat (sole timer — runs every 30s) ────────────────────────────────────
 
+// `last_sign_in_at` fait foi : Supabase le remet à jour à chaque connexion et il
+// reste stable pendant toute la durée de la session. Le localStorage n'est qu'un
+// repli — s'y fier seul faisait hériter une connexion neuve de l'ancre de la
+// session précédente, d'où une expiration immédiate à la première connexion.
+function sessionStart(): number {
+  const lastSignInAt = user.value?.last_sign_in_at
+  if (lastSignInAt) return new Date(lastSignInAt).getTime()
+  return Number(localStorage.getItem(KEY_SESSION)) || Date.now()
+}
+
 function checkAbsoluteSession(): boolean {
-  const start = Number(localStorage.getItem(KEY_SESSION))
+  const start = sessionStart()
   if (start && Date.now() - start > MAX_SESSION_MS) {
     doSignOut('session_expired')
     return false
@@ -101,11 +111,9 @@ function tick() {
 const EVENTS = ['mousedown', 'keydown', 'scroll', 'touchstart'] as const
 
 onMounted(() => {
-  const signInTime = user.value?.last_sign_in_at
-    ? new Date(user.value.last_sign_in_at).getTime()
-    : Date.now()
-
-  if (!localStorage.getItem(KEY_SESSION)) localStorage.setItem(KEY_SESSION, String(signInTime))
+  // Toujours réancrer sur la session courante, sans condition : une valeur
+  // laissée par une session précédente doit être écrasée, pas conservée.
+  localStorage.setItem(KEY_SESSION, String(sessionStart()))
   localStorage.setItem(KEY_ACTIVITY, String(Date.now()))
 
   if (!checkAbsoluteSession()) return

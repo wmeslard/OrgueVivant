@@ -43,6 +43,10 @@ async function login() {
     error.value = 'Accès non autorisé. Contactez l\'administrateur.'
     return
   }
+  // Repartir d'un état propre : des clés laissées par une session précédente
+  // provoquaient une expiration immédiate au premier accès à l'admin.
+  localStorage.removeItem('ov_admin_session_start')
+  localStorage.removeItem('ov_admin_activity')
   loading.value = false
   await navigateTo('/admin')
 }
