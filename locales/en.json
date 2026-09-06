@@ -93,7 +93,9 @@
     "google": "Google Calendar",
     "apple": "Apple · Outlook",
     "copyLink": "Copy link",
-    "copied": "Link copied"
+    "copied": "Link copied",
+    "feedLabel": "Calendar address",
+    "appleHelp": "Your browser could not open your Calendar app. Copy this address, then in Apple Calendar: File → New Calendar Subscription. In Outlook: Add calendar → Subscribe from web."
   },
   "modal": {
     "close": "Close",

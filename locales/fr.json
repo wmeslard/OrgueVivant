@@ -93,7 +93,9 @@
     "google": "Google Agenda",
     "apple": "Apple · Outlook",
     "copyLink": "Copier le lien",
-    "copied": "Lien copié"
+    "copied": "Lien copié",
+    "feedLabel": "Adresse de l'agenda",
+    "appleHelp": "Votre navigateur n'a pas pu ouvrir votre application Calendrier. Copiez cette adresse, puis dans Apple Calendrier : Fichier → Nouvel abonnement. Dans Outlook : Ajouter un calendrier → S'abonner à partir du Web."
   },
   "modal": {
     "close": "Fermer",
