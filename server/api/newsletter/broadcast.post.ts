@@ -107,7 +107,7 @@ export default defineEventHandler(async (event) => {
   if (!subscribers?.length) return { ok: true, sent: 0 }
 
   const resend = new Resend(config.resendApiKey)
-  const from = `Orgue Vivant <${config.contactFrom || 'contact@orgue-vivant.fr'}>`
+  const from = `Orgue Vivant <${config.contactFrom || 'contact@orguevivant.fr'}>`
 
   const subject = type === 'concert'
     ? `Nouveau concert : ${(data as Concert).title}`

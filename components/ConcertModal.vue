@@ -145,7 +145,7 @@ onBeforeUnmount(() => window.removeEventListener('keydown', onKey))
 
             <!-- Description -->
             <div v-if="description">
-              <p class="text-sm leading-relaxed text-text-secondary font-light">
+              <p class="text-sm leading-relaxed text-text-secondary font-light whitespace-pre-wrap">
                 {{ description }}
               </p>
             </div>

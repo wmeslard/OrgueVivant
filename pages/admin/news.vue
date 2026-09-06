@@ -172,14 +172,15 @@ async function logout() {
         </div>
         <div class="md:col-span-2">
           <label class="label">{{ t('admin.fields.body') }}</label>
-          <textarea v-model="editing.body" rows="6" required class="input resize-none" />
+          <textarea v-model="editing.body" rows="16" required class="input resize-y leading-relaxed" />
         </div>
       </div>
       <div v-if="error" class="mt-4 text-sm text-red-600">{{ error }}</div>
       <div class="mt-6 flex justify-end gap-2">
         <button type="button" class="btn-ghost" @click="cancel">{{ t('admin.cancel') }}</button>
         <button type="submit" class="btn-primary" :disabled="saving">
-          {{ saving ? '…' : t('admin.save') }}
+          <Icon v-if="saving" name="heroicons:arrow-path" class="w-4 h-4 animate-spin mr-2" />
+          {{ t('admin.save') }}
         </button>
       </div>
     </form>

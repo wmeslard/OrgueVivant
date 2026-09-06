@@ -66,7 +66,7 @@ async function submit() {
               </div>
               <div>
                 <div class="text-[10px] uppercase tracking-widest text-text-secondary font-bold mb-1">Email</div>
-                <div class="text-text-primary">contact@orgue-vivant.fr</div>
+                <div class="text-text-primary">contact@orguevivant.fr</div>
               </div>
             </div>
             <div class="flex items-start gap-4">

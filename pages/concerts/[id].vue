@@ -140,7 +140,7 @@ if (concert.value) {
           </div>
         </dl>
 
-        <p v-if="description" class="text-text-secondary font-light leading-relaxed mb-10">
+        <p v-if="description" class="text-text-secondary font-light leading-relaxed mb-10 whitespace-pre-wrap">
           {{ description }}
         </p>
 

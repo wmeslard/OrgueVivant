@@ -42,8 +42,8 @@ export default defineEventHandler(async (event) => {
   const safeMessage = escapeHtml(message)
 
   await resend.emails.send({
-    from: `Orgue Vivant <${config.contactFrom || 'contact@orgue-vivant.fr'}>`,
-    to: config.contactTo || 'contact@orgue-vivant.fr',
+    from: `Orgue Vivant <${config.contactFrom || 'contact@orguevivant.fr'}>`,
+    to: config.contactTo || 'contact@orguevivant.fr',
     replyTo: `${sanitizeHeader(name)} <${sanitizeHeader(email)}>`,
     subject: `[Orgue Vivant] Message de ${sanitizeHeader(name)}`,
     html: `
