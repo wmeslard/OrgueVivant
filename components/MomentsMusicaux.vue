@@ -85,12 +85,17 @@ const nextSessionLabel = computed(() => {
 
       <div
         v-if="nextSessionLabel"
-        class="mt-7 inline-flex flex-wrap items-center gap-x-2.5 gap-y-1 rounded-full border border-gold/20 bg-gold/10 px-5 py-2.5 text-sm"
+        class="mt-7 inline-flex flex-col items-start gap-1 rounded-2xl border border-gold/20 bg-gold/10 px-5 py-3 text-sm sm:flex-row sm:items-center sm:gap-2.5 sm:rounded-full sm:py-2.5"
       >
-        <Icon name="heroicons:calendar-days" class="h-4 w-4 shrink-0 text-gold" />
-        <!-- Même police et même taille des deux côtés : seule la couleur les
+        <!-- Sur mobile la pastille passait sur deux lignes, et une forme
+             entièrement arrondie rend mal une fois dédoublée : on empile en
+             bloc arrondi, et on retrouve la pastille sur une ligne dès `sm`.
+             Même police et même taille des deux côtés, seule la couleur les
              distingue, ce qui évite tout décalage optique. -->
-        <span class="font-medium text-gold">{{ t('moments.nextLabel') }}</span>
+        <span class="flex items-center gap-2.5 font-medium text-gold">
+          <Icon name="heroicons:calendar-days" class="h-4 w-4 shrink-0" />
+          {{ t('moments.nextLabel') }}
+        </span>
         <span class="text-text-primary">{{ nextSessionLabel }}</span>
       </div>
 
@@ -124,10 +129,12 @@ const nextSessionLabel = computed(() => {
           </p>
           <div
             v-if="nextSessionLabel"
-            class="mt-5 inline-flex flex-wrap items-center gap-x-2.5 gap-y-1 rounded-full border border-gold/20 bg-gold/10 px-4 py-2 text-sm"
+            class="mt-5 inline-flex flex-col items-start gap-1 rounded-2xl border border-gold/20 bg-gold/10 px-4 py-2.5 text-sm sm:flex-row sm:items-center sm:gap-2.5 sm:rounded-full sm:py-2"
           >
-            <Icon name="heroicons:calendar-days" class="h-4 w-4 shrink-0 text-gold" />
-            <span class="font-medium text-gold">{{ t('moments.nextLabel') }}</span>
+            <span class="flex items-center gap-2.5 font-medium text-gold">
+              <Icon name="heroicons:calendar-days" class="h-4 w-4 shrink-0" />
+              {{ t('moments.nextLabel') }}
+            </span>
             <span class="text-text-primary">{{ nextSessionLabel }}</span>
           </div>
         </div>

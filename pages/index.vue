@@ -5,6 +5,7 @@ import type { NewsItem } from '~/composables/useNews'
 const { t, locale } = useI18n()
 const { upcoming, pending, fetchConcerts } = useConcerts()
 const { latest, fetchNews } = useNews()
+const { downloadIcs } = useIcs()
 
 await callOnce('concerts', fetchConcerts)
 await callOnce('news-home', fetchNews)
@@ -176,7 +177,7 @@ function needsMore(n: NewsItem) {
                 <span class="text-gold text-2xl leading-none">+</span>
                 <span>{{ t('modal.moreInfo') }}</span>
               </button>
-              <button class="btn-premium-secondary !h-14 !px-8">
+              <button class="btn-premium-secondary !h-14 !px-8" @click="downloadIcs(nextConcert)">
                 <Icon name="heroicons:calendar" class="w-5 h-5 text-gold" />
                 <span>{{ t('modal.addToCalendar') }}</span>
               </button>
