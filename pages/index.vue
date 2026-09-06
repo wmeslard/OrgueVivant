@@ -153,7 +153,6 @@ function needsMore(n: NewsItem) {
               decoding="async"
               class="w-full h-full object-cover transition-transform duration-1000 group-hover:scale-105"
             />
-            <div class="absolute inset-0 bg-gradient-to-r from-surface via-transparent to-transparent hidden md:block"></div>
           </div>
           <div class="md:w-1/2 p-7 md:p-10 flex flex-col justify-center">
             <div class="text-gold font-bold tracking-widest text-sm mb-3">

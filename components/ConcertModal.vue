@@ -77,7 +77,8 @@ onBeforeUnmount(() => window.removeEventListener('keydown', onKey))
     >
       <div
         ref="modalRef"
-        class="relative w-full max-w-5xl max-h-[90vh] flex flex-col lg:flex-row overflow-hidden rounded-[28px] bg-surface border border-text-primary/10 shadow-2xl"
+        class="relative w-full max-w-5xl xl:max-w-[1400px] max-h-[90vh] flex flex-col lg:flex-row overflow-hidden rounded-[28px] bg-surface border border-text-primary/10 shadow-2xl"
+        :class="concert.image_url ? 'lg:h-[90vh]' : ''"
         @click.stop
       >
         <!-- Bouton fermer -->
@@ -90,7 +91,7 @@ onBeforeUnmount(() => window.removeEventListener('keydown', onKey))
         </button>
 
         <!-- Image (desktop uniquement) -->
-        <div v-if="concert.image_url" class="hidden lg:block lg:w-2/5 lg:h-auto shrink-0 overflow-hidden">
+        <div v-if="concert.image_url" class="hidden lg:block lg:w-[72vh] lg:max-w-[52%] shrink-0 overflow-hidden">
           <img
             :src="concert.image_url"
             :alt="concert.title"
