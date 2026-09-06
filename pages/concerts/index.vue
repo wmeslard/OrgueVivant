@@ -172,6 +172,8 @@ useSeoMeta({
       />
     </div>
 
+    <MomentsMusicaux variant="full" />
+
     <LazyConcertModal :concert="selected" @close="selected = null" />
   </div>
 </template>

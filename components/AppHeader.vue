@@ -49,10 +49,20 @@ onBeforeUnmount(() => {
       :class="isScrolled ? 'opacity-100' : 'opacity-0'"
     />
     <div class="container-premium flex h-full items-center justify-between">
-      <NuxtLink to="/" class="group flex items-center gap-2 font-display text-2xl tracking-tight">
-        <span class="transition-colors duration-300 group-hover:text-gold">Orgue</span>
-        <span class="text-gold">·</span>
-        <span class="transition-colors duration-300 group-hover:text-gold">Vivant</span>
+      <NuxtLink to="/" class="group flex items-center gap-3 font-display text-2xl tracking-tight">
+        <img
+          src="/img/logo/symbole-128.png"
+          alt=""
+          aria-hidden="true"
+          width="109"
+          height="128"
+          class="h-8 w-auto shrink-0 md:h-9"
+        >
+        <span class="flex items-center gap-2">
+          <span class="transition-colors duration-300 group-hover:text-gold">Orgue</span>
+          <span class="text-gold">·</span>
+          <span class="transition-colors duration-300 group-hover:text-gold">Vivant</span>
+        </span>
       </NuxtLink>
 
       <nav class="hidden gap-10 lg:flex">

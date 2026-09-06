@@ -23,8 +23,11 @@ function concertHtml(concert: Concert, unsubscribeUrl: string, siteUrl: string) 
   <table width="100%" cellpadding="0" cellspacing="0" style="background:#0a0a0a;padding:40px 20px">
     <tr><td align="center">
       <table width="600" cellpadding="0" cellspacing="0" style="max-width:600px;width:100%;background:#141414;border-radius:16px;overflow:hidden;border:1px solid #2a2a2a">
-        <tr><td style="padding:40px 40px 0">
-          <p style="margin:0 0 8px;font-size:11px;letter-spacing:4px;text-transform:uppercase;color:#c9a84c">Orgue Vivant · Nouveau concert</p>
+        <tr><td align="center" style="padding:36px 40px 8px">
+          <img src="${siteUrl}/img/logo/horizontal-dore-600.png" alt="Orgue Vivant" width="200" style="width:200px;max-width:60%;height:auto;display:block;margin:0 auto">
+        </td></tr>
+        <tr><td style="padding:16px 40px 0">
+          <p style="margin:0 0 8px;font-size:11px;letter-spacing:4px;text-transform:uppercase;color:#c9a84c">Nouveau concert</p>
         </td></tr>
         ${concert.image_url ? `<tr><td style="padding:24px 40px 0"><img src="${escapeHtml(concert.image_url)}" alt="" style="width:100%;height:240px;object-fit:cover;border-radius:8px"></td></tr>` : ''}
         <tr><td style="padding:32px 40px">
@@ -60,8 +63,11 @@ function newsHtml(news: NewsItem, unsubscribeUrl: string, siteUrl: string) {
   <table width="100%" cellpadding="0" cellspacing="0" style="background:#0a0a0a;padding:40px 20px">
     <tr><td align="center">
       <table width="600" cellpadding="0" cellspacing="0" style="max-width:600px;width:100%;background:#141414;border-radius:16px;overflow:hidden;border:1px solid #2a2a2a">
-        <tr><td style="padding:40px 40px 0">
-          <p style="margin:0 0 8px;font-size:11px;letter-spacing:4px;text-transform:uppercase;color:#c9a84c">Orgue Vivant · Actualité</p>
+        <tr><td align="center" style="padding:36px 40px 8px">
+          <img src="${siteUrl}/img/logo/horizontal-dore-600.png" alt="Orgue Vivant" width="200" style="width:200px;max-width:60%;height:auto;display:block;margin:0 auto">
+        </td></tr>
+        <tr><td style="padding:16px 40px 0">
+          <p style="margin:0 0 8px;font-size:11px;letter-spacing:4px;text-transform:uppercase;color:#c9a84c">Actualité</p>
         </td></tr>
         ${news.image_url ? `<tr><td style="padding:24px 40px 0"><img src="${escapeHtml(news.image_url)}" alt="" style="width:100%;height:240px;object-fit:cover;border-radius:8px"></td></tr>` : ''}
         <tr><td style="padding:32px 40px">

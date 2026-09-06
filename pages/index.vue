@@ -220,6 +220,9 @@ function needsMore(n: NewsItem) {
       </div>
     </section>
 
+    <!-- SECTION MOMENTS MUSICAUX (un jeudi sur deux) -->
+    <MomentsMusicaux variant="compact" />
+
     <!-- SECTION PATRIMOINE / STORYTELLING -->
     <div class="py-16 bg-background">
       <section class="relative py-40 bg-black overflow-hidden">
@@ -304,6 +307,10 @@ function needsMore(n: NewsItem) {
             <p class="mt-6 text-[10px] text-text-secondary/50 uppercase tracking-widest">
               {{ t('home.newsletterConsent') }}
             </p>
+          </div>
+
+          <div class="mt-12 w-full max-w-2xl border-t border-white/5 pt-10">
+            <CalendarSubscribe />
           </div>
         </div>
       </div>

@@ -75,6 +75,14 @@ async function sendReset() {
       @submit.prevent="login"
     >
       <div>
+        <img
+          src="/img/logo/symbole-128.png"
+          alt=""
+          aria-hidden="true"
+          width="109"
+          height="128"
+          class="mb-6 h-12 w-auto"
+        >
         <div class="text-xs uppercase tracking-widest text-accent">{{ t('admin.eyebrow') }}</div>
         <h1 class="mt-2 font-display text-3xl font-light">{{ t('admin.loginTitle') }}</h1>
       </div>

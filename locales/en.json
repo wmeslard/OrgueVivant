@@ -74,6 +74,27 @@
     "resetFilters": "Reset",
     "noResults": "No concerts match these filters."
   },
+  "moments": {
+    "eyebrow": "Regular gathering",
+    "title": "Musical Moments",
+    "subtitle": "Every other Thursday, half an hour of music on the choir organ of Saint-Maurice church. A regular gathering, alongside the concert programme.",
+    "scheduleLabel": "Time",
+    "schedule": "Thursdays of even-numbered weeks, 1:15 to 1:45 pm",
+    "placeLabel": "Venue",
+    "place": "Saint-Maurice Church — choir organ",
+    "performerLabel": "At the organ",
+    "performer": "Louis-Paul Courtois",
+    "nextLabel": "Next session",
+    "today": "Today at 1:15 pm"
+  },
+  "calendar": {
+    "eyebrow": "Add to your calendar",
+    "subtitle": "Concerts and musical moments appear automatically in your calendar, and update whenever something new is published.",
+    "google": "Google Calendar",
+    "apple": "Apple · Outlook",
+    "copyLink": "Copy link",
+    "copied": "Link copied"
+  },
   "modal": {
     "close": "Close",
     "location": "Venue",

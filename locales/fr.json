@@ -74,6 +74,27 @@
     "resetFilters": "Réinitialiser",
     "noResults": "Aucun concert ne correspond à ces filtres."
   },
+  "moments": {
+    "eyebrow": "Rendez-vous régulier",
+    "title": "Les Moments musicaux",
+    "subtitle": "Un jeudi sur deux, une demi-heure de musique à l'orgue de chœur de l'église Saint-Maurice. Un rendez-vous régulier, en marge de la programmation des concerts.",
+    "scheduleLabel": "Horaire",
+    "schedule": "Les jeudis des semaines paires, de 13h15 à 13h45",
+    "placeLabel": "Lieu",
+    "place": "Église Saint-Maurice — orgue de chœur",
+    "performerLabel": "À l'orgue",
+    "performer": "Louis-Paul Courtois",
+    "nextLabel": "Prochaine séance",
+    "today": "Aujourd'hui à 13h15"
+  },
+  "calendar": {
+    "eyebrow": "Ajouter à votre agenda",
+    "subtitle": "Concerts et moments musicaux apparaissent automatiquement dans votre calendrier, et se mettent à jour à chaque nouveauté.",
+    "google": "Google Agenda",
+    "apple": "Apple · Outlook",
+    "copyLink": "Copier le lien",
+    "copied": "Lien copié"
+  },
   "modal": {
     "close": "Fermer",
     "location": "Lieu",

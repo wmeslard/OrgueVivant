@@ -8,22 +8,15 @@ const year = new Date().getFullYear()
     <div class="container-premium">
       <div class="grid gap-16 md:grid-cols-4 lg:grid-cols-5">
         <div class="md:col-span-2">
-          <NuxtLink to="/" class="font-display text-3xl tracking-tight text-text-primary">
-            Orgue<span class="text-gold">·</span>Vivant
-          </NuxtLink>
-          <p class="mt-6 max-w-sm text-text-secondary font-light leading-relaxed">
-            {{ t('footer.tagline') }}
-          </p>
-          <div class="mt-10">
-            <a
-              href="/api/calendar.ics"
-              class="inline-flex items-center gap-2 text-xs uppercase tracking-widest text-text-secondary hover:text-gold transition-colors font-medium"
-              download
+          <NuxtLink to="/" class="inline-block">
+            <img
+              src="/img/logo/horizontal-blanc-720.png"
+              alt="Orgue Vivant — Concerts d'orgue à Lille"
+              width="720"
+              height="194"
+              class="h-auto w-[300px] max-w-full md:w-[360px]"
             >
-              <Icon name="heroicons:calendar" class="w-4 h-4" />
-              S'abonner au calendrier
-            </a>
-          </div>
+          </NuxtLink>
         </div>
 
         <div>
