@@ -1,6 +1,11 @@
 <script setup lang="ts">
 const { t } = useI18n()
 const year = new Date().getFullYear()
+
+// Mêmes destinations que sur la fiche concert et la fenêtre de détail :
+// la source des URL Maps reste unique.
+const { placeUrl: stMauriceUrl } = useMapsUrls(ref('saint_maurice'))
+const { placeUrl: stEtienneUrl } = useMapsUrls(ref('saint_etienne'))
 </script>
 
 <template>
@@ -34,9 +39,23 @@ const year = new Date().getFullYear()
           <div class="mb-6 text-[10px] font-bold uppercase tracking-[0.3em] text-gold">
             Lieux
           </div>
-          <ul class="space-y-4 text-sm text-text-secondary">
-            <li>{{ t('locations.saint_maurice') }}</li>
-            <li>{{ t('locations.saint_etienne') }}</li>
+          <ul class="space-y-4 text-sm">
+            <li>
+              <a
+                :href="stMauriceUrl"
+                target="_blank"
+                rel="noopener noreferrer"
+                class="text-text-secondary hover:text-text-primary transition-colors"
+              >{{ t('locations.saint_maurice') }}</a>
+            </li>
+            <li>
+              <a
+                :href="stEtienneUrl"
+                target="_blank"
+                rel="noopener noreferrer"
+                class="text-text-secondary hover:text-text-primary transition-colors"
+              >{{ t('locations.saint_etienne') }}</a>
+            </li>
           </ul>
         </div>
 
