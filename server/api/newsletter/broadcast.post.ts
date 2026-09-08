@@ -107,7 +107,7 @@ export default defineEventHandler(async (event) => {
   const client = getServiceClient()
   const { data: subscribers, error } = await client
     .from('newsletter_subscribers')
-    .select('email, token')
+    .select('email, token:unsubscribe_token')
 
   if (error) throw createError({ statusCode: 500, statusMessage: 'Impossible de récupérer les abonnés' })
   if (!subscribers?.length) return { ok: true, sent: 0 }

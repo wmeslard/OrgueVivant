@@ -26,7 +26,7 @@ export default defineEventHandler(async (event) => {
   const { error } = await client
     .from('newsletter_subscribers')
     .delete()
-    .eq('token', token)
+    .eq('unsubscribe_token', token)
 
   if (error) throw createError({ statusCode: 500, statusMessage: 'Erreur lors de la désinscription' })
 

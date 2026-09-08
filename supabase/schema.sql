@@ -48,3 +48,56 @@ values
    'Improvisations libres sur des thèmes proposés par le public.',
    'https://images.unsplash.com/photo-1465847899084-d164df4dedc6?auto=format&fit=crop&w=1200&q=60',
    '1h30', 'paid', 'https://example.com/billetterie');
+
+-- ─────────────────────────────────────────────────────────────────────────────
+-- Actualités
+-- ─────────────────────────────────────────────────────────────────────────────
+
+create table if not exists news (
+  id           uuid primary key default gen_random_uuid(),
+  title        text not null,
+  title_en     text not null,
+  body         text not null,
+  body_en      text not null,
+  author       text,
+  image_url    text,
+  published_at timestamptz default now(),
+  created_at   timestamptz default now()
+);
+
+alter table news enable row level security;
+
+-- Contenu éditorial, public par nature.
+create policy "Public can read news"
+  on news for select
+  to anon, authenticated
+  using (true);
+
+-- L'écriture passe par les points d'entrée serveur, qui utilisent la clé
+-- `service_role` : celle-ci contourne RLS, aucune politique n'est requise.
+
+-- ─────────────────────────────────────────────────────────────────────────────
+-- Abonnés à la newsletter — DONNÉES PERSONNELLES
+-- ─────────────────────────────────────────────────────────────────────────────
+
+create table if not exists newsletter_subscribers (
+  id                uuid primary key default gen_random_uuid(),
+  email             text not null unique,
+  -- 24 octets aléatoires en hexadécimal : jeton non devinable, porté par le
+  -- lien de désinscription de chaque email envoyé.
+  unsubscribe_token text not null default encode(extensions.gen_random_bytes(24), 'hex'),
+  subscribed_at     timestamptz default now()
+);
+
+-- AUCUNE politique, volontairement : la clé « anon » est publiquement lisible
+-- dans le code envoyé à chaque visiteur. Lui laisser le moindre droit exposait
+-- l'intégralité des adresses et des jetons de désinscription.
+-- Un audit du 8 septembre 2026 a confirmé cette fuite avant correction.
+--
+-- Les points d'entrée /api/newsletter/* tournent côté serveur avec la clé
+-- `service_role`, qui contourne RLS : inscription, désinscription et diffusion
+-- fonctionnent sans qu'aucun droit public ne soit nécessaire.
+alter table newsletter_subscribers enable row level security;
+revoke all on newsletter_subscribers from anon, authenticated;
+
+-- Non-régression : ./supabase/test-fuite-emails.sh
