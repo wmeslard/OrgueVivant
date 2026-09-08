@@ -30,10 +30,11 @@ create policy "Public can read concerts"
   on concerts for select
   using (true);
 
-create policy "Authenticated users manage concerts"
-  on concerts for all
-  using (auth.role() = 'authenticated')
-  with check (auth.role() = 'authenticated');
+-- Aucune policy d'écriture pour anon / authenticated : un audit du 9 septembre
+-- 2026 a montré qu'un simple compte authentifié pouvait modifier et supprimer
+-- des concerts directement via l'API, en contournant requireAdmin(). Les droits
+-- d'écriture ont été révoqués (voir rls-ecriture.sql). L'administration passe
+-- par /api/admin/**, qui utilise la clé service_role et contourne RLS.
 
 -- Seed data (optional)
 insert into concerts (title, date, time, location, artists, instruments, description, image_url, duration, price_type, external_link)
@@ -75,6 +76,7 @@ create policy "Public can read news"
 
 -- L'écriture passe par les points d'entrée serveur, qui utilisent la clé
 -- `service_role` : celle-ci contourne RLS, aucune politique n'est requise.
+-- Les droits d'écriture des rôles publics sont révoqués (voir rls-ecriture.sql).
 
 -- ─────────────────────────────────────────────────────────────────────────────
 -- Abonnés à la newsletter — DONNÉES PERSONNELLES
