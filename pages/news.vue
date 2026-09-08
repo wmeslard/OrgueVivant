@@ -2,27 +2,15 @@
 import type { NewsItem } from '~/composables/useNews'
 
 const { t, locale } = useI18n()
-const { all, pending, fetchNews } = useNews()
+// La règle de bascule vers les archives vit dans le composable, pour que
+// l'accueil et cette page ne puissent pas diverger.
+const { pending, current, archived, fetchNews } = useNews()
 await callOnce('news', fetchNews)
 
-const tab = ref<'upcoming' | 'past'>('upcoming')
+const tab = ref<'recent' | 'archived'>('recent')
 const selectedNews = ref<NewsItem | null>(null)
 
-const now = () => new Date().toISOString().slice(0, 10)
-
-const upcoming = computed(() =>
-  [...all.value]
-    .filter(n => n.published_at.slice(0, 10) >= now())
-    .sort((a, b) => a.published_at.slice(0, 10).localeCompare(b.published_at.slice(0, 10)))
-)
-
-const past = computed(() =>
-  [...all.value]
-    .filter(n => n.published_at.slice(0, 10) < now())
-    .sort((a, b) => b.published_at.slice(0, 10).localeCompare(a.published_at.slice(0, 10)))
-)
-
-const list = computed(() => tab.value === 'upcoming' ? upcoming.value : past.value)
+const list = computed(() => tab.value === 'recent' ? current.value : archived.value)
 
 function getTitle(n: NewsItem) {
   return locale.value === 'en' && n.title_en ? n.title_en : n.title
@@ -84,17 +72,17 @@ useSeoMeta({
     <div class="mb-16 inline-flex rounded-full border border-white/5 bg-surface p-1 shadow-2xl">
       <button
         class="rounded-full px-8 py-3 text-xs font-bold uppercase tracking-widest transition-all duration-300"
-        :class="tab === 'upcoming' ? 'bg-gold text-background shadow-lg' : 'text-text-secondary hover:text-text-primary'"
-        @click="tab = 'upcoming'"
+        :class="tab === 'recent' ? 'bg-gold text-background shadow-lg' : 'text-text-secondary hover:text-text-primary'"
+        @click="tab = 'recent'"
       >
-        {{ t('news.upcoming') }} <span class="ml-2 opacity-50">{{ upcoming.length }}</span>
+        {{ t('news.recent') }} <span class="ml-2 opacity-50">{{ current.length }}</span>
       </button>
       <button
         class="rounded-full px-8 py-3 text-xs font-bold uppercase tracking-widest transition-all duration-300"
-        :class="tab === 'past' ? 'bg-gold text-background shadow-lg' : 'text-text-secondary hover:text-text-primary'"
-        @click="tab = 'past'"
+        :class="tab === 'archived' ? 'bg-gold text-background shadow-lg' : 'text-text-secondary hover:text-text-primary'"
+        @click="tab = 'archived'"
       >
-        {{ t('news.past') }} <span class="ml-2 opacity-50">{{ past.length }}</span>
+        {{ t('news.past') }} <span class="ml-2 opacity-50">{{ archived.length }}</span>
       </button>
     </div>
 

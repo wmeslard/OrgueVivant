@@ -33,14 +33,35 @@ export function useNews() {
     }
   }
 
-  const today = () => new Date().toISOString().slice(0, 10)
+  // Une actualité reste affichée une semaine après sa date de publication, puis
+  // bascule dans les archives.
+  const VISIBLE_DAYS = 7
 
-  const latest = computed(() =>
-    [...all.value]
-      .filter(n => n.published_at.slice(0, 10) >= today())
-      .sort((a, b) => a.published_at.slice(0, 10).localeCompare(b.published_at.slice(0, 10)))
-      .slice(0, 3)
+  /**
+   * Date plancher de visibilité. Le retrait en jours traverse correctement les
+   * changements de mois et d'année, sans le débordement que produisait un
+   * retrait en mois sur les mois plus courts.
+   */
+  function visibilityCutoff() {
+    const d = new Date()
+    d.setDate(d.getDate() - VISIBLE_DAYS)
+    return d.toISOString().slice(0, 10)
+  }
+
+  const day = (n: NewsItem) => n.published_at.slice(0, 10)
+  const byDateDesc = (a: NewsItem, b: NewsItem) => day(b).localeCompare(day(a))
+
+  /** Actualités encore à l'affiche : à venir, ou datées de moins d'un mois. */
+  const current = computed(() =>
+    [...all.value].filter(n => day(n) >= visibilityCutoff()).sort(byDateDesc)
   )
+
+  /** Actualités passées depuis plus d'un mois. */
+  const archived = computed(() =>
+    [...all.value].filter(n => day(n) < visibilityCutoff()).sort(byDateDesc)
+  )
+
+  const latest = computed(() => current.value.slice(0, 3))
 
   async function createNews(n: Partial<NewsItem>) {
     await $fetch('/api/admin/news', { method: 'POST', body: n })
@@ -54,5 +75,5 @@ export function useNews() {
     await $fetch(`/api/admin/news/${id}`, { method: 'DELETE' })
   }
 
-  return { all, pending, latest, fetchNews, createNews, updateNews, deleteNews }
+  return { all, pending, latest, current, archived, fetchNews, createNews, updateNews, deleteNews }
 }
