@@ -218,6 +218,20 @@
       "author": "Auteur",
       "authorPlaceholder": "ex. Marie Dupont",
       "actions": "Actions"
-    }
+    },
+    "newsletter": "Newsletter",
+    "newsletterCompose": "Composer un envoi",
+    "newsletterHelp": "Choisissez un concert ou une actualité déjà publiée : l'annonce correspondante sera envoyée à tous les abonnés. Rien n'est envoyé automatiquement à la création.",
+    "newsletterKind": "Type d'annonce",
+    "newsletterPick": "Élément à annoncer",
+    "newsletterSend": "Envoyer la newsletter",
+    "newsletterRecipients": "{n} abonné(s) destinataire(s)",
+    "newsletterSent": "Envoyée à {n} abonné(s).",
+    "newsletterConfirm": "Envoyer « {title} » à {n} abonné(s) ? Cette action est irréversible.",
+    "newsletterConfirmDelete": "Désinscrire {email} ?",
+    "newsletterSubscribers": "Abonnés",
+    "newsletterSince": "Inscrit le",
+    "newsletterRefresh": "Actualiser",
+    "newsletterEmpty": "Aucun abonné pour le moment."
   }
 }

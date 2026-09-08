@@ -127,7 +127,12 @@ export default defineEventHandler(async (event) => {
     return { from, to: sub.email, subject, html }
   })
 
-  await resend.batch.send(emails)
+  // Resend plafonne chaque envoi groupé à 100 destinataires : au-delà, l'appel
+  // échouerait en bloc. On découpe donc en lots.
+  const BATCH_SIZE = 100
+  for (let i = 0; i < emails.length; i += BATCH_SIZE) {
+    await resend.batch.send(emails.slice(i, i + BATCH_SIZE))
+  }
 
   return { ok: true, sent: emails.length }
 })

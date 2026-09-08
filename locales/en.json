@@ -218,6 +218,20 @@
       "author": "Author",
       "authorPlaceholder": "e.g. Marie Dupont",
       "actions": "Actions"
-    }
+    },
+    "newsletter": "Newsletter",
+    "newsletterCompose": "Compose a mailing",
+    "newsletterHelp": "Pick a published concert or news item: the matching announcement will be sent to every subscriber. Nothing is sent automatically on creation.",
+    "newsletterKind": "Announcement type",
+    "newsletterPick": "Item to announce",
+    "newsletterSend": "Send newsletter",
+    "newsletterRecipients": "{n} subscriber(s) will receive it",
+    "newsletterSent": "Sent to {n} subscriber(s).",
+    "newsletterConfirm": "Send “{title}” to {n} subscriber(s)? This cannot be undone.",
+    "newsletterConfirmDelete": "Unsubscribe {email}?",
+    "newsletterSubscribers": "Subscribers",
+    "newsletterSince": "Subscribed on",
+    "newsletterRefresh": "Refresh",
+    "newsletterEmpty": "No subscribers yet."
   }
 }

@@ -41,7 +41,6 @@ function cancel() { editing.value = null; error.value = '' }
 async function save() {
   if (!editing.value) return
   saving.value = true; error.value = ''
-  const isNew = !editing.value.id
   try {
     if (editing.value.title) {
       const { translated: titleEn } = await $fetch<{ translated: string }>('/api/translate', {
@@ -61,12 +60,6 @@ async function save() {
       await updateNews(editing.value.id, editing.value)
     } else {
       await createNews(editing.value)
-    }
-    if (isNew) {
-      $fetch('/api/newsletter/broadcast', {
-        method: 'POST',
-        body: { type: 'news', data: editing.value }
-      }).catch(() => {})
     }
     editing.value = null
     await fetchNews()
@@ -123,23 +116,7 @@ async function logout() {
       </div>
     </header>
 
-    <!-- Nav tabs -->
-    <nav class="mb-8 flex gap-6 border-b border-ink-200 dark:border-ink-800">
-      <NuxtLink
-        to="/admin/concerts"
-        class="pb-3 text-sm font-medium text-ink-500 transition-colors hover:text-ink-900 dark:hover:text-ink-100"
-        active-class="border-b-2 border-gold text-ink-900 dark:text-ink-100"
-      >
-        {{ t('admin.concerts') }}
-      </NuxtLink>
-      <NuxtLink
-        to="/admin/news"
-        class="pb-3 text-sm font-medium text-ink-500 transition-colors hover:text-ink-900 dark:hover:text-ink-100"
-        active-class="border-b-2 border-gold text-ink-900 dark:text-ink-100"
-      >
-        {{ t('admin.news') }}
-      </NuxtLink>
-    </nav>
+    <AdminNav />
 
     <!-- Editor -->
     <form v-if="editing" class="mb-10 rounded-2xl border border-ink-200 p-6 dark:border-ink-800" @submit.prevent="save">
