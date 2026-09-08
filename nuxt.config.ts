@@ -84,7 +84,7 @@ export default defineNuxtConfig({
   },
 
   site: {
-    url: 'https://orgue-vivant.vercel.app',
+    url: 'https://orguevivant.fr',
     name: 'Orgue Vivant'
   },
 
@@ -101,7 +101,7 @@ export default defineNuxtConfig({
     contactTo: process.env.CONTACT_TO || 'contact@orguevivant.fr',
     contactFrom: process.env.CONTACT_FROM || 'contact@orguevivant.fr',
     public: {
-      siteUrl: process.env.SITE_URL || 'https://orgue-vivant.vercel.app',
+      siteUrl: process.env.SITE_URL || 'https://orguevivant.fr',
       supabaseUrl: process.env.SUPABASE_URL || ''
     }
   },
