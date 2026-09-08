@@ -13,7 +13,10 @@ export default defineNuxtConfig({
     '@nuxtjs/supabase',
     '@nuxtjs/sitemap',
     '@nuxt/icon',
-    '@nuxtjs/google-fonts'
+    '@nuxtjs/google-fonts',
+    // Mesure d'audience Vercel : sans cookie, servie depuis notre propre
+    // domaine, elle ne requiert donc pas de consentement préalable.
+    '@vercel/analytics/nuxt'
   ],
 
   googleFonts: {

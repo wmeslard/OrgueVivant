@@ -30,6 +30,7 @@
     "@nuxtjs/sitemap": "^5.2.0",
     "@nuxtjs/supabase": "^1.4.1",
     "@supabase/supabase-js": "^2.43.4",
+    "@vercel/analytics": "^2.0.1",
     "@vueuse/core": "^10.10.0",
     "@vueuse/nuxt": "^10.10.0",
     "cropperjs": "^1.6.2",
