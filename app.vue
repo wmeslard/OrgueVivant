@@ -1,7 +1,15 @@
 <script setup lang="ts">
 const siteUrl = useRuntimeConfig().public.siteUrl
 
-useHead({
+// Canonique et `hreflang` produits par le module i18n : ils pointent vers la
+// bonne URL selon la langue courante, ce qu'une canonique écrite à la main dans
+// chaque page ne savait pas faire une fois servie depuis /en/.
+const localeHead = useLocaleHead()
+
+useHead(() => ({
+  htmlAttrs: localeHead.value.htmlAttrs,
+  link: localeHead.value.link,
+  meta: localeHead.value.meta,
   script: [{
     type: 'application/ld+json',
     innerHTML: JSON.stringify({
@@ -9,13 +17,13 @@ useHead({
       '@type': 'Organization',
       name: 'Orgue Vivant',
       url: siteUrl,
-      logo: `${siteUrl}/favicon.svg`,
+      logo: `${siteUrl}/img/logo/apple-touch-icon.png`,
       description: 'Concerts d\'orgues dans le centre-ville de Lille — Saint-Maurice & Saint-Étienne.',
       address: { '@type': 'PostalAddress', addressLocality: 'Lille', addressCountry: 'FR' },
       sameAs: []
     })
   }]
-})
+}))
 </script>
 
 <template>

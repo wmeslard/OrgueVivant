@@ -16,12 +16,12 @@ const selected = ref<Concert | null>(null)
 const selectedNews = ref<NewsItem | null>(null)
 
 const siteUrl = useRuntimeConfig().public.siteUrl
+const localePath = useLocalePath()
 
 useHead({
   title: 'Orgue Vivant — Concerts d\'orgues à Lille',
   meta: [{ name: 'description', content: t('seo.homeDesc') }],
   link: [
-    { rel: 'canonical', href: siteUrl },
     // Précharge le WebP réellement affiché, à la largeur adaptée à l'écran.
     // L'image « église » n'est plus préchargée : elle est sous la ligne de flottaison et en lazy.
     {
@@ -40,7 +40,7 @@ useSeoMeta({
   ogTitle: 'Orgue Vivant — Concerts d\'orgues à Lille',
   ogDescription: t('seo.homeDesc'),
   ogImage: `${siteUrl}/img/hero-tuyaux-orgue.jpg`,
-  ogUrl: siteUrl,
+  ogUrl: `${siteUrl}${localePath('/')}`,
   ogType: 'website',
   twitterCard: 'summary_large_image',
   twitterTitle: 'Orgue Vivant — Concerts d\'orgues à Lille',
@@ -122,7 +122,7 @@ function needsMore(n: NewsItem) {
             </p>
             
             <div class="mt-12 flex flex-wrap gap-6">
-              <NuxtLink to="/concerts" class="btn-premium-primary">
+              <NuxtLink :to="localePath('/concerts')" class="btn-premium-primary">
                 {{ t('home.ctaConcerts') }}
               </NuxtLink>
               <button v-if="nextConcert" class="btn-premium-secondary cursor-pointer" @click="selected = nextConcert">
@@ -197,7 +197,7 @@ function needsMore(n: NewsItem) {
               {{ t('home.upcomingSubtitle') }}
             </p>
           </div>
-          <NuxtLink to="/concerts" class="group flex items-center gap-3 text-gold tracking-widest text-sm font-bold uppercase">
+          <NuxtLink :to="localePath('/concerts')" class="group flex items-center gap-3 text-gold tracking-widest text-sm font-bold uppercase">
             {{ t('home.viewAll') }}
             <Icon name="heroicons:arrow-right" class="w-5 h-5 transition-transform group-hover:translate-x-2" />
           </NuxtLink>
@@ -248,7 +248,7 @@ function needsMore(n: NewsItem) {
             <p class="text-xl text-text-secondary font-light mb-8 leading-relaxed">
               {{ t('home.heritageBody') }}
             </p>
-            <NuxtLink to="/about" class="btn-premium-primary">
+            <NuxtLink :to="localePath('/about')" class="btn-premium-primary">
               {{ t('home.ctaAbout') }}
             </NuxtLink>
           </div>
@@ -261,7 +261,7 @@ function needsMore(n: NewsItem) {
       <div class="container-premium">
         <div class="flex flex-col md:flex-row md:items-end justify-between mb-10 gap-6">
           <h2 class="heading-section">{{ t('home.newsTitle') }}</h2>
-          <NuxtLink to="/news" class="group flex items-center gap-3 text-gold tracking-widest text-sm font-bold uppercase">
+          <NuxtLink :to="localePath('/news')" class="group flex items-center gap-3 text-gold tracking-widest text-sm font-bold uppercase">
             {{ t('home.viewAllNews') }}
             <Icon name="heroicons:arrow-right" class="w-5 h-5 transition-transform group-hover:translate-x-2" />
           </NuxtLink>

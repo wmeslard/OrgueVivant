@@ -49,18 +49,18 @@ const formatDate = (dateStr: string) => {
 }
 
 const siteUrl = useRuntimeConfig().public.siteUrl
+const localePath = useLocalePath()
 
 useHead({
   title: `${t('nav.news')} — Orgue Vivant`,
-  meta: [{ name: 'description', content: t('seo.newsDesc') }],
-  link: [{ rel: 'canonical', href: `${siteUrl}/news` }]
+  meta: [{ name: 'description', content: t('seo.newsDesc') }]
 })
 
 useSeoMeta({
   ogTitle: `${t('nav.news')} — Orgue Vivant`,
   ogDescription: t('seo.newsDesc'),
   ogImage: `${siteUrl}/img/hero-tuyaux-orgue.jpg`,
-  ogUrl: `${siteUrl}/news`,
+  ogUrl: `${siteUrl}${localePath('/news')}`,
   ogType: 'website',
   twitterCard: 'summary_large_image'
 })

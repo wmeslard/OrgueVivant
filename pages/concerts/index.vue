@@ -38,6 +38,7 @@ watchEffect(() => {
 })
 
 const siteUrl = useRuntimeConfig().public.siteUrl
+const localePath = useLocalePath()
 
 const jsonLd = computed(() => JSON.stringify({
   '@context': 'https://schema.org',
@@ -68,7 +69,6 @@ const jsonLd = computed(() => JSON.stringify({
 useHead({
   title: `${t('nav.concerts')} — Orgue Vivant`,
   meta: [{ name: 'description', content: t('seo.concertsDesc') }],
-  link: [{ rel: 'canonical', href: `${siteUrl}/concerts` }],
   script: [{ type: 'application/ld+json', innerHTML: jsonLd }]
 })
 
@@ -76,7 +76,7 @@ useSeoMeta({
   ogTitle: `${t('nav.concerts')} — Orgue Vivant`,
   ogDescription: t('seo.concertsDesc'),
   ogImage: `${siteUrl}/img/orgue-st-maurice.jpg`,
-  ogUrl: `${siteUrl}/concerts`,
+  ogUrl: `${siteUrl}${localePath('/concerts')}`,
   ogType: 'website',
   twitterCard: 'summary_large_image'
 })

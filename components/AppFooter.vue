@@ -1,5 +1,6 @@
 <script setup lang="ts">
 const { t } = useI18n()
+const localePath = useLocalePath()
 const year = new Date().getFullYear()
 
 // Mêmes destinations que sur la fiche concert et la fenêtre de détail :
@@ -13,7 +14,7 @@ const { placeUrl: stEtienneUrl } = useMapsUrls(ref('saint_etienne'))
     <div class="container-premium">
       <div class="grid gap-16 md:grid-cols-4 lg:grid-cols-5">
         <div class="md:col-span-2">
-          <NuxtLink to="/" class="inline-block">
+          <NuxtLink :to="localePath('/')" class="inline-block">
             <img
               src="/img/logo/horizontal-blanc-720.png"
               alt="Orgue Vivant — Concerts d'orgue à Lille"
@@ -29,9 +30,9 @@ const { placeUrl: stEtienneUrl } = useMapsUrls(ref('saint_etienne'))
             {{ t('footer.navigation') }}
           </div>
           <ul class="space-y-4 text-sm">
-            <li><NuxtLink to="/concerts" class="text-text-secondary hover:text-text-primary transition-colors">{{ t('nav.concerts') }}</NuxtLink></li>
-            <li><NuxtLink to="/about" class="text-text-secondary hover:text-text-primary transition-colors">{{ t('nav.about') }}</NuxtLink></li>
-            <li><NuxtLink to="/contact" class="text-text-secondary hover:text-text-primary transition-colors">{{ t('nav.contact') }}</NuxtLink></li>
+            <li><NuxtLink :to="localePath('/concerts')" class="text-text-secondary hover:text-text-primary transition-colors">{{ t('nav.concerts') }}</NuxtLink></li>
+            <li><NuxtLink :to="localePath('/about')" class="text-text-secondary hover:text-text-primary transition-colors">{{ t('nav.about') }}</NuxtLink></li>
+            <li><NuxtLink :to="localePath('/contact')" class="text-text-secondary hover:text-text-primary transition-colors">{{ t('nav.contact') }}</NuxtLink></li>
           </ul>
         </div>
 
@@ -64,8 +65,8 @@ const { placeUrl: stEtienneUrl } = useMapsUrls(ref('saint_etienne'))
             {{ t('footer.legal') }}
           </div>
           <ul class="space-y-4 text-sm">
-            <li><NuxtLink to="/legal" class="text-text-secondary hover:text-text-primary transition-colors">{{ t('footer.legalMentions') }}</NuxtLink></li>
-            <li><NuxtLink to="/privacy" class="text-text-secondary hover:text-text-primary transition-colors">{{ t('footer.privacy') }}</NuxtLink></li>
+            <li><NuxtLink :to="localePath('/legal')" class="text-text-secondary hover:text-text-primary transition-colors">{{ t('footer.legalMentions') }}</NuxtLink></li>
+            <li><NuxtLink :to="localePath('/privacy')" class="text-text-secondary hover:text-text-primary transition-colors">{{ t('footer.privacy') }}</NuxtLink></li>
             <li><NuxtLink to="/admin" class="text-text-secondary/50 hover:text-text-primary transition-colors text-xs">{{ t('footer.admin') }}</NuxtLink></li>
           </ul>
         </div>

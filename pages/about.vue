@@ -1,12 +1,12 @@
 <script setup lang="ts">
 const { t } = useI18n()
 const siteUrl = useRuntimeConfig().public.siteUrl
+const localePath = useLocalePath()
 
 useHead({
   title: `${t('nav.about')} — Orgue Vivant`,
   meta: [{ name: 'description', content: t('seo.aboutDesc') }],
   link: [
-    { rel: 'canonical', href: `${siteUrl}/about` },
     {
       rel: 'preload', as: 'image', type: 'image/webp',
       href: '/img/orgue-st-maurice-1024.webp',
@@ -26,7 +26,7 @@ useSeoMeta({
   ogTitle: `${t('nav.about')} — Orgue Vivant`,
   ogDescription: t('seo.aboutDesc'),
   ogImage: `${siteUrl}/img/orgue-st-etienne.jpg`,
-  ogUrl: `${siteUrl}/about`,
+  ogUrl: `${siteUrl}${localePath('/about')}`,
   ogType: 'website',
   twitterCard: 'summary_large_image'
 })

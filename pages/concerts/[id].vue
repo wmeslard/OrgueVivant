@@ -4,6 +4,7 @@ const route = useRoute()
 const { all, fetchConcerts } = useConcerts()
 const { downloadIcs } = useIcs()
 const siteUrl = useRuntimeConfig().public.siteUrl
+const localePath = useLocalePath()
 
 await callOnce('concerts', fetchConcerts)
 
@@ -42,7 +43,6 @@ const safeExternalLink = computed(() => {
 useHead({
   title: concert.value ? `${concert.value.title} — Orgue Vivant` : 'Concert — Orgue Vivant',
   meta: [{ name: 'description', content: description.value || t('seo.concertsDesc') }],
-  link: [{ rel: 'canonical', href: `${siteUrl}/concerts/${route.params.id}` }],
   script: concert.value ? [{
     type: 'application/ld+json',
     innerHTML: JSON.stringify({
@@ -61,7 +61,7 @@ useHead({
       eventAttendanceMode: 'https://schema.org/OfflineEventAttendanceMode',
       ...(concert.value.image_url && { image: concert.value.image_url }),
       ...(description.value && { description: description.value }),
-      url: `${siteUrl}/concerts/${route.params.id}`
+      url: `${siteUrl}${localePath(`/concerts/${route.params.id}`)}`
     })
   }] : []
 })
@@ -71,7 +71,7 @@ if (concert.value) {
     ogTitle: concert.value.title,
     ogDescription: description.value || t('seo.concertsDesc'),
     ogImage: concert.value.image_url || `${siteUrl}/img/orgue-st-maurice.jpg`,
-    ogUrl: `${siteUrl}/concerts/${route.params.id}`,
+    ogUrl: `${siteUrl}${localePath(`/concerts/${route.params.id}`)}`,
     ogType: 'website',
     twitterCard: 'summary_large_image',
     twitterImage: concert.value.image_url || `${siteUrl}/img/orgue-st-maurice.jpg`
@@ -82,7 +82,7 @@ if (concert.value) {
 <template>
   <div v-if="concert" class="container-premium py-16 md:py-24 bg-background min-h-screen">
     <NuxtLink
-      to="/concerts"
+      :to="localePath('/concerts')"
       class="inline-flex items-center gap-2 text-xs uppercase tracking-widest text-text-secondary hover:text-gold transition-colors mb-10"
     >
       <Icon name="heroicons:arrow-left" class="w-4 h-4" />

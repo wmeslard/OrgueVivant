@@ -64,12 +64,21 @@ export default defineNuxtConfig({
     ],
     defaultLocale: 'fr',
     langDir: 'locales/',
-    strategy: 'no_prefix',
+    // Une URL par langue : `no_prefix` figeait la langue dans la page mise en
+    // cache, si bien qu'un visiteur pouvait recevoir celle d'un autre. Google
+    // recommande par ailleurs des URL distinctes plutôt que la détection
+    // navigateur, que son robot n'émet pas.
+    strategy: 'prefix_except_default',
+    baseUrl: process.env.SITE_URL || 'https://orguevivant.fr',
     detectBrowserLanguage: {
+      // Redirection uniquement depuis la racine : un lien profond partagé
+      // garde la langue qu'il annonce. Le choix manuel est mémorisé dans un
+      // cookie et prime ensuite sur la langue du navigateur.
       useCookie: true,
       cookieKey: 'i18n_redirected',
       cookieSecure: true,
       redirectOn: 'root',
+      alwaysRedirect: false,
       fallbackLocale: 'fr'
     }
   },
@@ -128,14 +137,24 @@ export default defineNuxtConfig({
 
   routeRules: {
     // Pages publiques : ISR (servi depuis CDN, regénéré toutes les heures)
-    '/':         { isr: 3600 },
-    '/concerts': { isr: 3600 },
-    '/news':     { isr: 3600 },
+    // Racine non mise en cache : c'est la seule page qui redirige selon la
+    // langue du navigateur, et une réponse servie depuis le CDN n'exécute
+    // aucun code serveur. La mettre en cache rendrait la redirection aléatoire.
+    '/':            { isr: false },
+    '/concerts':    { isr: 3600 },
+    '/news':        { isr: 3600 },
+    '/en':          { isr: 3600 },
+    '/en/concerts': { isr: 3600 },
+    '/en/news':     { isr: 3600 },
     // Pages statiques : pré-rendues une fois au build
-    '/about':    { prerender: true },
-    '/contact':  { prerender: true },
-    '/legal':    { prerender: true },
-    '/privacy':  { prerender: true },
+    '/about':       { prerender: true },
+    '/contact':     { prerender: true },
+    '/legal':       { prerender: true },
+    '/privacy':     { prerender: true },
+    '/en/about':    { prerender: true },
+    '/en/contact':  { prerender: true },
+    '/en/legal':    { prerender: true },
+    '/en/privacy':  { prerender: true },
     // Admin : toujours SSR, jamais mis en cache
     '/admin/**': { ssr: true, robots: false, headers: { 'Cache-Control': 'no-store' } },
 

@@ -1,5 +1,8 @@
 User-agent: *
 Allow: /
 Disallow: /admin
+Disallow: /en/admin
+Disallow: /auth-setup
+Disallow: /en/auth-setup
 
-Sitemap: https://orgue-vivant.vercel.app/sitemap.xml
+Sitemap: https://orguevivant.fr/sitemap_index.xml

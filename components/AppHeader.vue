@@ -1,5 +1,6 @@
 <script setup lang="ts">
 const { t } = useI18n()
+const localePath = useLocalePath()
 const route = useRoute()
 const open = ref(false)
 const isScrolled = ref(false)
@@ -49,7 +50,7 @@ onBeforeUnmount(() => {
       :class="isScrolled ? 'opacity-100' : 'opacity-0'"
     />
     <div class="container-premium flex h-full items-center justify-between">
-      <NuxtLink to="/" class="group flex items-center gap-3 font-display text-2xl tracking-tight">
+      <NuxtLink :to="localePath('/')" class="group flex items-center gap-3 font-display text-2xl tracking-tight">
         <img
           src="/img/logo/symbole-128.png"
           alt=""
@@ -69,12 +70,12 @@ onBeforeUnmount(() => {
         <NuxtLink
           v-for="item in nav"
           :key="item.to"
-          :to="item.to"
+          :to="localePath(item.to)"
           class="relative text-sm font-medium tracking-wide text-text-secondary transition-opacity hover:opacity-70 group"
           active-class="!text-text-primary"
         >
           {{ item.label }}
-          <span class="absolute -bottom-1 left-0 h-[1px] w-0 bg-gold transition-all duration-300 group-hover:w-full" :class="{ 'w-full': route.path === item.to }"></span>
+          <span class="absolute -bottom-1 left-0 h-[1px] w-0 bg-gold transition-all duration-300 group-hover:w-full" :class="{ 'w-full': route.path === localePath(item.to) }"></span>
         </NuxtLink>
       </nav>
 
@@ -113,7 +114,7 @@ onBeforeUnmount(() => {
           <NuxtLink
             v-for="item in nav"
             :key="item.to"
-            :to="item.to"
+            :to="localePath(item.to)"
             class="font-display text-4xl text-text-primary transition-colors duration-300 hover:text-gold"
             @click="open = false"
           >

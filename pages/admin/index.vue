@@ -2,4 +2,6 @@
 definePageMeta({ middleware: 'auth' })
 await navigateTo('/admin/concerts', { replace: true })
 </script>
-<template></template>
+<template>
+  <div />
+</template>

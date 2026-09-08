@@ -41,11 +41,14 @@ onMounted(async () => {
       return
     }
     await new Promise<void>(resolve => {
-      let stop: (() => void) | undefined
-      stop = watch(user, val => {
-        if (val) { stop?.(); resolve() }
-      }, { immediate: true })
-      setTimeout(() => { stop?.(); resolve() }, 2000)
+      // La valeur est testée en amont plutôt que via `immediate: true` : le
+      // rappel s'exécutait alors avant l'affectation de `stop`, ce qui
+      // imposait un `let` et un appel optionnel.
+      if (user.value) { resolve(); return }
+      const stop = watch(user, val => {
+        if (val) { stop(); resolve() }
+      })
+      setTimeout(() => { stop(); resolve() }, 2000)
     })
   }
 

@@ -4,7 +4,11 @@ export function useFavorites() {
   const favorites = ref<string[]>([])
 
   if (import.meta.client) {
-    try { favorites.value = JSON.parse(localStorage.getItem(KEY) || '[]') } catch {}
+    try {
+      favorites.value = JSON.parse(localStorage.getItem(KEY) || '[]')
+    } catch {
+      // Stockage indisponible ou contenu corrompu : on garde la liste vide.
+    }
   }
 
   function toggle(id: string) {

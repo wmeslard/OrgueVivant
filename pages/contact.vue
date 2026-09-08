@@ -6,18 +6,18 @@ const status = ref<'idle' | 'sending' | 'success' | 'error'>('idle')
 const error = ref('')
 
 const siteUrl = useRuntimeConfig().public.siteUrl
+const localePath = useLocalePath()
 
 useHead({
   title: `${t('nav.contact')} — Orgue Vivant`,
-  meta: [{ name: 'description', content: t('seo.contactDesc') }],
-  link: [{ rel: 'canonical', href: `${siteUrl}/contact` }]
+  meta: [{ name: 'description', content: t('seo.contactDesc') }]
 })
 
 useSeoMeta({
   ogTitle: `${t('nav.contact')} — Orgue Vivant`,
   ogDescription: t('seo.contactDesc'),
   ogImage: `${siteUrl}/img/hero-tuyaux-orgue.jpg`,
-  ogUrl: `${siteUrl}/contact`,
+  ogUrl: `${siteUrl}${localePath('/contact')}`,
   ogType: 'website',
   twitterCard: 'summary_large_image'
 })
