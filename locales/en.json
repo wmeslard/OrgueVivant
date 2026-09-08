@@ -157,10 +157,16 @@
     "learnMore": "Learn more"
   },
   "legal": {
-    "editor": "Publisher: Orgue Vivant Association, Lille, France.",
-    "hosting": "Hosting: Vercel Inc., 440 N Barranca Ave #4133, Covina, CA 91723, USA.",
-    "contact": "Contact: contact{'@'}orguevivant.fr",
-    "intellectual": "All site content is protected by copyright."
+    "editorTitle": "Site publisher",
+    "editor": "ORGUE VIVANT association\nRegistered non-profit association under French law of 1901 — RNA no. W595047126\nRegistered office: 19 Parvis Saint-Maurice, 59800 Lille, France\nSIREN: 109 597 831\nSIRET: 109 597 831 00014",
+    "publisherTitle": "Publication director",
+    "publisher": "The secretary of the ORGUE VIVANT association\n19 Parvis Saint-Maurice, 59800 Lille, France\nContact: contact{'@'}orguevivant.fr",
+    "hostingTitle": "Hosting",
+    "hosting": "Vercel Inc.\n440 N Barranca Ave #4133, Covina, CA 91723, United States\nThe orguevivant.fr domain name is registered with OVH SAS, 2 rue Kellermann, 59100 Roubaix, France.",
+    "ipTitle": "Intellectual property",
+    "ip": "The publication director owns the intellectual property rights, or holds the usage rights, to all items available on this site, including texts, images, graphics, logos, icons, sounds and software.\n\nAny reproduction, representation, modification, publication or adaptation of all or part of the site, by whatever means, is prohibited without the prior written consent of the publication director.\n\nAny unauthorised use of the site or of any of its contents will be considered an infringement and prosecuted under articles L.335-2 et seq. of the French Intellectual Property Code.\n\nAll site content is protected by copyright.",
+    "lawsTitle": "Applicable law",
+    "laws": "French Act no. 78-17 of 6 January 1978 on data processing, data files and individual liberties, as amended by Act no. 2004-801 of 6 August 2004.\nFrench Act no. 2004-575 of 21 June 2004 on confidence in the digital economy."
   },
   "privacy": {
     "intro": "This policy describes how we handle your personal data, in compliance with GDPR.",
