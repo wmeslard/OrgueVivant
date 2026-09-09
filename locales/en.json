@@ -221,7 +221,7 @@
     },
     "newsletter": "Newsletter",
     "newsletterCompose": "Compose a mailing",
-    "newsletterHelp": "Pick a published concert or news item: the matching announcement will be sent to every subscriber. Nothing is sent automatically on creation.",
+    "newsletterHelp": "Pick a concert or a news item: the fields are pre-filled and editable. Your edits only affect the email, nothing on the site changes.",
     "newsletterKind": "Announcement type",
     "newsletterPick": "Item to announce",
     "newsletterSend": "Send newsletter",
@@ -232,6 +232,10 @@
     "newsletterSubscribers": "Subscribers",
     "newsletterSince": "Subscribed on",
     "newsletterRefresh": "Refresh",
-    "newsletterEmpty": "No subscribers yet."
+    "newsletterEmpty": "No subscribers yet.",
+    "newsletterEdit": "Email content",
+    "newsletterEditHelp": "These fields feed the email only. The concert or news item published on the site stays unchanged.",
+    "newsletterSubject": "Subject line",
+    "newsletterPreview": "Preview"
   }
 }

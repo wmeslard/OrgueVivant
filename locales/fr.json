@@ -221,7 +221,7 @@
     },
     "newsletter": "Newsletter",
     "newsletterCompose": "Composer un envoi",
-    "newsletterHelp": "Choisissez un concert ou une actualité déjà publiée : l'annonce correspondante sera envoyée à tous les abonnés. Rien n'est envoyé automatiquement à la création.",
+    "newsletterHelp": "Choisissez un concert ou une actualité : les champs sont pré-remplis et modifiables. Vos retouches ne concernent que l'email, elles ne modifient rien sur le site.",
     "newsletterKind": "Type d'annonce",
     "newsletterPick": "Élément à annoncer",
     "newsletterSend": "Envoyer la newsletter",
@@ -232,6 +232,10 @@
     "newsletterSubscribers": "Abonnés",
     "newsletterSince": "Inscrit le",
     "newsletterRefresh": "Actualiser",
-    "newsletterEmpty": "Aucun abonné pour le moment."
+    "newsletterEmpty": "Aucun abonné pour le moment.",
+    "newsletterEdit": "Contenu de l'email",
+    "newsletterEditHelp": "Ces champs alimentent uniquement l'email. Le concert ou l'actualité publiée sur le site reste inchangé.",
+    "newsletterSubject": "Objet du message",
+    "newsletterPreview": "Aperçu"
   }
 }

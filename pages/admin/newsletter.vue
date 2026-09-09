@@ -36,10 +36,10 @@ async function loadSubscribers() {
 
 await Promise.all([fetchConcerts(), fetchNews(), loadSubscribers()])
 
-// ── Sélection de l'annonce à envoyer ─────────────────────────────────────────
+// ── Sélection ────────────────────────────────────────────────────────────────
 
 const kind = ref<'concert' | 'news'>('concert')
-const selectedId = ref<string>('')
+const selectedId = ref('')
 
 const options = computed(() =>
   kind.value === 'concert'
@@ -51,14 +51,88 @@ const options = computed(() =>
     }))
 )
 
-watch(kind, () => { selectedId.value = '' })
+// ── Champs éditables, pré-remplis depuis l'élément choisi ────────────────────
+// L'envoi part de ce brouillon, jamais de l'élément d'origine : modifier ici
+// ne touche donc pas le concert ni l'actualité publiés sur le site.
 
-const selected = computed<Concert | NewsItem | null>(() => {
-  if (!selectedId.value) return null
-  return kind.value === 'concert'
-    ? concerts.value.find(c => c.id === selectedId.value) ?? null
-    : news.value.find(n => n.id === selectedId.value) ?? null
-})
+const draft = ref<Record<string, string>>({})
+const subject = ref('')
+
+/** Champs proposés selon le type, dans l'ordre où ils apparaissent dans l'email. */
+const fields = computed(() =>
+  kind.value === 'concert'
+    ? [
+      { key: 'title', label: t('admin.fields.title') },
+      { key: 'date', label: t('admin.fields.date'), type: 'date' },
+      { key: 'time', label: t('admin.fields.time'), type: 'time' },
+      { key: 'location', label: t('admin.fields.location'), select: 'location' },
+      { key: 'price_type', label: t('admin.fields.price'), select: 'price' },
+      { key: 'artists', label: t('admin.fields.artists') },
+      { key: 'image_url', label: t('admin.fields.imageUrl') },
+      { key: 'description', label: t('admin.fields.description'), area: true }
+    ]
+    : [
+      { key: 'title', label: t('admin.fields.title') },
+      { key: 'published_at', label: t('admin.fields.date'), type: 'date' },
+      { key: 'image_url', label: t('admin.fields.imageUrl') },
+      { key: 'body', label: t('admin.fields.description'), area: true }
+    ]
+)
+
+function fillDraft() {
+  if (!selectedId.value) { draft.value = {}; subject.value = ''; return }
+  if (kind.value === 'concert') {
+    const c = concerts.value.find(x => x.id === selectedId.value)
+    if (!c) return
+    draft.value = {
+      title: c.title ?? '', date: c.date ?? '', time: c.time ?? '',
+      location: c.location ?? 'saint_maurice', price_type: c.price_type ?? 'free',
+      artists: c.artists ?? '', image_url: c.image_url ?? '', description: c.description ?? ''
+    }
+    subject.value = `Nouveau concert : ${c.title}`
+  } else {
+    const n = news.value.find(x => x.id === selectedId.value)
+    if (!n) return
+    draft.value = {
+      title: n.title ?? '', published_at: (n.published_at ?? '').slice(0, 10),
+      image_url: n.image_url ?? '', body: n.body ?? ''
+    }
+    subject.value = `Actualité : ${n.title}`
+  }
+}
+
+watch(selectedId, fillDraft)
+watch(kind, () => { selectedId.value = ''; draft.value = {}; subject.value = '' })
+
+// ── Prévisualisation ─────────────────────────────────────────────────────────
+// Rendue par le serveur avec le gabarit d'envoi : l'aperçu correspond donc
+// exactement à ce qui partira.
+
+const previewHtml = ref('')
+const previewing = ref(false)
+let previewTimer: ReturnType<typeof setTimeout> | null = null
+
+async function refreshPreview() {
+  if (!selectedId.value) { previewHtml.value = ''; return }
+  previewing.value = true
+  try {
+    const res = await $fetch<{ html: string }>('/api/admin/newsletter/preview', {
+      method: 'POST',
+      body: { type: kind.value, data: { ...draft.value, id: selectedId.value } }
+    })
+    previewHtml.value = res.html
+  } catch {
+    previewHtml.value = ''
+  } finally {
+    previewing.value = false
+  }
+}
+
+// Le rendu est demandé au serveur : on attend une pause de frappe.
+watch([draft, selectedId], () => {
+  if (previewTimer) clearTimeout(previewTimer)
+  previewTimer = setTimeout(refreshPreview, 400)
+}, { deep: true })
 
 // ── Envoi ────────────────────────────────────────────────────────────────────
 
@@ -67,19 +141,22 @@ const error = ref('')
 const lastSent = ref<number | null>(null)
 
 async function send() {
-  if (!selected.value || !subscribers.value.length) return
-  const label = kind.value === 'concert'
-    ? (selected.value as Concert).title
-    : (selected.value as NewsItem).title
-  if (!confirm(t('admin.newsletterConfirm', { n: subscribers.value.length, title: label }))) return
+  if (!selectedId.value || !subscribers.value.length) return
+  if (!confirm(t('admin.newsletterConfirm', {
+    n: subscribers.value.length, title: draft.value.title || ''
+  }))) return
 
   sending.value = true
   error.value = ''
   try {
-    const res = await $fetch<{ ok: boolean; sent: number; dev?: boolean }>(
-      '/api/newsletter/broadcast',
-      { method: 'POST', body: { type: kind.value, data: selected.value } }
-    )
+    const res = await $fetch<{ ok: boolean; sent: number }>('/api/newsletter/broadcast', {
+      method: 'POST',
+      body: {
+        type: kind.value,
+        data: { ...draft.value, id: selectedId.value },
+        subject: subject.value
+      }
+    })
     lastSent.value = res.sent
     showToast(t('admin.newsletterSent', { n: res.sent }), { type: 'success' })
   } catch (e: unknown) {
@@ -127,8 +204,7 @@ async function logout() {
 
     <AdminNav />
 
-    <!-- Composer un envoi -->
-    <section class="mb-12 rounded-2xl border border-ink-200 p-6 dark:border-ink-800">
+    <section class="mb-12">
       <h2 class="font-display text-2xl">{{ t('admin.newsletterCompose') }}</h2>
       <p class="mt-2 text-sm text-ink-500">{{ t('admin.newsletterHelp') }}</p>
 
@@ -149,9 +225,64 @@ async function logout() {
         </div>
       </div>
 
+      <!-- Édition + aperçu, côte à côte sur grand écran -->
+      <div v-if="selectedId" class="mt-8 grid gap-8 lg:grid-cols-2">
+        <div>
+          <h3 class="mb-4 text-xs font-bold uppercase tracking-widest text-ink-500">
+            {{ t('admin.newsletterEdit') }}
+          </h3>
+          <p class="mb-5 text-xs text-ink-500">{{ t('admin.newsletterEditHelp') }}</p>
+
+          <div class="space-y-4">
+            <div>
+              <label class="label">{{ t('admin.newsletterSubject') }}</label>
+              <input v-model="subject" class="input">
+            </div>
+
+            <div v-for="f in fields" :key="f.key">
+              <label class="label">{{ f.label }}</label>
+              <select v-if="f.select === 'location'" v-model="draft[f.key]" class="input">
+                <option value="saint_maurice">Saint-Maurice</option>
+                <option value="saint_etienne">Saint-Étienne</option>
+              </select>
+              <select v-else-if="f.select === 'price'" v-model="draft[f.key]" class="input">
+                <option value="free">{{ t('modal.free') }}</option>
+                <option value="paid">{{ t('modal.paid') }}</option>
+              </select>
+              <textarea
+                v-else-if="f.area"
+                v-model="draft[f.key]"
+                rows="8"
+                class="input resize-y leading-relaxed"
+              />
+              <input v-else v-model="draft[f.key]" :type="f.type || 'text'" class="input">
+            </div>
+          </div>
+        </div>
+
+        <div>
+          <h3 class="mb-4 flex items-center gap-2 text-xs font-bold uppercase tracking-widest text-ink-500">
+            {{ t('admin.newsletterPreview') }}
+            <Icon v-if="previewing" name="heroicons:arrow-path" class="h-3 w-3 animate-spin" />
+          </h3>
+          <div class="overflow-hidden rounded-2xl border border-ink-200 dark:border-ink-800">
+            <iframe
+              v-if="previewHtml"
+              :srcdoc="previewHtml"
+              :title="t('admin.newsletterPreview')"
+              sandbox=""
+              class="h-[720px] w-full bg-[#0a0a0a]"
+            />
+            <div v-else class="flex h-[720px] items-center justify-center text-sm text-ink-500">
+              …
+            </div>
+          </div>
+        </div>
+      </div>
+
       <div v-if="error" class="mt-4 text-sm text-red-600">{{ error }}</div>
 
-      <div class="mt-6 flex flex-wrap items-center gap-4">
+      <div class="mt-8 flex flex-wrap items-center gap-4">
         <button
           class="btn-primary"
           :disabled="!selectedId || sending || !subscribers.length"
@@ -169,7 +300,6 @@ async function logout() {
       </div>
     </section>
 
-    <!-- Abonnés -->
     <section>
       <div class="mb-4 flex items-center justify-between">
         <h2 class="font-display text-2xl">{{ t('admin.newsletterSubscribers') }}</h2>
