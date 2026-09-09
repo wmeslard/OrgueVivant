@@ -51,8 +51,7 @@
     "newsletterTitle": "Recevez la programmation en avant-première.",
     "newsletterSubtitle": "Dates, coulisses, artistes invités et nouveautés. Rejoignez notre cercle de passionnés.",
     "newsletterConsent": "En vous inscrivant, vous acceptez notre politique de confidentialité.",
-    "readMore": "Lire la suite",
-    "relatedNews": "À lire à ce sujet"
+    "readMore": "Lire la suite"
   },
   "news": {
     "eyebrow": "Actualités",
@@ -225,8 +224,6 @@
       "authorPlaceholder": "ex. Marie Dupont",
       "actions": "Actions",
       "descriptionHelp": "Présentation du concert lui-même : le programme, l'instrument, l'ambiance.",
-      "linkedConcert": "Concert lié",
-      "linkedConcertHelp": "Si cette actualité annonce un concert, elle apparaîtra sur sa carte en page d'accueil.",
       "artist": "Artiste",
       "artistName": "Nom",
       "artistBio": "Présentation",

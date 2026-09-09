@@ -8,8 +8,12 @@
 --    remplace, et la ligne courte affichée dans les listes et les emails est
 --    reconstruite à partir des noms.
 --
--- 2. news.concert_id rattache une actualité au concert qu'elle annonce, pour
---    la faire remonter dans la carte du prochain concert sur la page d'accueil.
+-- 2. news.concert_id rattachait une actualité au concert qu'elle annonce.
+--    ABANDONNÉ : le rapprochement entre actualité et concert a été retiré du
+--    site. La colonne reste en base, inutilisée et toujours nulle ; elle n'est
+--    supprimée nulle part automatiquement. Pour s'en défaire :
+--        drop index if exists news_concert_id_idx;
+--        alter table public.news drop column if exists concert_id;
 --
 -- ORDRE D'EXÉCUTION : déployer le code AVANT de lancer ce script. Le code sait
 -- lire les deux formats, donc rien ne casse pendant l'intervalle ; l'ancien

@@ -10,14 +10,9 @@ const isSuperAdmin = computed(() =>
   (user.value?.app_metadata as Record<string, unknown>)?.role === 'super_admin'
 )
 const { all, fetchNews, createNews, updateNews, deleteNews } = useNews()
-// Permet de rattacher l'actualité au concert qu'elle annonce.
-const { all: concerts, fetchConcerts } = useConcerts()
-const linkableConcerts = computed(() =>
-  [...concerts.value].sort((a, b) => b.date.localeCompare(a.date))
-)
 const { show: showToast } = useToast()
 
-await Promise.all([fetchNews(), fetchConcerts()])
+await fetchNews()
 
 const editing = ref<Partial<NewsItem> | null>(null)
 const saving = ref(false)
@@ -136,18 +131,6 @@ async function logout() {
           <input v-model="editing.published_at" type="date" required class="input">
         </div>
         <div>
-          <label class="label">{{ t('admin.fields.linkedConcert') }}</label>
-          <!-- L'aide passe sous le champ : intercalée, elle décalait le select
-               d'une ligne par rapport à la date, dans la colonne d'à côté. -->
-          <select v-model="editing.concert_id" class="input">
-            <option :value="null">—</option>
-            <option v-for="c in linkableConcerts" :key="c.id" :value="c.id">
-              {{ c.date }} — {{ c.title }}
-            </option>
-          </select>
-          <p class="mt-2 text-xs text-ink-500">{{ t('admin.fields.linkedConcertHelp') }}</p>
-        </div>
-        <div>
           <label class="label">
             {{ t('admin.fields.author') }}
             <span class="ml-1 text-ink-400 font-normal">({{ t('admin.optional') }})</span>
@@ -191,7 +174,8 @@ async function logout() {
         class="input !py-2 !text-xs max-w-xs"
       >
     </div>
-    <div class="overflow-hidden rounded-2xl border border-ink-200 dark:border-ink-800">
+    <!-- Pendant l'édition, la liste s'efface : le formulaire occupe l'écran. -->
+    <div v-if="!editing" class="overflow-hidden rounded-2xl border border-ink-200 dark:border-ink-800">
       <table class="w-full text-left text-sm">
         <thead class="bg-ink-50 text-xs uppercase tracking-wider text-ink-500 dark:bg-ink-900">
           <tr>

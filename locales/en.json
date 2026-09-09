@@ -51,8 +51,7 @@
     "newsletterTitle": "Receive the programme before anyone else.",
     "newsletterSubtitle": "Dates, behind-the-scenes, guest artists and news. Join our circle of enthusiasts.",
     "newsletterConsent": "By subscribing, you agree to our privacy policy.",
-    "readMore": "Read more",
-    "relatedNews": "Read more about it"
+    "readMore": "Read more"
   },
   "news": {
     "eyebrow": "News",
@@ -225,8 +224,6 @@
       "authorPlaceholder": "e.g. Marie Dupont",
       "actions": "Actions",
       "descriptionHelp": "About the concert itself: the programme, the instrument, the atmosphere.",
-      "linkedConcert": "Related concert",
-      "linkedConcertHelp": "If this news item announces a concert, it will appear on its card on the home page.",
       "artist": "Artist",
       "artistName": "Name",
       "artistBio": "Biography",

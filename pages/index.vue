@@ -12,13 +12,6 @@ await callOnce('news-home', fetchNews)
 
 const preview = computed(() => upcoming.value.slice(1, 4))
 
-// Actualité rattachée au prochain concert : elle remonte ainsi dans la carte
-// principale, au lieu de n'exister qu'au quatrième écran de la page.
-const nextConcertNews = computed(() => {
-  const c = upcoming.value[0]
-  if (!c) return null
-  return latest.value.find(n => n.concert_id === c.id) ?? null
-})
 const nextConcert = computed(() => upcoming.value[0] || null)
 const selected = ref<Concert | null>(null)
 const selectedNews = ref<NewsItem | null>(null)
@@ -180,21 +173,6 @@ function needsMore(n: NewsItem) {
                 <span>{{ artistNames(nextConcert.artists, locale) }}</span>
               </div>
             </div>
-            <button
-              v-if="nextConcertNews"
-              type="button"
-              class="mb-6 w-full rounded-2xl border border-gold/20 bg-gold/[0.07] p-5 text-left transition-colors hover:bg-gold/[0.12]"
-              @click="selectedNews = nextConcertNews"
-            >
-              <div class="mb-2 flex items-center gap-2 text-[10px] font-bold uppercase tracking-[0.2em] text-gold">
-                <Icon name="heroicons:newspaper" class="h-3.5 w-3.5 shrink-0" />
-                {{ t('home.relatedNews') }}
-              </div>
-              <div class="font-display text-lg font-light leading-snug text-text-primary">
-                {{ getTitle(nextConcertNews) }}
-              </div>
-            </button>
-
             <div class="grid grid-cols-1 sm:flex sm:flex-wrap items-stretch gap-4">
               <button @click="selected = nextConcert" class="btn-premium-primary !h-14 !px-8">
                 <span class="text-gold text-2xl leading-none">+</span>

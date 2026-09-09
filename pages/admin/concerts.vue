@@ -206,15 +206,10 @@ async function logout() {
           <textarea v-model="editing.description" rows="12" class="input resize-y leading-relaxed" />
         </div>
         <div class="md:col-span-2">
-          <div class="mb-2 flex items-center justify-between">
-            <label class="label !mb-0">{{ t('admin.fields.artists') }}</label>
-            <button type="button" class="text-sm text-gold hover:text-gold/70" @click="addArtist">
-              + {{ t('admin.fields.addArtist') }}
-            </button>
-          </div>
+          <label class="label">{{ t('admin.fields.artists') }}</label>
           <p class="mb-4 text-xs text-ink-500">{{ t('admin.fields.artistsHelp') }}</p>
 
-          <div v-if="!artists.length" class="text-xs text-ink-500">
+          <div v-if="!artists.length" class="mb-4 text-xs text-ink-500">
             {{ t('admin.fields.noArtist') }}
           </div>
 
@@ -249,6 +244,10 @@ async function logout() {
               </div>
             </div>
           </div>
+
+          <button type="button" class="text-sm text-gold hover:text-gold/70" @click="addArtist">
+            + {{ t('admin.fields.addArtist') }}
+          </button>
         </div>
       </div>
       <div v-if="error" class="mt-4 text-sm text-red-600">{{ error }}</div>
@@ -273,7 +272,8 @@ async function logout() {
         class="input !py-2 !text-xs max-w-xs"
       >
     </div>
-    <div class="overflow-hidden rounded-2xl border border-ink-200 dark:border-ink-800">
+    <!-- Pendant l'édition, la liste s'efface : le formulaire occupe l'écran. -->
+    <div v-if="!editing" class="overflow-hidden rounded-2xl border border-ink-200 dark:border-ink-800">
       <table class="w-full text-left text-sm">
         <thead class="bg-ink-50 text-xs uppercase tracking-wider text-ink-500 dark:bg-ink-900">
           <tr>
