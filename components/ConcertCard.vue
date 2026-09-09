@@ -64,8 +64,8 @@ const formattedFullDate = computed(() => {
         <h3 class="font-display text-2xl font-light leading-tight text-text-primary group-hover:text-gold transition-colors duration-300">
           {{ concert.title }}
         </h3>
-        <p v-if="concert.artists" class="mt-2 text-sm text-text-secondary line-clamp-1 italic">
-          {{ concert.artists }}
+        <p v-if="artistNames(concert.artists, locale)" class="mt-2 text-sm text-text-secondary line-clamp-1 italic">
+          {{ artistNames(concert.artists, locale) }}
         </p>
         
         <div class="mt-6 flex items-center justify-between">

@@ -7,6 +7,8 @@ export interface NewsItem {
   published_at: string // YYYY-MM-DD
   author?: string
   image_url?: string
+  /** Concert que cette actualité annonce, le cas échéant. */
+  concert_id?: string | null
   created_at?: string
 }
 

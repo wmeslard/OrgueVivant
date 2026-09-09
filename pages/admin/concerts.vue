@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import type { Concert } from '~/composables/useConcerts'
+import { artistDraft, artistNames, type Artist } from '~/utils/artists'
 
 definePageMeta({ middleware: 'auth', layout: 'admin' })
 
@@ -24,17 +25,34 @@ const filtered = computed(() => {
   if (!q) return all.value
   return all.value.filter(c =>
     c.title.toLowerCase().includes(q) ||
-    c.artists?.toLowerCase().includes(q)
+    artistNames(c.artists).toLowerCase().includes(q)
   )
 })
 
 function blank(): Partial<Concert> {
   return {
     title: '', date: '', time: '20:00',
-    location: 'saint_maurice', artists: '', instruments: '',
+    location: 'saint_maurice', artists: [], instruments: '',
     description: '', image_url: '', duration: '', price_type: 'free',
     external_link: ''
   }
+}
+
+// `artists` a d'abord été une simple ligne de texte : `artistDraft` la convertit
+// en une entrée unique, pour que l'édition d'un ancien concert parte du nom
+// déjà saisi au lieu d'une liste vide. Contrairement à `artistList`, il garde
+// les lignes encore vides, sans quoi un artiste ajouté disparaîtrait aussitôt.
+const artists = computed<Artist[]>({
+  get: () => artistDraft(editing.value?.artists),
+  set: (v) => { if (editing.value) editing.value.artists = v }
+})
+
+function addArtist() {
+  artists.value = [...artists.value, { name: '', image_url: '', bio: '' }]
+}
+
+function removeArtist(i: number) {
+  artists.value = artists.value.filter((_, idx) => idx !== i)
 }
 
 function newOne() { editing.value = blank() }
@@ -66,6 +84,11 @@ async function save() {
       })
       editing.value.description_en = translated
     }
+    // Les lignes laissées vides par l'éditeur répétable ne sont pas enregistrées.
+    editing.value.artists = artists.value
+      .map(a => ({ name: a.name.trim(), image_url: a.image_url?.trim() || '', bio: a.bio?.trim() || '' }))
+      .filter(a => a.name)
+
     if (editing.value.id) {
       await updateConcert(editing.value.id, editing.value)
     } else {
@@ -159,10 +182,6 @@ async function logout() {
           </select>
         </div>
         <div>
-          <label class="label">{{ t('admin.fields.artists') }}</label>
-          <input v-model="editing.artists" class="input">
-        </div>
-        <div>
           <label class="label">{{ t('admin.fields.instruments') }}</label>
           <input v-model="editing.instruments" class="input">
         </div>
@@ -183,7 +202,53 @@ async function logout() {
         </div>
         <div class="md:col-span-2">
           <label class="label">{{ t('admin.fields.description') }}</label>
+          <p class="mb-2 text-xs text-ink-500">{{ t('admin.fields.descriptionHelp') }}</p>
           <textarea v-model="editing.description" rows="12" class="input resize-y leading-relaxed" />
+        </div>
+        <div class="md:col-span-2">
+          <div class="mb-2 flex items-center justify-between">
+            <label class="label !mb-0">{{ t('admin.fields.artists') }}</label>
+            <button type="button" class="text-sm text-gold hover:text-gold/70" @click="addArtist">
+              + {{ t('admin.fields.addArtist') }}
+            </button>
+          </div>
+          <p class="mb-4 text-xs text-ink-500">{{ t('admin.fields.artistsHelp') }}</p>
+
+          <div v-if="!artists.length" class="text-xs text-ink-500">
+            {{ t('admin.fields.noArtist') }}
+          </div>
+
+          <div
+            v-for="(a, i) in artists"
+            :key="i"
+            class="mb-4 rounded-xl border border-ink-200 p-4 dark:border-ink-800"
+          >
+            <div class="mb-3 flex items-center justify-between">
+              <span class="text-xs font-bold uppercase tracking-widest text-ink-500">
+                {{ t('admin.fields.artist') }} {{ i + 1 }}
+              </span>
+              <button type="button" class="text-sm text-red-600 underline" @click="removeArtist(i)">
+                {{ t('admin.delete') }}
+              </button>
+            </div>
+            <div class="grid gap-4 md:grid-cols-2">
+              <div>
+                <label class="label">{{ t('admin.fields.artistName') }}</label>
+                <input v-model="a.name" class="input">
+              </div>
+              <div>
+                <label class="label">{{ t('admin.fields.imageUrl') }}</label>
+                <ImageUpload
+                  :model-value="a.image_url || null"
+                  @update:model-value="a.image_url = $event"
+                />
+              </div>
+              <div class="md:col-span-2">
+                <label class="label">{{ t('admin.fields.artistBio') }}</label>
+                <textarea v-model="a.bio" rows="8" class="input resize-y leading-relaxed" />
+              </div>
+            </div>
+          </div>
         </div>
       </div>
       <div v-if="error" class="mt-4 text-sm text-red-600">{{ error }}</div>

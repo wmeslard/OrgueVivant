@@ -51,7 +51,8 @@
     "newsletterTitle": "Recevez la programmation en avant-première.",
     "newsletterSubtitle": "Dates, coulisses, artistes invités et nouveautés. Rejoignez notre cercle de passionnés.",
     "newsletterConsent": "En vous inscrivant, vous acceptez notre politique de confidentialité.",
-    "readMore": "Lire la suite"
+    "readMore": "Lire la suite",
+    "relatedNews": "À lire à ce sujet"
   },
   "news": {
     "eyebrow": "Actualités",
@@ -109,7 +110,12 @@
     "paid": "Payant",
     "moreInfo": "Plus d'informations",
     "addToCalendar": "Ajouter au calendrier",
-    "directions": "Y aller"
+    "directions": "Y aller",
+    "previousTile": "Tuile précédente",
+    "nextTile": "Tuile suivante",
+    "backToConcert": "Retour au concert",
+    "artist": "Artiste",
+    "goToTile": "Aller à la tuile {n}"
   },
   "about": {
     "eyebrow": "À propos",
@@ -217,7 +223,16 @@
       "publishedAt": "Date de publication",
       "author": "Auteur",
       "authorPlaceholder": "ex. Marie Dupont",
-      "actions": "Actions"
+      "actions": "Actions",
+      "descriptionHelp": "Présentation du concert lui-même : le programme, l'instrument, l'ambiance.",
+      "linkedConcert": "Concert lié",
+      "linkedConcertHelp": "Si cette actualité annonce un concert, elle apparaîtra sur sa carte en page d'accueil.",
+      "artist": "Artiste",
+      "artistName": "Nom",
+      "artistBio": "Présentation",
+      "addArtist": "Ajouter un artiste",
+      "noArtist": "Aucun artiste pour l’instant.",
+      "artistsHelp": "Un artiste par entrée. Ceux qui ont une photo ou une présentation obtiennent leur propre tuile dans la fiche du concert ; les autres apparaissent seulement dans la liste."
     },
     "newsletter": "Newsletter",
     "newsletterCompose": "Composer un envoi",

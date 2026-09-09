@@ -87,7 +87,7 @@ function fillDraft() {
     draft.value = {
       title: c.title ?? '', date: c.date ?? '', time: c.time ?? '',
       location: c.location ?? 'saint_maurice', price_type: c.price_type ?? 'free',
-      artists: c.artists ?? '', image_url: c.image_url ?? '', description: c.description ?? ''
+      artists: artistNames(c.artists), image_url: c.image_url ?? '', description: c.description ?? ''
     }
     subject.value = `Nouveau concert : ${c.title}`
   } else {

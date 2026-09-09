@@ -10,9 +10,14 @@ const isSuperAdmin = computed(() =>
   (user.value?.app_metadata as Record<string, unknown>)?.role === 'super_admin'
 )
 const { all, fetchNews, createNews, updateNews, deleteNews } = useNews()
+// Permet de rattacher l'actualité au concert qu'elle annonce.
+const { all: concerts, fetchConcerts } = useConcerts()
+const linkableConcerts = computed(() =>
+  [...concerts.value].sort((a, b) => b.date.localeCompare(a.date))
+)
 const { show: showToast } = useToast()
 
-await fetchNews()
+await Promise.all([fetchNews(), fetchConcerts()])
 
 const editing = ref<Partial<NewsItem> | null>(null)
 const saving = ref(false)
@@ -129,6 +134,18 @@ async function logout() {
         <div>
           <label class="label">{{ t('admin.fields.publishedAt') }}</label>
           <input v-model="editing.published_at" type="date" required class="input">
+        </div>
+        <div>
+          <label class="label">{{ t('admin.fields.linkedConcert') }}</label>
+          <!-- L'aide passe sous le champ : intercalée, elle décalait le select
+               d'une ligne par rapport à la date, dans la colonne d'à côté. -->
+          <select v-model="editing.concert_id" class="input">
+            <option :value="null">—</option>
+            <option v-for="c in linkableConcerts" :key="c.id" :value="c.id">
+              {{ c.date }} — {{ c.title }}
+            </option>
+          </select>
+          <p class="mt-2 text-xs text-ink-500">{{ t('admin.fields.linkedConcertHelp') }}</p>
         </div>
         <div>
           <label class="label">

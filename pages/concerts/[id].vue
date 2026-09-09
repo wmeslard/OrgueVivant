@@ -14,6 +14,12 @@ if (!concert.value) {
   throw createError({ statusCode: 404, statusMessage: 'Concert introuvable' })
 }
 
+const artists = computed(() => artistList(concert.value?.artists))
+
+/** Seuls les artistes détaillés méritent une carte ; les autres apparaissent
+ *  simplement dans la liste en tête de page. */
+const detailed = computed(() => artists.value.filter(a => a.image_url || a.bio))
+
 const description = computed(() => {
   if (!concert.value) return ''
   if (locale.value === 'en' && concert.value.description_en) return concert.value.description_en
@@ -130,9 +136,9 @@ if (concert.value) {
               {{ t(`modal.${concert.price_type}`) }}
             </dd>
           </div>
-          <div v-if="concert.artists">
+          <div v-if="artists.length">
             <dt class="text-[10px] uppercase tracking-widest text-text-secondary mb-1.5 font-bold">{{ t('modal.artists') }}</dt>
-            <dd class="text-text-primary italic text-sm">{{ concert.artists }}</dd>
+            <dd class="text-text-primary italic text-sm">{{ artistNames(artists, locale) }}</dd>
           </div>
           <div v-if="concert.duration">
             <dt class="text-[10px] uppercase tracking-widest text-text-secondary mb-1.5 font-bold">{{ t('modal.duration') }}</dt>
@@ -143,6 +149,38 @@ if (concert.value) {
         <p v-if="description" class="text-text-secondary font-light leading-relaxed mb-10 whitespace-pre-wrap">
           {{ description }}
         </p>
+
+        <!-- Artistes : une carte par personne, la page ayant la place
+             de les empiler, là où la fenêtre de détail les fait défiler. -->
+        <section v-if="detailed.length" class="mb-10">
+          <div class="mb-4 text-[10px] font-bold uppercase tracking-widest text-gold">
+            {{ t('modal.artists') }}
+          </div>
+          <div class="grid gap-6 sm:grid-cols-2">
+            <article
+              v-for="(a, i) in detailed"
+              :key="i"
+              class="card-premium overflow-hidden"
+            >
+              <img
+                v-if="a.image_url"
+                :src="a.image_url"
+                :alt="a.name"
+                loading="lazy"
+                class="aspect-[4/5] w-full object-cover"
+              >
+              <div class="p-6">
+                <h2 class="font-display text-2xl font-light text-text-primary">{{ a.name }}</h2>
+                <p
+                  v-if="a.bio"
+                  class="mt-3 whitespace-pre-wrap text-sm font-light leading-relaxed text-text-secondary"
+                >
+                  {{ a.bio }}
+                </p>
+              </div>
+            </article>
+          </div>
+        </section>
 
         <div class="flex flex-wrap gap-3">
           <a

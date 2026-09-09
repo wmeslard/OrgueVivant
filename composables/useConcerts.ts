@@ -1,10 +1,17 @@
+import type { Artist } from '~/utils/artists'
+
 export interface Concert {
   id: string
   title: string
   date: string // YYYY-MM-DD
   time: string // HH:MM
   location: 'saint_maurice' | 'saint_etienne'
-  artists: string
+  /**
+   * Artistes du concert : un par entrée, chacun avec sa photo et sa
+   * présentation. La forme texte reste tolérée pour les concerts saisis avant
+   * la migration de la colonne — voir `artistList()`.
+   */
+  artists: Artist[] | string
   instruments: string
   description: string
   description_en?: string

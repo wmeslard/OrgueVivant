@@ -51,7 +51,8 @@
     "newsletterTitle": "Receive the programme before anyone else.",
     "newsletterSubtitle": "Dates, behind-the-scenes, guest artists and news. Join our circle of enthusiasts.",
     "newsletterConsent": "By subscribing, you agree to our privacy policy.",
-    "readMore": "Read more"
+    "readMore": "Read more",
+    "relatedNews": "Read more about it"
   },
   "news": {
     "eyebrow": "News",
@@ -109,7 +110,12 @@
     "paid": "Paid",
     "moreInfo": "More information",
     "addToCalendar": "Add to calendar",
-    "directions": "Get directions"
+    "directions": "Get directions",
+    "previousTile": "Previous tile",
+    "nextTile": "Next tile",
+    "backToConcert": "Back to the concert",
+    "artist": "Artist",
+    "goToTile": "Go to tile {n}"
   },
   "about": {
     "eyebrow": "About",
@@ -217,7 +223,16 @@
       "publishedAt": "Publication date",
       "author": "Author",
       "authorPlaceholder": "e.g. Marie Dupont",
-      "actions": "Actions"
+      "actions": "Actions",
+      "descriptionHelp": "About the concert itself: the programme, the instrument, the atmosphere.",
+      "linkedConcert": "Related concert",
+      "linkedConcertHelp": "If this news item announces a concert, it will appear on its card on the home page.",
+      "artist": "Artist",
+      "artistName": "Name",
+      "artistBio": "Biography",
+      "addArtist": "Add an artist",
+      "noArtist": "No artist yet.",
+      "artistsHelp": "One artist per entry. Those with a photo or a biography get their own tile on the concert page; the others only appear in the list."
     },
     "newsletter": "Newsletter",
     "newsletterCompose": "Compose a mailing",
