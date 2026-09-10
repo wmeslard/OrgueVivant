@@ -19,7 +19,7 @@ const active = computed(() => props.index === props.slide)
     :class="active ? 'opacity-100' : 'pointer-events-none opacity-0'"
   >
     <button
-      class="absolute right-4 top-4 z-30 flex h-9 w-9 items-center justify-center rounded-full bg-background/60 text-text-primary backdrop-blur transition-all duration-300 hover:bg-gold hover:text-background"
+      class="absolute right-4 top-4 z-30 flex h-9 w-9 items-center justify-center rounded-full bg-background/30 text-text-primary/70 backdrop-blur transition-all duration-300 hover:bg-gold hover:text-background"
       :aria-label="t('modal.close')"
       @click="$emit('close')"
     >
