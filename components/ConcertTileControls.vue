@@ -28,7 +28,7 @@ const active = computed(() => props.index === props.slide)
 
     <button
       v-if="index > 0"
-      class="absolute left-0 top-1/2 z-20 flex h-24 w-9 -translate-y-1/2 items-center justify-center rounded-r-2xl text-text-primary/45 transition-colors duration-300 hover:bg-background/40 hover:text-text-primary"
+      class="absolute left-0 top-1/2 z-20 hidden h-24 w-9 sm:flex -translate-y-1/2 items-center justify-center rounded-r-2xl text-text-primary/45 transition-colors duration-300 hover:bg-background/40 hover:text-text-primary"
       :aria-label="t('modal.previousTile')"
       @click="$emit('go', index - 1)"
     >
@@ -43,7 +43,7 @@ const active = computed(() => props.index === props.slide)
 
     <button
       v-if="index < count - 1"
-      class="absolute right-0 top-1/2 z-20 flex h-24 w-9 -translate-y-1/2 items-center justify-center rounded-l-2xl text-text-primary/45 transition-colors duration-300 hover:bg-background/40 hover:text-text-primary"
+      class="absolute right-0 top-1/2 z-20 hidden h-24 w-9 sm:flex -translate-y-1/2 items-center justify-center rounded-l-2xl text-text-primary/45 transition-colors duration-300 hover:bg-background/40 hover:text-text-primary"
       :aria-label="t('modal.nextTile')"
       @click="$emit('go', index + 1)"
     >

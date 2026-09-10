@@ -326,8 +326,8 @@ onBeforeUnmount(() => window.removeEventListener('keydown', onKey))
 
               <!-- Contenu scrollable -->
               <div class="relative flex min-h-0 flex-1">
-                <div data-panel class="h-full w-full overflow-y-auto p-7 md:p-10 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden" @scroll.passive="onPanelScroll(0, $event)">
-                <div class="text-[10px] font-bold uppercase tracking-[0.3em] text-gold mb-3">
+                <div data-panel class="h-full w-full overflow-y-auto p-5 sm:p-7 md:p-10 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden" @scroll.passive="onPanelScroll(0, $event)">
+                <div class="text-[10px] font-bold uppercase tracking-[0.3em] text-gold mb-3 pr-12">
                   {{ formattedDate }}
                 </div>
                 <h2 class="font-display text-3xl md:text-4xl font-light leading-tight text-text-primary">
@@ -336,7 +336,7 @@ onBeforeUnmount(() => window.removeEventListener('keydown', onKey))
 
                 <div class="mt-7 space-y-5">
                   <!-- Lieu + Tarif -->
-                  <div class="grid grid-cols-2 gap-6 border-b border-text-primary/5 pb-5">
+                  <div class="grid grid-cols-1 gap-4 border-b border-text-primary/5 pb-5 sm:grid-cols-2 sm:gap-6">
                     <div>
                       <dt class="text-[10px] uppercase tracking-widest text-text-secondary mb-1.5 font-bold">{{ t('modal.location') }}</dt>
                       <dd class="text-text-primary flex items-center gap-2 text-sm">
@@ -359,7 +359,7 @@ onBeforeUnmount(() => window.removeEventListener('keydown', onKey))
                   </div>
 
                   <!-- Artistes + Durée -->
-                  <div v-if="artists.length || concert.duration" class="grid grid-cols-2 gap-6 border-b border-text-primary/5 pb-5">
+                  <div v-if="artists.length || concert.duration" class="grid grid-cols-1 gap-4 border-b border-text-primary/5 pb-5 sm:grid-cols-2 sm:gap-6">
                     <div v-if="artists.length">
                       <dt class="text-[10px] uppercase tracking-widest text-text-secondary mb-1.5 font-bold">{{ t('modal.artists') }}</dt>
                       <!-- Chaque artiste ayant une tuile y renvoie au clic. -->
@@ -445,21 +445,31 @@ onBeforeUnmount(() => window.removeEventListener('keydown', onKey))
                 <img :src="a.image_url" :alt="a.name" class="h-full w-full object-cover">
               </div>
               <div class="relative flex min-h-0 flex-1">
-                <div data-panel class="h-full w-full overflow-y-auto p-7 md:p-10 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden" @scroll.passive="onPanelScroll(i + 1, $event)">
-                <!-- Sous `lg`, la photo flotte à droite : le nom reste en haut à
-                     gauche et le texte s'écoule à sa suite en la contournant. -->
+                <div data-panel class="h-full w-full overflow-y-auto p-5 sm:p-7 md:p-10 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden" @scroll.passive="onPanelScroll(i + 1, $event)">
+                <!-- Entre `sm` et `lg`, la photo flotte à droite du texte, qui la
+                     contourne. Deux balises plutôt qu'une : sur mobile la photo
+                     passe SOUS le nom, un ordre que le flottement ne permet pas
+                     depuis cette position dans le document. -->
                 <img
                   v-if="a.image_url"
                   :src="a.image_url"
                   :alt="a.name"
-                  class="float-right mb-4 ml-5 mt-9 aspect-[4/5] w-28 rounded-xl object-cover sm:ml-6 sm:mt-0 sm:w-40 md:w-52 lg:hidden"
+                  class="hidden aspect-[4/5] w-40 rounded-xl object-cover sm:mb-4 sm:ml-6 sm:block sm:float-right md:w-52 lg:hidden"
                 >
                 <div class="mb-3 text-[10px] font-bold uppercase tracking-[0.3em] text-gold">
                   {{ t('modal.artist') }}
                 </div>
-                <h2 class="font-display text-3xl font-light leading-tight text-text-primary md:text-4xl">
+                <!-- Plus petit sur mobile, pour que le nom tienne sur une ligne. -->
+                <h2 class="font-display text-2xl font-light leading-tight text-text-primary sm:text-3xl md:text-4xl">
                   {{ a.name }}
                 </h2>
+                <!-- Sur mobile, la photo est centrée sous le nom. -->
+                <img
+                  v-if="a.image_url"
+                  :src="a.image_url"
+                  :alt="a.name"
+                  class="mx-auto mb-2 mt-6 block aspect-[4/5] w-44 rounded-xl object-cover sm:hidden"
+                >
                 <p
                   v-if="a.bio"
                   class="mt-5 whitespace-pre-wrap text-sm font-light leading-relaxed text-text-secondary"
