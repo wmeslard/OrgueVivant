@@ -353,7 +353,7 @@ onBeforeUnmount(() => window.removeEventListener('keydown', onKey))
                       <dt class="text-[10px] uppercase tracking-widest text-text-secondary mb-1.5 font-bold">{{ t('modal.price') }}</dt>
                       <dd class="text-text-primary flex items-center gap-2 text-sm">
                         <Icon name="heroicons:ticket" class="w-4 h-4 text-gold shrink-0" />
-                        {{ t(`modal.${concert.price_type}`) }}
+                        {{ concert.price_type === 'free' ? t('modal.freeLong') : t('modal.paid') }}
                       </dd>
                     </div>
                   </div>

@@ -106,6 +106,7 @@
     "price": "Tarif",
     "book": "Réserver",
     "free": "Entrée libre",
+    "freeLong": "Entrée libre — participation libre",
     "paid": "Payant",
     "moreInfo": "Plus d'informations",
     "addToCalendar": "Ajouter au calendrier",

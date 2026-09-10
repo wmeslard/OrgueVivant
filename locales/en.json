@@ -106,6 +106,7 @@
     "price": "Price",
     "book": "Book now",
     "free": "Free entry",
+    "freeLong": "Free entry — pay what you wish",
     "paid": "Paid",
     "moreInfo": "More information",
     "addToCalendar": "Add to calendar",
