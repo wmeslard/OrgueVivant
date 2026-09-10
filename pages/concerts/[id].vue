@@ -51,7 +51,7 @@ useHead({
   meta: [{ name: 'description', content: description.value || t('seo.concertsDesc') }],
   script: concert.value ? [{
     type: 'application/ld+json',
-    innerHTML: JSON.stringify({
+    innerHTML: safeJsonLd({
       '@context': 'https://schema.org',
       '@type': 'MusicEvent',
       name: concert.value.title,

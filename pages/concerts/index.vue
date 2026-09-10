@@ -40,7 +40,7 @@ watchEffect(() => {
 const siteUrl = useRuntimeConfig().public.siteUrl
 const localePath = useLocalePath()
 
-const jsonLd = computed(() => JSON.stringify({
+const jsonLd = computed(() => safeJsonLd({
   '@context': 'https://schema.org',
   '@type': 'ItemList',
   name: 'Concerts d\'orgue à Lille — Orgue Vivant',
