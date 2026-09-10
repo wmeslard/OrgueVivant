@@ -1,8 +1,8 @@
 <script setup lang="ts">
 import type { Concert } from '~/composables/useConcerts'
-import { artistList, type Artist } from '~/utils/artists'
+import { artistList, artistTiles, type Artist } from '~/utils/artists'
 
-const props = defineProps<{ concert: Concert | null }>()
+const props = defineProps<{ concert: Concert | null, startTile?: number }>()
 const emit = defineEmits<{ (e: 'close'): void }>()
 
 const { locale, t } = useI18n()
@@ -18,14 +18,13 @@ const description = computed(() => {
 
 const artists = computed(() => artistList(props.concert?.artists))
 
-/** Un artiste sans photo ni présentation n'a rien à montrer sur une tuile :
- *  son nom reste affiché, mais en texte simple plutôt qu'en lien. C'est le cas
- *  des concerts dont les artistes n'ont pas encore été détaillés. */
-const tiles = computed(() => artists.value.filter(a => a.image_url || a.bio))
+const tiles = computed(() => artistTiles(props.concert?.artists))
 
-/** Position de la tuile d'un artiste dans le rail, ou 0 s'il n'en a pas. */
+/** Position de la tuile d'un artiste dans le rail, ou 0 s'il n'en a pas.
+ *  La comparaison porte sur le nom : `tiles` reconstruit ses objets, une
+ *  égalité de référence serait toujours fausse. */
 function tileOf(a: Artist) {
-  const i = tiles.value.indexOf(a)
+  const i = tiles.value.findIndex(t => t.name === a.name)
   return i < 0 ? 0 : i + 1
 }
 
@@ -168,6 +167,36 @@ function nearestIndex() {
   return best
 }
 
+// ── Indice « il reste du texte plus bas » ───────────────────────────────────
+// Une flèche discrète, affichée seulement quand le panneau déborde et qu'on
+// n'en a pas encore atteint le bas.
+
+const overflowing = ref<Record<number, boolean>>({})
+const atBottom = ref<Record<number, boolean>>({})
+
+const MARGE = 24
+
+function measurePanels() {
+  const el = scroller.value
+  if (!el) return
+  const o: Record<number, boolean> = {}
+  const b: Record<number, boolean> = {}
+  el.querySelectorAll<HTMLElement>('[data-panel]').forEach((p, i) => {
+    o[i] = p.scrollHeight - p.clientHeight > MARGE
+    b[i] = p.scrollHeight - p.scrollTop - p.clientHeight < MARGE
+  })
+  overflowing.value = o
+  atBottom.value = b
+}
+
+function onPanelScroll(i: number, e: Event) {
+  const p = e.target as HTMLElement
+  atBottom.value = {
+    ...atBottom.value,
+    [i]: p.scrollHeight - p.scrollTop - p.clientHeight < MARGE
+  }
+}
+
 /** L'index se déduit de la position, pour suivre aussi le défilement fait à la
  *  main ou au trackpad, et pas seulement les clics sur les flèches. */
 function onScroll() {
@@ -175,10 +204,16 @@ function onScroll() {
 }
 
 
-// Chaque ouverture repart de la fiche du concert.
-watch(() => props.concert?.id, () => {
-  slide.value = 0
-  nextTick(() => { if (scroller.value) scroller.value.scrollLeft = 0 })
+// Chaque ouverture repart de la fiche du concert, sauf si l'appelant demande
+// une tuile précise — un clic sur un nom d'artiste, depuis la page d'accueil.
+watch(() => [props.concert?.id, props.startTile], () => {
+  if (!props.concert) return
+  slide.value = props.startTile ?? 0
+  nextTick(() => {
+    const el = scroller.value
+    if (el) el.scrollLeft = offsets()[slide.value] ?? 0
+    measurePanels()
+  })
 })
 
 const modalRef = ref<HTMLElement>()
@@ -231,13 +266,15 @@ onBeforeUnmount(() => window.removeEventListener('keydown', onKey))
 </script>
 
 <template>
+  <!-- Le fond fait un fondu ; le cadre, lui, monte légèrement en se dépliant.
+       `[&>div]` vise le cadre, seul enfant direct du fond. -->
   <Transition
-    enter-active-class="transition duration-400 ease-apple"
-    enter-from-class="opacity-0"
-    enter-to-class="opacity-100"
-    leave-active-class="transition duration-250 ease-apple"
-    leave-from-class="opacity-100"
-    leave-to-class="opacity-0"
+    enter-active-class="transition duration-400 ease-apple [&>div]:transition-transform [&>div]:duration-400 [&>div]:ease-apple"
+    enter-from-class="opacity-0 [&>div]:scale-[0.96] [&>div]:translate-y-4"
+    enter-to-class="opacity-100 [&>div]:scale-100 [&>div]:translate-y-0"
+    leave-active-class="transition duration-250 ease-apple [&>div]:transition-transform [&>div]:duration-250 [&>div]:ease-apple"
+    leave-from-class="opacity-100 [&>div]:scale-100"
+    leave-to-class="opacity-0 [&>div]:scale-[0.98]"
   >
     <div
       v-if="concert"
@@ -254,45 +291,6 @@ onBeforeUnmount(() => window.removeEventListener('keydown', onKey))
         @click.stop
       >
         <div class="relative flex min-h-0 w-full flex-1">
-          <!-- Bouton fermer, posé sur la tuile en cours -->
-          <button
-            class="absolute top-4 right-[calc((100vw-var(--card))/2+0.75rem)] z-30 flex h-9 w-9 items-center justify-center rounded-full bg-background/60 text-text-primary backdrop-blur transition-all duration-300 hover:bg-gold hover:text-background"
-            :aria-label="t('modal.close')"
-            @click="$emit('close')"
-          >
-            <Icon name="heroicons:x-mark" class="h-4 w-4" />
-          </button>
-
-          <!-- Flèches : au bord de la tuile, sans fond, pour laisser voir le texte -->
-          <button
-            v-if="slide > 0"
-            class="absolute top-1/2 z-20 flex h-24 w-9 -translate-y-1/2 items-center justify-center text-text-primary/45 transition-colors duration-300 hover:bg-background/40 hover:text-text-primary left-[calc((100vw-var(--card))/2)] rounded-r-2xl"
-            :aria-label="t('modal.previousTile')"
-            @click="goTo(slide - 1)"
-          >
-            <svg
-              viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1"
-            stroke-linecap="round" stroke-linejoin="round"
-            class="h-7 w-7 drop-shadow-[0_1px_3px_rgba(0,0,0,0.55)]"
-            >
-              <path d="M15 4 7 12l8 8" />
-            </svg>
-          </button>
-          <button
-            v-if="slide < slideCount - 1"
-            class="absolute top-1/2 z-20 flex h-24 w-9 -translate-y-1/2 items-center justify-center text-text-primary/45 transition-colors duration-300 hover:bg-background/40 hover:text-text-primary right-[calc((100vw-var(--card))/2)] rounded-l-2xl"
-            :aria-label="t('modal.nextTile')"
-            @click="goTo(slide + 1)"
-          >
-            <svg
-              viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1"
-            stroke-linecap="round" stroke-linejoin="round"
-            class="h-7 w-7 drop-shadow-[0_1px_3px_rgba(0,0,0,0.55)]"
-            >
-              <path d="m9 4 8 8-8 8" />
-            </svg>
-          </button>
-
           <!-- Rail : une tuile par écran, la suivante dépasse pour se signaler.
                `dragstart` est neutralisé, sinon empoigner une photo lancerait le
                glisser-déposer natif du navigateur au lieu de faire défiler. -->
@@ -310,9 +308,13 @@ onBeforeUnmount(() => window.removeEventListener('keydown', onKey))
           >
             <!-- Tuile 1 : le concert -->
             <div
-              class="flex h-full shrink-0 w-[var(--card)] snap-center flex-col overflow-hidden rounded-[28px] border border-text-primary/10 bg-surface shadow-2xl lg:flex-row"
+              class="relative flex h-full shrink-0 w-[var(--card)] snap-center flex-col overflow-hidden rounded-[28px] border border-text-primary/10 bg-surface shadow-2xl lg:flex-row"
               @click.capture="onCardClick(0, $event)"
             >
+              <ConcertTileControls
+                :index="0" :slide="slide" :count="slideCount"
+                @go="goTo" @close="$emit('close')"
+              />
               <!-- Image (desktop uniquement) -->
               <div v-if="concert.image_url" class="hidden lg:block lg:w-[72vh] lg:max-w-[52%] shrink-0 overflow-hidden">
                 <img
@@ -323,7 +325,8 @@ onBeforeUnmount(() => window.removeEventListener('keydown', onKey))
               </div>
 
               <!-- Contenu scrollable -->
-              <div class="flex-1 overflow-y-auto p-7 md:p-10 min-h-0 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+              <div class="relative flex min-h-0 flex-1">
+                <div data-panel class="h-full w-full overflow-y-auto p-7 md:p-10 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden" @scroll.passive="onPanelScroll(0, $event)">
                 <div class="text-[10px] font-bold uppercase tracking-[0.3em] text-gold mb-3">
                   {{ formattedDate }}
                 </div>
@@ -410,6 +413,20 @@ onBeforeUnmount(() => window.removeEventListener('keydown', onKey))
                     </a>
                   </div>
                 </div>
+                </div>
+                <!-- Indice discret : il reste du texte plus bas. -->
+                <div
+                  v-if="overflowing[0] && !atBottom[0]"
+                  class="pointer-events-none absolute inset-x-0 bottom-0 flex justify-center bg-gradient-to-t from-surface via-surface/70 to-transparent pb-3 pt-10"
+                >
+                  <svg
+                    viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.2"
+                    stroke-linecap="round" stroke-linejoin="round"
+                    class="h-4 w-4 text-text-secondary/50"
+                  >
+                    <path d="m6 9 6 6 6-6" />
+                  </svg>
+                </div>
               </div>
             </div>
 
@@ -417,13 +434,18 @@ onBeforeUnmount(() => window.removeEventListener('keydown', onKey))
             <div
               v-for="(a, i) in tiles"
               :key="i"
-              class="flex h-full shrink-0 w-[var(--card)] snap-center flex-col overflow-hidden rounded-[28px] border border-text-primary/10 bg-surface shadow-2xl lg:flex-row"
+              class="relative flex h-full shrink-0 w-[var(--card)] snap-center flex-col overflow-hidden rounded-[28px] border border-text-primary/10 bg-surface shadow-2xl lg:flex-row"
               @click.capture="onCardClick(i + 1, $event)"
             >
+              <ConcertTileControls
+                :index="i + 1" :slide="slide" :count="slideCount"
+                @go="goTo" @close="$emit('close')"
+              />
               <div v-if="a.image_url" class="hidden lg:block lg:w-[72vh] lg:max-w-[52%] shrink-0 overflow-hidden">
                 <img :src="a.image_url" :alt="a.name" class="h-full w-full object-cover">
               </div>
-              <div class="min-h-0 flex-1 overflow-y-auto p-7 md:p-10 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+              <div class="relative flex min-h-0 flex-1">
+                <div data-panel class="h-full w-full overflow-y-auto p-7 md:p-10 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden" @scroll.passive="onPanelScroll(i + 1, $event)">
                 <!-- Sous `lg`, la photo flotte à droite : le nom reste en haut à
                      gauche et le texte s'écoule à sa suite en la contournant. -->
                 <img
@@ -451,6 +473,20 @@ onBeforeUnmount(() => window.removeEventListener('keydown', onKey))
                   <Icon name="heroicons:arrow-left" class="h-4 w-4 text-gold" />
                   <span>{{ t('modal.backToConcert') }}</span>
                 </button>
+                </div>
+                <!-- Indice discret : il reste du texte plus bas. -->
+                <div
+                  v-if="overflowing[i + 1] && !atBottom[i + 1]"
+                  class="pointer-events-none absolute inset-x-0 bottom-0 flex justify-center bg-gradient-to-t from-surface via-surface/70 to-transparent pb-3 pt-10"
+                >
+                  <svg
+                    viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.2"
+                    stroke-linecap="round" stroke-linejoin="round"
+                    class="h-4 w-4 text-text-secondary/50"
+                  >
+                    <path d="m6 9 6 6 6-6" />
+                  </svg>
+                </div>
               </div>
             </div>
           </div>

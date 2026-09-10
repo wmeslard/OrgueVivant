@@ -174,6 +174,11 @@ useSeoMeta({
 
     <MomentsMusicaux variant="full" />
 
+    <!-- Au bas du programme : le moment où l'on veut noter ces dates. -->
+    <div class="card-premium mt-16 p-8 md:p-12">
+      <CalendarSubscribe />
+    </div>
+
     <LazyConcertModal :concert="selected" @close="selected = null" />
   </div>
 </template>

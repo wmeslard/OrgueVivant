@@ -51,3 +51,11 @@ export function artistDraft(value: unknown): Artist[] {
   }
   return Array.isArray(value) ? value.filter((a): a is Artist => !!a) : []
 }
+
+/**
+ * Artistes ayant de quoi remplir une tuile. Un artiste réduit à son nom n'a
+ * rien à montrer : il reste dans la liste, sans tuile ni lien.
+ */
+export function artistTiles(value: unknown): Artist[] {
+  return artistList(value).filter(a => a.image_url || a.bio)
+}

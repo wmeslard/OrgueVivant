@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import type { Concert } from '~/composables/useConcerts'
+import { artistList, artistTiles, type Artist } from '~/utils/artists'
 import type { NewsItem } from '~/composables/useNews'
 
 const { t, locale } = useI18n()
@@ -7,13 +8,40 @@ const { upcoming, pending, fetchConcerts } = useConcerts()
 const { latest, fetchNews } = useNews()
 const { downloadIcs } = useIcs()
 
+const nextConcert = computed(() => upcoming.value[0] || null)
+const selected = ref<Concert | null>(null)
+
+// Carte du prochain concert : le lieu renvoie vers la carte, et chaque artiste
+// détaillé vers sa tuile dans la fiche.
+const nextLocation = computed(() => nextConcert.value?.location ?? '')
+const { placeUrl: nextPlaceUrl, directionsUrl: nextDirectionsUrl } = useMapsUrls(nextLocation)
+const startTile = ref(0)
+
+/** Rang de la tuile d'un artiste dans la fiche, 0 s'il n'en a pas. Même règle
+ *  que la fenêtre de détail : seuls les artistes détaillés ont une tuile. */
+function tileOfArtist(a: Artist) {
+  const i = artistTiles(nextConcert.value?.artists).findIndex(t => t.name === a.name)
+  return i < 0 ? 0 : i + 1
+}
+
+function openNextConcert(tile = 0) {
+  startTile.value = tile
+  selected.value = nextConcert.value
+}
+
+/** Un clic n'importe où sur la carte ouvre la fiche, sauf sur les éléments qui
+ *  ont déjà leur propre action — liens et boutons. */
+function onNextCardClick(e: MouseEvent) {
+  if ((e.target as HTMLElement).closest('a, button')) return
+  openNextConcert()
+}
+
 await callOnce('concerts', fetchConcerts)
 await callOnce('news-home', fetchNews)
 
 const preview = computed(() => upcoming.value.slice(1, 4))
 
-const nextConcert = computed(() => upcoming.value[0] || null)
-const selected = ref<Concert | null>(null)
+
 const selectedNews = ref<NewsItem | null>(null)
 
 const siteUrl = useRuntimeConfig().public.siteUrl
@@ -146,7 +174,15 @@ function needsMore(n: NewsItem) {
           <div class="h-[1px] flex-1 bg-white/5"></div>
         </div>
 
-        <div class="card-premium group flex flex-col md:flex-row items-stretch min-h-[400px]">
+        <div
+          class="card-premium group flex cursor-pointer flex-col items-stretch min-h-[400px] md:flex-row"
+          role="button"
+          tabindex="0"
+          :aria-label="t('modal.moreInfo')"
+          @click="onNextCardClick"
+          @keydown.enter="openNextConcert()"
+          @keydown.space.prevent="openNextConcert()"
+        >
           <div class="md:w-1/2 overflow-hidden relative">
             <img
               :src="nextConcert.image_url || '/img/concert-fallback.jpg'"
@@ -165,16 +201,31 @@ function needsMore(n: NewsItem) {
             </h2>
             <div class="flex flex-col gap-3 text-text-secondary mb-6">
               <div class="flex items-center gap-3">
-                <Icon name="heroicons:map-pin" class="w-5 h-5 text-gold" />
-                <span>{{ t(`locations.${nextConcert.location}`) }}</span>
+                <Icon name="heroicons:map-pin" class="w-5 h-5 text-gold shrink-0" />
+                <a
+                  :href="nextPlaceUrl"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  class="underline-offset-2 transition-colors duration-200 hover:text-gold hover:underline"
+                >{{ t(`locations.${nextConcert.location}`) }}</a>
               </div>
-              <div v-if="artistNames(nextConcert.artists, locale)" class="flex items-center gap-3">
-                <Icon name="heroicons:user" class="w-5 h-5 text-gold" />
-                <span>{{ artistNames(nextConcert.artists, locale) }}</span>
+              <div v-if="artistList(nextConcert.artists).length" class="flex items-center gap-3">
+                <Icon name="heroicons:user" class="w-5 h-5 text-gold shrink-0" />
+                <span class="flex flex-wrap gap-x-2 gap-y-1">
+                  <template v-for="(a, i) in artistList(nextConcert.artists)" :key="i">
+                    <span v-if="i" aria-hidden="true">·</span>
+                    <button
+                      type="button"
+                      :disabled="!tileOfArtist(a)"
+                      class="text-left enabled:underline enabled:decoration-gold/40 enabled:underline-offset-4 enabled:transition-colors enabled:hover:text-gold disabled:cursor-default"
+                      @click="openNextConcert(tileOfArtist(a))"
+                    >{{ a.name }}</button>
+                  </template>
+                </span>
               </div>
             </div>
             <div class="grid grid-cols-1 sm:flex sm:flex-wrap items-stretch gap-4">
-              <button @click="selected = nextConcert" class="btn-premium-primary !h-14 !px-8">
+              <button class="btn-premium-primary !h-14 !px-8" @click="openNextConcert()">
                 <span class="text-gold text-2xl leading-none">+</span>
                 <span>{{ t('modal.moreInfo') }}</span>
               </button>
@@ -182,6 +233,15 @@ function needsMore(n: NewsItem) {
                 <Icon name="heroicons:calendar" class="w-5 h-5 text-gold" />
                 <span>{{ t('modal.addToCalendar') }}</span>
               </button>
+              <a
+                :href="nextDirectionsUrl"
+                target="_blank"
+                rel="noopener noreferrer"
+                class="btn-premium-secondary !h-14 !px-8"
+              >
+                <Icon name="heroicons:map-pin" class="w-5 h-5 text-gold" />
+                <span>{{ t('modal.directions') }}</span>
+              </a>
             </div>
           </div>
         </div>
@@ -222,6 +282,30 @@ function needsMore(n: NewsItem) {
       </div>
     </section>
 
+    <!-- NEWSLETTER PREMIUM -->
+    <section class="py-16">
+      <div class="container-premium">
+        <div class="card-premium p-8 md:p-12 bg-surface flex flex-col items-center text-center">
+          <h2 class="font-display text-3xl md:text-4xl font-light mb-4 text-text-primary max-w-4xl">
+            {{ t('home.newsletterTitle') }}
+          </h2>
+          <p class="text-text-secondary text-lg font-light mb-8 max-w-2xl">
+            {{ t('home.newsletterSubtitle') }}
+          </p>
+          <div class="w-full max-w-lg">
+            <NewsletterSignup />
+            <p class="mt-6 text-[10px] text-text-secondary/50 uppercase tracking-widest">
+              {{ t('home.newsletterConsent') }}
+            </p>
+          </div>
+
+          <div class="mt-12 w-full max-w-2xl border-t border-white/5 pt-10">
+            <CalendarSubscribe />
+          </div>
+        </div>
+      </div>
+    </section>
+
     <!-- SECTION MOMENTS MUSICAUX (un jeudi sur deux) -->
     <MomentsMusicaux variant="compact" />
 
@@ -245,7 +329,7 @@ function needsMore(n: NewsItem) {
         <div class="absolute inset-0 z-[1] bg-black/70" />
         <div class="container-premium relative z-10">
           <div class="max-w-3xl">
-            <h2 class="heading-section text-white mb-5">{{ t('home.heritageTitle') }}</h2>
+            <h2 class="heading-section text-text-primary mb-5">{{ t('home.heritageTitle') }}</h2>
             <p class="text-xl text-text-secondary font-light mb-8 leading-relaxed">
               {{ t('home.heritageBody') }}
             </p>
@@ -294,30 +378,6 @@ function needsMore(n: NewsItem) {
       </div>
     </section>
 
-    <!-- NEWSLETTER PREMIUM -->
-    <section class="py-16">
-      <div class="container-premium">
-        <div class="card-premium p-8 md:p-12 bg-surface flex flex-col items-center text-center">
-          <h2 class="font-display text-3xl md:text-4xl font-light mb-4 text-text-primary max-w-4xl">
-            {{ t('home.newsletterTitle') }}
-          </h2>
-          <p class="text-text-secondary text-lg font-light mb-8 max-w-2xl">
-            {{ t('home.newsletterSubtitle') }}
-          </p>
-          <div class="w-full max-w-lg">
-            <NewsletterSignup />
-            <p class="mt-6 text-[10px] text-text-secondary/50 uppercase tracking-widest">
-              {{ t('home.newsletterConsent') }}
-            </p>
-          </div>
-
-          <div class="mt-12 w-full max-w-2xl border-t border-white/5 pt-10">
-            <CalendarSubscribe />
-          </div>
-        </div>
-      </div>
-    </section>
-
     <!-- SECTION POURQUOI VENIR -->
     <section class="py-16 pb-32 bg-surface/30">
       <div class="container-premium">
@@ -347,7 +407,7 @@ function needsMore(n: NewsItem) {
       </div>
     </section>
 
-<LazyConcertModal :concert="selected" @close="selected = null" />
+<LazyConcertModal :concert="selected" :start-tile="startTile" @close="selected = null" />
 <LazyNewsModal :news="selectedNews" @close="selectedNews = null" />
   </div>
 </template>
