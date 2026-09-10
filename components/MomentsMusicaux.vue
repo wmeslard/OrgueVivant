@@ -50,6 +50,16 @@ function findNextSession(now: Date): Date | null {
 const nextSession = ref<Date | null>(null)
 onMounted(() => { nextSession.value = findNextSession(new Date()) })
 
+// La pastille est la même sur les deux variantes : ses classes sont définies
+// ici pour qu'elles ne divergent pas d'un endroit à l'autre.
+// Sur mobile elle occupe toute la largeur et sépare l'intitulé de la date ;
+// dès `sm` elle redevient une pastille sur une ligne.
+const pastille = 'flex w-full flex-col items-start gap-1.5 rounded-2xl border border-gold/25 bg-gold/[0.12] px-5 py-4 text-sm sm:inline-flex sm:w-auto sm:flex-row sm:items-center sm:gap-2.5 sm:rounded-full sm:py-2.5'
+const pastilleIntitule = 'flex items-center gap-2 text-[11px] font-bold uppercase tracking-[0.15em] text-gold sm:text-sm sm:font-medium sm:normal-case sm:tracking-normal'
+// La hauteur ne dépend pas du texte : la ligne est réservée dès le rendu
+// serveur, seule l'opacité change quand la date, calculée après montage, arrive.
+const pastilleDate = 'min-h-[1.5rem] text-base font-medium text-text-primary transition-opacity duration-500 sm:min-h-0 sm:text-sm sm:font-normal'
+
 const isToday = computed(() =>
   !!nextSession.value && nextSession.value.toDateString() === new Date().toDateString()
 )
@@ -83,20 +93,14 @@ const nextSessionLabel = computed(() => {
         {{ t('moments.subtitle') }}
       </p>
 
-      <div
-        v-if="nextSessionLabel"
-        class="mt-7 inline-flex flex-col items-start gap-1 rounded-2xl border border-gold/20 bg-gold/10 px-5 py-3 text-sm sm:flex-row sm:items-center sm:gap-2.5 sm:rounded-full sm:py-2.5"
-      >
-        <!-- Sur mobile la pastille passait sur deux lignes, et une forme
-             entièrement arrondie rend mal une fois dédoublée : on empile en
-             bloc arrondi, et on retrouve la pastille sur une ligne dès `sm`.
-             Même police et même taille des deux côtés, seule la couleur les
-             distingue, ce qui évite tout décalage optique. -->
-        <span class="flex items-center gap-2.5 font-medium text-gold">
+      <div class="mt-7" :class="pastille">
+        <span :class="pastilleIntitule">
           <Icon name="heroicons:calendar-days" class="h-4 w-4 shrink-0" />
           {{ t('moments.nextLabel') }}
         </span>
-        <span class="text-text-primary">{{ nextSessionLabel }}</span>
+        <span :class="[pastilleDate, nextSessionLabel ? 'opacity-100' : 'opacity-0']">
+          {{ nextSessionLabel || '—' }}
+        </span>
       </div>
 
       <dl class="mt-9 grid gap-7 border-t border-white/5 pt-8 sm:grid-cols-3">
@@ -127,15 +131,14 @@ const nextSessionLabel = computed(() => {
           <p class="mt-3 max-w-xl text-sm font-light leading-relaxed text-text-secondary">
             {{ t('moments.subtitle') }}
           </p>
-          <div
-            v-if="nextSessionLabel"
-            class="mt-5 inline-flex flex-col items-start gap-1 rounded-2xl border border-gold/20 bg-gold/10 px-4 py-2.5 text-sm sm:flex-row sm:items-center sm:gap-2.5 sm:rounded-full sm:py-2"
-          >
-            <span class="flex items-center gap-2.5 font-medium text-gold">
+          <div class="mt-5" :class="pastille">
+            <span :class="pastilleIntitule">
               <Icon name="heroicons:calendar-days" class="h-4 w-4 shrink-0" />
               {{ t('moments.nextLabel') }}
             </span>
-            <span class="text-text-primary">{{ nextSessionLabel }}</span>
+            <span :class="[pastilleDate, nextSessionLabel ? 'opacity-100' : 'opacity-0']">
+              {{ nextSessionLabel || '—' }}
+            </span>
           </div>
         </div>
 
