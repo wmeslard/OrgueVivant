@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import type { Concert } from '~/composables/useConcerts'
 
-const { t } = useI18n()
+const { t, locale } = useI18n()
 const { upcoming, past, pending, fetchConcerts } = useConcerts()
 await callOnce('concerts', fetchConcerts)
 
@@ -49,7 +49,7 @@ const jsonLd = computed(() => safeJsonLd({
     position: i + 1,
     item: {
       '@type': 'MusicEvent',
-      name: c.title,
+      name: localized(c.title, c.title_en, locale.value),
       startDate: `${c.date}T${c.time || '20:00'}:00`,
       location: {
         '@type': 'Place',

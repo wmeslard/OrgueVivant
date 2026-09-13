@@ -34,7 +34,7 @@ const formattedFullDate = computed(() => {
       <img
         v-if="concert.image_url"
         :src="concert.image_url"
-        :alt="concert.title"
+        :alt="localized(concert.title, concert.title_en, locale)"
         loading="lazy"
         decoding="async"
         class="h-full w-full object-cover transition-transform duration-700 ease-apple group-hover:scale-110"
@@ -62,7 +62,7 @@ const formattedFullDate = computed(() => {
           {{ t(`locations.${concert.location}`) }}
         </div>
         <h3 class="font-display text-2xl font-light leading-tight text-text-primary group-hover:text-gold transition-colors duration-300">
-          {{ concert.title }}
+          {{ localized(concert.title, concert.title_en, locale) }}
         </h3>
         <p v-if="artistNames(concert.artists, locale)" class="mt-2 text-sm text-text-secondary line-clamp-1 italic">
           {{ artistNames(concert.artists, locale) }}

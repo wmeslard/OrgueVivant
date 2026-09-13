@@ -8,11 +8,9 @@ const emit = defineEmits<{ (e: 'close'): void }>()
 const { locale, t } = useI18n()
 const { downloadIcs } = useIcs()
 
-const description = computed(() => {
-  if (!props.concert) return ''
-  if (locale.value === 'en' && props.concert.description_en) return props.concert.description_en
-  return props.concert.description
-})
+const title = computed(() => localized(props.concert?.title, props.concert?.title_en, locale.value))
+const description = computed(() =>
+  localized(props.concert?.description, props.concert?.description_en, locale.value))
 
 // ── Tuiles : la fiche du concert, puis une tuile par artiste ────────────────
 
@@ -319,7 +317,7 @@ onBeforeUnmount(() => window.removeEventListener('keydown', onKey))
               <div v-if="concert.image_url" class="hidden lg:block lg:w-[72vh] lg:max-w-[52%] shrink-0 overflow-hidden">
                 <img
                   :src="concert.image_url"
-                  :alt="concert.title"
+                  :alt="title"
                   class="h-full w-full object-cover"
                 >
               </div>
@@ -331,7 +329,7 @@ onBeforeUnmount(() => window.removeEventListener('keydown', onKey))
                   {{ formattedDate }}
                 </div>
                 <h2 class="font-display text-3xl md:text-4xl font-light leading-tight text-text-primary">
-                  {{ concert.title }}
+                  {{ title }}
                 </h2>
 
                 <div class="mt-7 space-y-5">
@@ -474,7 +472,7 @@ onBeforeUnmount(() => window.removeEventListener('keydown', onKey))
                   v-if="a.bio"
                   class="mt-5 whitespace-pre-wrap text-sm font-light leading-relaxed text-text-secondary"
                 >
-                  {{ a.bio }}
+                  {{ localized(a.bio, a.bio_en, locale) }}
                 </p>
                 <button
                   class="btn-premium-secondary clear-both mt-8 !h-11 !w-auto !px-7 flex items-center gap-2"

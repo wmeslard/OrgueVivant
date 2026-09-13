@@ -3,6 +3,8 @@ import type { Artist } from '~/utils/artists'
 export interface Concert {
   id: string
   title: string
+  /** Titre traduit, rempli à l'enregistrement dans l'espace admin. */
+  title_en?: string
   date: string // YYYY-MM-DD
   time: string // HH:MM
   location: 'saint_maurice' | 'saint_etienne'

@@ -55,11 +55,27 @@ function removeArtist(i: number) {
   artists.value = artists.value.filter((_, idx) => idx !== i)
 }
 
-function newOne() { editing.value = blank() }
-function edit(c: Concert) { editing.value = { ...c } }
+// Texte français tel qu'il était à l'ouverture du formulaire. Il sert à ne
+// retraduire que ce qui a réellement changé : un concert à quatre artistes
+// déclencherait sinon six appels de traduction à chaque enregistrement, et
+// l'API n'en accepte que dix par minute.
+let source = { title: '', description: '', bios: [] as string[] }
+
+function snapshot(c?: Partial<Concert> | null) {
+  source = {
+    title: c?.title ?? '',
+    description: c?.description ?? '',
+    bios: artistDraft(c?.artists).map(a => a.bio ?? '')
+  }
+}
+
+function newOne() { editing.value = blank(); snapshot(editing.value) }
+function edit(c: Concert) { editing.value = { ...c }; snapshot(c) }
 function duplicate(c: Concert) {
   const { id, created_at, ...rest } = c
   editing.value = { ...rest }
+  // Une copie porte le même texte : ses traductions restent valables.
+  snapshot(rest)
 }
 function cancel() { editing.value = null; error.value = '' }
 
@@ -77,17 +93,37 @@ async function save() {
         throw new Error('Lien externe invalide')
       }
     }
-    if (editing.value.description) {
+    const traduire = async (texte: string) => {
       const { translated } = await $fetch<{ translated: string }>('/api/translate', {
         method: 'POST',
-        body: { text: editing.value.description }
+        body: { text: texte }
       })
-      editing.value.description_en = translated
+      return translated
     }
+
+    // Une traduction est refaite si le français a changé, ou si elle manque
+    // encore — cas des concerts saisis avant l'ajout de ces champs.
+    if (editing.value.title
+        && (!editing.value.title_en || editing.value.title !== source.title)) {
+      editing.value.title_en = await traduire(editing.value.title)
+    }
+    if (editing.value.description
+        && (!editing.value.description_en || editing.value.description !== source.description)) {
+      editing.value.description_en = await traduire(editing.value.description)
+    }
+
     // Les lignes laissées vides par l'éditeur répétable ne sont pas enregistrées.
-    editing.value.artists = artists.value
-      .map(a => ({ name: a.name.trim(), image_url: a.image_url?.trim() || '', bio: a.bio?.trim() || '' }))
-      .filter(a => a.name)
+    const propres: Artist[] = []
+    for (const [i, a] of artists.value.entries()) {
+      const name = a.name.trim()
+      if (!name) continue
+      const bio = a.bio?.trim() || ''
+      let bio_en = a.bio_en?.trim() || ''
+      if (!bio) bio_en = ''
+      else if (!bio_en || bio !== source.bios[i]) bio_en = await traduire(bio)
+      propres.push({ name, image_url: a.image_url?.trim() || '', bio, bio_en })
+    }
+    editing.value.artists = propres
 
     if (editing.value.id) {
       await updateConcert(editing.value.id, editing.value)

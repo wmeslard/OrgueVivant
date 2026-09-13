@@ -20,11 +20,9 @@ const artists = computed(() => artistList(concert.value?.artists))
  *  simplement dans la liste en tête de page. */
 const detailed = computed(() => artists.value.filter(a => a.image_url || a.bio))
 
-const description = computed(() => {
-  if (!concert.value) return ''
-  if (locale.value === 'en' && concert.value.description_en) return concert.value.description_en
-  return concert.value.description
-})
+const title = computed(() => localized(concert.value?.title, concert.value?.title_en, locale.value))
+const description = computed(() =>
+  localized(concert.value?.description, concert.value?.description_en, locale.value))
 
 const formattedDate = computed(() => {
   if (!concert.value) return ''
@@ -47,14 +45,14 @@ const safeExternalLink = computed(() => {
 })
 
 useHead({
-  title: concert.value ? `${concert.value.title} — Orgue Vivant` : 'Concert — Orgue Vivant',
+  title: concert.value ? `${title.value} — Orgue Vivant` : 'Concert — Orgue Vivant',
   meta: [{ name: 'description', content: description.value || t('seo.concertsDesc') }],
   script: concert.value ? [{
     type: 'application/ld+json',
     innerHTML: safeJsonLd({
       '@context': 'https://schema.org',
       '@type': 'MusicEvent',
-      name: concert.value.title,
+      name: title.value,
       startDate: `${concert.value.date}T${concert.value.time || '20:00'}:00`,
       location: {
         '@type': 'Place',
@@ -74,7 +72,7 @@ useHead({
 
 if (concert.value) {
   useSeoMeta({
-    ogTitle: concert.value.title,
+    ogTitle: title.value,
     ogDescription: description.value || t('seo.concertsDesc'),
     ogImage: concert.value.image_url || `${siteUrl}/img/orgue-st-maurice.jpg`,
     ogUrl: `${siteUrl}${localePath(`/concerts/${route.params.id}`)}`,
@@ -100,7 +98,7 @@ if (concert.value) {
       <div v-if="concert.image_url" class="aspect-[4/5] overflow-hidden rounded-[28px] sticky top-24">
         <img
           :src="concert.image_url"
-          :alt="concert.title"
+          :alt="title"
           loading="eager"
           decoding="async"
           class="w-full h-full object-cover"
@@ -113,7 +111,7 @@ if (concert.value) {
           {{ formattedDate }}
         </div>
         <h1 class="font-display text-4xl md:text-5xl lg:text-6xl font-light leading-tight text-text-primary mb-8">
-          {{ concert.title }}
+          {{ title }}
         </h1>
 
         <dl class="grid grid-cols-2 gap-6 border-y border-text-primary/5 py-8 mb-8">
@@ -175,7 +173,7 @@ if (concert.value) {
                   v-if="a.bio"
                   class="mt-3 whitespace-pre-wrap text-sm font-light leading-relaxed text-text-secondary"
                 >
-                  {{ a.bio }}
+                  {{ localized(a.bio, a.bio_en, locale) }}
                 </p>
               </div>
             </article>

@@ -10,6 +10,8 @@ export interface Artist {
   name: string
   image_url?: string
   bio?: string
+  /** Présentation traduite, remplie à l'enregistrement dans l'espace admin. */
+  bio_en?: string
 }
 
 /**
@@ -27,7 +29,7 @@ export function artistList(value: unknown): Artist[] {
   if (!Array.isArray(value)) return []
   return value
     .filter((a): a is Artist => !!a && typeof a.name === 'string' && !!a.name.trim())
-    .map(a => ({ name: a.name.trim(), image_url: a.image_url || '', bio: a.bio || '' }))
+    .map(a => ({ name: a.name.trim(), image_url: a.image_url || '', bio: a.bio || '', bio_en: a.bio_en || '' }))
 }
 
 /** Ligne courte « A, B et C », pour les listes, les cartes et les emails. */

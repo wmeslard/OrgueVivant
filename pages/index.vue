@@ -186,7 +186,7 @@ function needsMore(n: NewsItem) {
           <div class="md:w-1/2 overflow-hidden relative">
             <img
               :src="nextConcert.image_url || '/img/concert-fallback.jpg'"
-              :alt="nextConcert.title"
+              :alt="localized(nextConcert.title, nextConcert.title_en, locale)"
               loading="lazy"
               decoding="async"
               class="w-full h-full object-cover transition-transform duration-1000 group-hover:scale-105"
@@ -197,7 +197,7 @@ function needsMore(n: NewsItem) {
               {{ formatDate(nextConcert.date) }} — {{ nextConcert.time }}
             </div>
             <h2 class="font-display text-3xl md:text-4xl lg:text-5xl font-light mb-4 text-text-primary">
-              {{ nextConcert.title }}
+              {{ localized(nextConcert.title, nextConcert.title_en, locale) }}
             </h2>
             <div class="flex flex-col gap-3 text-text-secondary mb-6">
               <div class="flex items-center gap-3">
