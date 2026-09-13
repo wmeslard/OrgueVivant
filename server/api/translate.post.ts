@@ -87,7 +87,14 @@ async function translateChunk(text: string, email?: string): Promise<string> {
 }
 
 export default defineEventHandler(async (event) => {
-  const user = await serverSupabaseUser(event).catch(() => null)
+  // La cause d'un refus est journalisée : sans cela, une session absente,
+  // un jeton expiré ou une erreur renvoyée par Supabase Auth se confondent
+  // tous dans le même 401, impossible à diagnostiquer depuis le client.
+  const user = await serverSupabaseUser(event).catch((e: unknown) => {
+    const raison = (e as { statusMessage?: string; message?: string })
+    console.error('[translate] session refusée :', raison?.statusMessage || raison?.message || e)
+    return null
+  })
   if (!user) throw createError({ statusCode: 401, statusMessage: 'Unauthorized' })
 
   const now = Date.now()
