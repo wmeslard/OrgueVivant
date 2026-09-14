@@ -139,13 +139,17 @@
     "success": "Message sent. Thank you!",
     "errorRequired": "All fields are required.",
     "errorEmail": "Invalid email.",
-    "errorGeneric": "Something went wrong. Please try again."
+    "errorGeneric": "Something went wrong. Please try again.",
+    "social": "Social media"
   },
   "newsletter": {
     "placeholder": "Your email",
     "cta": "Subscribe",
     "thanks": "Thanks for subscribing!",
     "error": "Something went wrong. Please try again."
+  },
+  "social": {
+    "on": "Orgue Vivant on {name}"
   },
   "footer": {
     "tagline": "Organ concerts in downtown Lille.",

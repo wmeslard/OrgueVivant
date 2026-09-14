@@ -139,13 +139,17 @@
     "success": "Message envoyé. Merci !",
     "errorRequired": "Tous les champs sont requis.",
     "errorEmail": "Email invalide.",
-    "errorGeneric": "Une erreur est survenue. Merci de réessayer."
+    "errorGeneric": "Une erreur est survenue. Merci de réessayer.",
+    "social": "Réseaux sociaux"
   },
   "newsletter": {
     "placeholder": "Votre email",
     "cta": "S'inscrire",
     "thanks": "Merci pour votre inscription !",
     "error": "Une erreur est survenue. Veuillez réessayer."
+  },
+  "social": {
+    "on": "Orgue Vivant sur {name}"
   },
   "footer": {
     "tagline": "Concerts d'orgues dans le centre ville de Lille.",

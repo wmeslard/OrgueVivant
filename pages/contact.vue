@@ -78,6 +78,15 @@ async function submit() {
                 <div class="text-text-primary">Lille, France</div>
               </div>
             </div>
+            <div class="flex items-start gap-4">
+              <div class="w-12 h-12 rounded-full border border-gold/20 flex items-center justify-center shrink-0">
+                <Icon name="heroicons:share" class="w-6 h-6 text-gold" />
+              </div>
+              <div>
+                <div class="text-[10px] uppercase tracking-widest text-text-secondary font-bold mb-1">{{ t('contact.social') }}</div>
+                <SocialLinks labels class="mt-1 [&_a]:text-text-primary [&_a:hover]:text-gold" />
+              </div>
+            </div>
           </div>
         </div>
 

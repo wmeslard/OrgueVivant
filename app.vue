@@ -1,4 +1,6 @@
 <script setup lang="ts">
+import { socialLinks } from '~/utils/social'
+
 const siteUrl = useRuntimeConfig().public.siteUrl
 
 // Canonique et `hreflang` produits par le module i18n : ils pointent vers la
@@ -20,7 +22,7 @@ useHead(() => ({
       logo: `${siteUrl}/img/logo/apple-touch-icon.png`,
       description: 'Concerts d\'orgues dans le centre-ville de Lille — Saint-Maurice & Saint-Étienne.',
       address: { '@type': 'PostalAddress', addressLocality: 'Lille', addressCountry: 'FR' },
-      sameAs: []
+      sameAs: socialLinks.map(s => s.url)
     })
   }]
 }))

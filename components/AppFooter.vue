@@ -23,6 +23,7 @@ const { placeUrl: stEtienneUrl } = useMapsUrls(ref('saint_etienne'))
               class="h-auto w-[300px] max-w-full md:w-[360px]"
             >
           </NuxtLink>
+          <SocialLinks class="mt-8" />
         </div>
 
         <div>
