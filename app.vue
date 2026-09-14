@@ -20,7 +20,7 @@ useHead(() => ({
       name: 'Orgue Vivant',
       url: siteUrl,
       logo: `${siteUrl}/img/logo/apple-touch-icon.png`,
-      description: 'Concerts d\'orgues dans le centre-ville de Lille — Saint-Maurice & Saint-Étienne.',
+      description: 'Concerts d\'orgue dans le centre-ville de Lille — Saint-Maurice & Saint-Étienne.',
       address: { '@type': 'PostalAddress', addressLocality: 'Lille', addressCountry: 'FR' },
       sameAs: socialLinks.map(s => s.url)
     })

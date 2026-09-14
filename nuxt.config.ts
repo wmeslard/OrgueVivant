@@ -38,13 +38,13 @@ export default defineNuxtConfig({
   app: {
     head: {
       htmlAttrs: { lang: 'fr' },
-      title: 'Orgue Vivant — Concerts d\'orgues à Lille',
+      title: 'Orgue Vivant — Concerts d\'orgue à Lille',
       meta: [
         { charset: 'utf-8' },
         { name: 'viewport', content: 'width=device-width, initial-scale=1' },
-        { name: 'description', content: 'Concerts d\'orgues dans le centre ville de Lille — Saint Maurice & Saint Étienne.' },
+        { name: 'description', content: 'Concerts d\'orgue dans le centre-ville de Lille — Saint Maurice & Saint Étienne.' },
         { property: 'og:title', content: 'Orgue Vivant' },
-        { property: 'og:description', content: 'Concerts d\'orgues dans le centre ville de Lille' },
+        { property: 'og:description', content: 'Concerts d\'orgue dans le centre-ville de Lille' },
         { property: 'og:type', content: 'website' },
         { property: 'og:image', content: '/og-image.jpg' },
         { name: 'twitter:card', content: 'summary_large_image' },
@@ -107,6 +107,8 @@ export default defineNuxtConfig({
   },
 
   sitemap: {
+    // Les fiches concert viennent de la base (voir server/api/__sitemap__/urls.ts)
+    sources: ['/api/__sitemap__/urls'],
     // L'admin est déjà bloqué par robots.txt : ne pas le soumettre non plus au sitemap
     exclude: ['/_nuxt/**', '/_**', '/admin', '/admin/**', '/auth-setup']
   },

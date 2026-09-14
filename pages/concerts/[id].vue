@@ -1,5 +1,8 @@
 <script setup lang="ts">
 import { concertPlaceholder } from '~/utils/placeholders'
+import { artistList, artistNames } from '~/utils/artists'
+import { venues } from '~/utils/venues'
+import { parisIso, parisEndIso, performerType, metaDescription } from '~/utils/event'
 const { t, locale } = useI18n()
 const route = useRoute()
 const { all, fetchConcerts } = useConcerts()
@@ -45,41 +48,85 @@ const safeExternalLink = computed(() => {
   } catch { return '' }
 })
 
+/**
+ * Description pour les moteurs : celle du concert, coupée à la longueur d'un
+ * extrait ; à défaut, une phrase construite (date, heure, lieu, artistes),
+ * toujours plus utile que la description générique de la liste.
+ */
+const seoDescription = computed(() => {
+  if (!concert.value) return t('seo.concertsDesc')
+  if (description.value) return metaDescription(description.value)
+  return t('seo.concertFallback', {
+    date: formattedDate.value,
+    time: locale.value === 'fr' ? concert.value.time.replace(':', 'h') : concert.value.time,
+    venue: t(`locations.${concert.value.location}`),
+    artists: artistNames(concert.value.artists, locale.value) || 'Orgue Vivant'
+  })
+})
+
+const pageUrl = computed(() => `${siteUrl}${localePath(`/concerts/${route.params.id}`)}`)
+const image = computed(() =>
+  concert.value?.image_url || `${siteUrl}${concertPlaceholder(concert.value?.id)}`)
+
 useHead({
   title: concert.value ? `${title.value} — Orgue Vivant` : 'Concert — Orgue Vivant',
-  meta: [{ name: 'description', content: description.value || t('seo.concertsDesc') }],
+  meta: [{ name: 'description', content: seoDescription.value }],
   script: concert.value ? [{
     type: 'application/ld+json',
-    innerHTML: safeJsonLd({
-      '@context': 'https://schema.org',
-      '@type': 'MusicEvent',
-      name: title.value,
-      startDate: `${concert.value.date}T${concert.value.time || '20:00'}:00`,
-      location: {
-        '@type': 'Place',
-        name: concert.value.location === 'saint_maurice' ? 'Église Saint-Maurice de Lille' : 'Église Saint-Étienne de Lille',
-        address: { '@type': 'PostalAddress', addressLocality: 'Lille', addressCountry: 'FR' }
-      },
-      organizer: { '@type': 'Organization', name: 'Orgue Vivant', url: siteUrl },
-      isAccessibleForFree: concert.value.price_type === 'free',
-      eventStatus: 'https://schema.org/EventScheduled',
-      eventAttendanceMode: 'https://schema.org/OfflineEventAttendanceMode',
-      ...(concert.value.image_url && { image: concert.value.image_url }),
-      ...(description.value && { description: description.value }),
-      url: `${siteUrl}${localePath(`/concerts/${route.params.id}`)}`
-    })
+    innerHTML: safeJsonLd((() => {
+      const c = concert.value
+      const venue = venues[c.location] ?? venues.saint_maurice
+      const time = c.time || '20:00'
+      const endDate = parisEndIso(c.date, time, c.duration)
+      const performer = artistList(c.artists).map(a => ({ '@type': performerType(a.name), name: a.name }))
+      return {
+        '@context': 'https://schema.org',
+        '@type': 'MusicEvent',
+        name: title.value,
+        startDate: parisIso(c.date, time),
+        ...(endDate && { endDate }),
+        location: {
+          '@type': 'Place',
+          name: venue.name,
+          address: {
+            '@type': 'PostalAddress',
+            streetAddress: venue.streetAddress,
+            postalCode: venue.postalCode,
+            addressLocality: 'Lille',
+            addressCountry: 'FR'
+          },
+          geo: { '@type': 'GeoCoordinates', latitude: venue.latitude, longitude: venue.longitude }
+        },
+        ...(performer.length && { performer }),
+        organizer: { '@type': 'Organization', name: 'Orgue Vivant', url: siteUrl },
+        isAccessibleForFree: c.price_type === 'free',
+        // Entrée libre = offre gratuite ; sinon le prix n'est pas connu du site,
+        // on renvoie vers la billetterie si un lien existe.
+        offers: {
+          '@type': 'Offer',
+          ...(c.price_type === 'free' && { price: 0, priceCurrency: 'EUR' }),
+          availability: 'https://schema.org/InStock',
+          url: safeExternalLink.value || pageUrl.value
+        },
+        eventStatus: 'https://schema.org/EventScheduled',
+        eventAttendanceMode: 'https://schema.org/OfflineEventAttendanceMode',
+        image: image.value,
+        description: seoDescription.value,
+        url: pageUrl.value
+      }
+    })())
   }] : []
 })
 
 if (concert.value) {
   useSeoMeta({
     ogTitle: title.value,
-    ogDescription: description.value || t('seo.concertsDesc'),
-    ogImage: concert.value.image_url || `${siteUrl}${concertPlaceholder(concert.value.id)}`,
-    ogUrl: `${siteUrl}${localePath(`/concerts/${route.params.id}`)}`,
+    ogDescription: seoDescription.value,
+    ogImage: image.value,
+    ogUrl: pageUrl.value,
     ogType: 'website',
     twitterCard: 'summary_large_image',
-    twitterImage: concert.value.image_url || `${siteUrl}${concertPlaceholder(concert.value.id)}`
+    twitterImage: image.value
   })
 }
 </script>

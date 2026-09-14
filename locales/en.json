@@ -19,6 +19,7 @@
     "concertsDesc": "All upcoming and past organ concerts in Lille.",
     "newsDesc": "All news and announcements from Orgue Vivant — concerts, restorations, partnerships.",
     "aboutDesc": "Discover Orgue Vivant and the Saint-Maurice and Saint-Étienne churches.",
+    "concertFallback": "Organ concert on {date} at {time}, {venue}, Lille — {artists}.",
     "contactDesc": "Get in touch with the Orgue Vivant team."
   },
   "home": {

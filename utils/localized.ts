@@ -6,6 +6,8 @@
  * français reste alors affiché, ce qui vaut toujours mieux qu'un blanc.
  */
 export function localized(fr?: string | null, en?: string | null, locale?: string): string {
-  if (locale === 'en' && en && en.trim()) return en
-  return fr ?? ''
+  // Les espaces de bord viennent parfois de la saisie ; ils fausseraient
+  // les titres de page et les données structurées.
+  if (locale === 'en' && en && en.trim()) return en.trim()
+  return (fr ?? '').trim()
 }

@@ -61,7 +61,7 @@ export function concertHtml(concert: Concert, unsubscribeUrl: string, siteUrl: s
         </td></tr>
         <tr><td style="padding:24px 40px;border-top:1px solid #2a2a2a">
           <p style="margin:0;font-size:11px;color:#555;text-align:center">
-            Orgue Vivant · Concerts d'orgues à Lille<br>
+            Orgue Vivant · Concerts d'orgue à Lille<br>
             <a href="${unsubscribeUrl}" style="color:#555;text-decoration:underline">Se désabonner</a>
           </p>
         </td></tr>
@@ -99,7 +99,7 @@ export function newsHtml(news: NewsItem, unsubscribeUrl: string, siteUrl: string
         </td></tr>
         <tr><td style="padding:24px 40px;border-top:1px solid #2a2a2a">
           <p style="margin:0;font-size:11px;color:#555;text-align:center">
-            Orgue Vivant · Concerts d'orgues à Lille<br>
+            Orgue Vivant · Concerts d'orgue à Lille<br>
             <a href="${unsubscribeUrl}" style="color:#555;text-decoration:underline">Se désabonner</a>
           </p>
         </td></tr>

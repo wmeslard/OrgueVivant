@@ -49,7 +49,7 @@ const siteUrl = useRuntimeConfig().public.siteUrl
 const localePath = useLocalePath()
 
 useHead({
-  title: 'Orgue Vivant — Concerts d\'orgues à Lille',
+  title: 'Orgue Vivant — Concerts d\'orgue à Lille',
   meta: [{ name: 'description', content: t('seo.homeDesc') }],
   link: [
     // Précharge le WebP réellement affiché, à la largeur adaptée à l'écran.
@@ -67,13 +67,13 @@ useHead({
 })
 
 useSeoMeta({
-  ogTitle: 'Orgue Vivant — Concerts d\'orgues à Lille',
+  ogTitle: 'Orgue Vivant — Concerts d\'orgue à Lille',
   ogDescription: t('seo.homeDesc'),
   ogImage: `${siteUrl}/img/hero-tuyaux-orgue.jpg`,
   ogUrl: `${siteUrl}${localePath('/')}`,
   ogType: 'website',
   twitterCard: 'summary_large_image',
-  twitterTitle: 'Orgue Vivant — Concerts d\'orgues à Lille',
+  twitterTitle: 'Orgue Vivant — Concerts d\'orgue à Lille',
   twitterImage: `${siteUrl}/img/hero-tuyaux-orgue.jpg`
 })
 
