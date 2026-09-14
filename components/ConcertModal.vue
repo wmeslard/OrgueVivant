@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import type { Concert } from '~/composables/useConcerts'
 import { artistList, artistTiles, type Artist } from '~/utils/artists'
+import { concertPlaceholder } from '~/utils/placeholders'
 
 const props = defineProps<{ concert: Concert | null, startTile?: number }>()
 const emit = defineEmits<{ (e: 'close'): void }>()
@@ -29,8 +30,7 @@ function tileOf(a: Artist) {
 /** Avec plusieurs tuiles, une hauteur commune évite que le cadre change de
  *  taille d'un défilement à l'autre. Seul, un concert garde la hauteur libre
  *  qu'il avait avant l'arrivée du carrousel. */
-const frameHeight = computed(() =>
-  tiles.value.length ? 'h-[90vh]' : (props.concert?.image_url ? 'lg:h-[90vh]' : ''))
+const frameHeight = computed(() => tiles.value.length ? 'h-[90vh]' : 'lg:h-[90vh]')
 
 const scroller = ref<HTMLElement>()
 const slide = ref(0)
@@ -314,9 +314,9 @@ onBeforeUnmount(() => window.removeEventListener('keydown', onKey))
                 @go="goTo" @close="$emit('close')"
               />
               <!-- Image (desktop uniquement) -->
-              <div v-if="concert.image_url" class="hidden lg:block lg:w-[72vh] lg:max-w-[52%] shrink-0 overflow-hidden">
+              <div class="hidden lg:block lg:w-[72vh] lg:max-w-[52%] shrink-0 overflow-hidden">
                 <img
-                  :src="concert.image_url"
+                  :src="concert.image_url || concertPlaceholder(concert.id)"
                   :alt="title"
                   class="h-full w-full object-cover"
                 >

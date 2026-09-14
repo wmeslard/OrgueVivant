@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { concertPlaceholder } from '~/utils/placeholders'
 import type { Concert } from '~/composables/useConcerts'
 
 const props = defineProps<{ concert: Concert }>()
@@ -32,18 +33,12 @@ const formattedFullDate = computed(() => {
     <!-- Image with gradient overlay -->
     <div class="relative aspect-[4/5] w-full overflow-hidden">
       <img
-        v-if="concert.image_url"
-        :src="concert.image_url"
+        :src="concert.image_url || concertPlaceholder(concert.id)"
         :alt="localized(concert.title, concert.title_en, locale)"
         loading="lazy"
         decoding="async"
         class="h-full w-full object-cover transition-transform duration-700 ease-apple group-hover:scale-110"
       >
-      <div v-else class="flex h-full w-full items-center justify-center bg-surface text-white/10">
-        <svg class="h-20 w-20" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="0.5" d="M9 19V6l12-3v13M9 19c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zm12-3c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zM9 10l12-3" />
-        </svg>
-      </div>
 
       <!-- Date Badge Overlay -->
       <div class="absolute left-6 top-6 flex flex-col items-center justify-center bg-gold px-3 py-2 text-background rounded-lg shadow-xl">

@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { concertPlaceholder } from '~/utils/placeholders'
 const { t, locale } = useI18n()
 const route = useRoute()
 const { all, fetchConcerts } = useConcerts()
@@ -74,11 +75,11 @@ if (concert.value) {
   useSeoMeta({
     ogTitle: title.value,
     ogDescription: description.value || t('seo.concertsDesc'),
-    ogImage: concert.value.image_url || `${siteUrl}/img/orgue-st-maurice.jpg`,
+    ogImage: concert.value.image_url || `${siteUrl}${concertPlaceholder(concert.value.id)}`,
     ogUrl: `${siteUrl}${localePath(`/concerts/${route.params.id}`)}`,
     ogType: 'website',
     twitterCard: 'summary_large_image',
-    twitterImage: concert.value.image_url || `${siteUrl}/img/orgue-st-maurice.jpg`
+    twitterImage: concert.value.image_url || `${siteUrl}${concertPlaceholder(concert.value.id)}`
   })
 }
 </script>
@@ -95,9 +96,9 @@ if (concert.value) {
 
     <div class="grid lg:grid-cols-2 gap-12 lg:gap-20 items-start">
       <!-- Image -->
-      <div v-if="concert.image_url" class="aspect-[4/5] overflow-hidden rounded-[28px] sticky top-24">
+      <div class="aspect-[4/5] overflow-hidden rounded-[28px] sticky top-24">
         <img
-          :src="concert.image_url"
+          :src="concert.image_url || concertPlaceholder(concert.id)"
           :alt="title"
           loading="eager"
           decoding="async"

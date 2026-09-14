@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import type { Concert } from '~/composables/useConcerts'
 import { artistList, artistTiles, type Artist } from '~/utils/artists'
+import { concertPlaceholder } from '~/utils/placeholders'
 import type { NewsItem } from '~/composables/useNews'
 
 const { t, locale } = useI18n()
@@ -185,7 +186,7 @@ function needsMore(n: NewsItem) {
         >
           <div class="md:w-1/2 overflow-hidden relative">
             <img
-              :src="nextConcert.image_url || '/img/concert-fallback.jpg'"
+              :src="nextConcert.image_url || concertPlaceholder(nextConcert.id)"
               :alt="localized(nextConcert.title, nextConcert.title_en, locale)"
               loading="lazy"
               decoding="async"
