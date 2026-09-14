@@ -51,7 +51,13 @@ export default defineNuxtConfig({
         { name: 'theme-color', content: '#0a0a0a' }
       ],
       link: [
-        { rel: 'icon', type: 'image/png', sizes: '32x32', href: '/img/logo/favicon-32.png' },
+        // Google n'affiche l'icône dans ses résultats que si elle fait un
+        // multiple de 48 px (ou est vectorielle) ; il va aussi chercher
+        // /favicon.ico de lui-même, qu'il faut donc servir réellement.
+        { rel: 'icon', href: '/favicon.ico', sizes: '48x48' },
+        { rel: 'icon', type: 'image/svg+xml', href: '/favicon.svg' },
+        { rel: 'icon', type: 'image/png', sizes: '96x96', href: '/img/logo/favicon-96.png' },
+        { rel: 'icon', type: 'image/png', sizes: '192x192', href: '/img/logo/favicon-192.png' },
         { rel: 'apple-touch-icon', href: '/img/logo/apple-touch-icon.png' },
         { rel: 'preconnect', href: process.env.SUPABASE_URL ?? 'https://your-project.supabase.co' },
         { rel: 'dns-prefetch', href: process.env.SUPABASE_URL ?? 'https://your-project.supabase.co' }
