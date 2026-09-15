@@ -17,8 +17,8 @@ const { t } = useI18n()
         :href="s.url"
         target="_blank"
         rel="noopener noreferrer"
-        :aria-label="t('social.on', { name: s.name })"
-        :title="t('social.on', { name: s.name })"
+        :aria-label="s.kind === 'support' ? t('social.support') : t('social.on', { name: s.name })"
+        :title="s.kind === 'support' ? t('social.support') : t('social.on', { name: s.name })"
         class="inline-flex items-center gap-2.5 text-text-secondary hover:text-text-primary transition-colors"
       >
         <svg
@@ -30,6 +30,12 @@ const { t } = useI18n()
             <rect x="2" y="2" width="20" height="20" rx="5" ry="5" />
             <path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z" />
             <line x1="17.5" y1="6.5" x2="17.51" y2="6.5" />
+          </template>
+          <!-- HelloAsso : l'anneau du logo, trois arcs qui se relaient -->
+          <template v-else-if="s.id === 'helloasso'">
+            <path d="M12 3.5a8.5 8.5 0 0 1 7.6 4.7" />
+            <path d="M19.9 14.2a8.5 8.5 0 0 1-7.4 6.3" />
+            <path d="M4.3 15.6A8.5 8.5 0 0 1 8 5.3" />
           </template>
         </svg>
         <span v-if="labels" class="text-sm">{{ s.name }}</span>

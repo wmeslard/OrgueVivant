@@ -141,7 +141,7 @@
     "errorEmail": "Invalid email.",
     "privacyNote": "Your name, email and message are used only to reply to you and kept for one year at most. {link}",
     "errorGeneric": "Something went wrong. Please try again.",
-    "social": "Social media"
+    "social": "Follow and support"
   },
   "newsletter": {
     "placeholder": "Your email",
@@ -152,6 +152,7 @@
     "error": "Something went wrong. Please try again."
   },
   "social": {
+    "support": "Join Orgue Vivant on HelloAsso",
     "on": "Orgue Vivant on {name}"
   },
   "footer": {

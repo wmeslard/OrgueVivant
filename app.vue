@@ -22,7 +22,7 @@ useHead(() => ({
       logo: `${siteUrl}/img/logo/apple-touch-icon.png`,
       description: 'Concerts d\'orgue dans le centre-ville de Lille — Saint-Maurice & Saint-Étienne.',
       address: { '@type': 'PostalAddress', addressLocality: 'Lille', addressCountry: 'FR' },
-      sameAs: socialLinks.map(s => s.url)
+      sameAs: socialLinks.filter(s => s.kind === 'social').map(s => s.url)
     })
   }]
 }))

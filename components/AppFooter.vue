@@ -12,7 +12,9 @@ const { placeUrl: stEtienneUrl } = useMapsUrls(ref('saint_etienne'))
 <template>
   <footer class="bg-surface border-t border-white/5 pt-20 pb-10">
     <div class="container-premium">
-      <div class="grid gap-16 md:grid-cols-4 lg:grid-cols-5">
+      <!-- Sur mobile, les trois listes tiennent côte à côte sous le logo :
+           empilées, elles laissaient la largeur inutilisée. -->
+      <div class="flex flex-col gap-12 md:grid md:grid-cols-4 md:gap-16 lg:grid-cols-5">
         <div class="md:col-span-2">
           <NuxtLink :to="localePath('/')" class="inline-block">
             <img
@@ -26,8 +28,9 @@ const { placeUrl: stEtienneUrl } = useMapsUrls(ref('saint_etienne'))
           <SocialLinks class="mt-8" />
         </div>
 
+        <div class="grid grid-cols-3 gap-4 md:contents">
         <div>
-          <div class="mb-6 text-[10px] font-bold uppercase tracking-[0.3em] text-gold">
+          <div class="mb-6 text-[10px] font-bold uppercase tracking-[0.15em] text-gold md:tracking-[0.3em]">
             {{ t('footer.navigation') }}
           </div>
           <ul class="space-y-4 text-sm">
@@ -38,7 +41,7 @@ const { placeUrl: stEtienneUrl } = useMapsUrls(ref('saint_etienne'))
         </div>
 
         <div>
-          <div class="mb-6 text-[10px] font-bold uppercase tracking-[0.3em] text-gold">
+          <div class="mb-6 text-[10px] font-bold uppercase tracking-[0.15em] text-gold md:tracking-[0.3em]">
             Lieux
           </div>
           <ul class="space-y-4 text-sm">
@@ -62,7 +65,7 @@ const { placeUrl: stEtienneUrl } = useMapsUrls(ref('saint_etienne'))
         </div>
 
         <div>
-          <div class="mb-6 text-[10px] font-bold uppercase tracking-[0.3em] text-gold">
+          <div class="mb-6 text-[10px] font-bold uppercase tracking-[0.15em] text-gold md:tracking-[0.3em]">
             {{ t('footer.legal') }}
           </div>
           <ul class="space-y-4 text-sm">
@@ -71,15 +74,21 @@ const { placeUrl: stEtienneUrl } = useMapsUrls(ref('saint_etienne'))
             <li><NuxtLink to="/admin" class="text-text-secondary/50 hover:text-text-primary transition-colors text-xs">{{ t('footer.admin') }}</NuxtLink></li>
           </ul>
         </div>
+        </div>
       </div>
 
       <div class="mt-20 pt-10 border-t border-white/5 flex flex-col md:flex-row justify-between items-center gap-6">
         <div class="text-[10px] uppercase tracking-widest text-text-secondary/60">
           © {{ year }} Orgue Vivant — {{ t('footer.rights') }}
         </div>
-        <div class="text-[10px] uppercase tracking-widest text-text-secondary/40">
+        <a
+          href="https://www.linkedin.com/in/william-meslard-81377a14b"
+          target="_blank"
+          rel="noopener noreferrer"
+          class="text-[10px] uppercase tracking-widest text-text-secondary/40 transition-colors hover:text-text-secondary"
+        >
           Design by William Meslard
-        </div>
+        </a>
       </div>
     </div>
   </footer>

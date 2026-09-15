@@ -141,7 +141,7 @@
     "errorEmail": "Email invalide.",
     "privacyNote": "Vos nom, email et message servent uniquement à vous répondre et sont conservés un an au plus. {link}",
     "errorGeneric": "Une erreur est survenue. Merci de réessayer.",
-    "social": "Réseaux sociaux"
+    "social": "Suivre et soutenir"
   },
   "newsletter": {
     "placeholder": "Votre email",
@@ -152,6 +152,7 @@
     "error": "Une erreur est survenue. Veuillez réessayer."
   },
   "social": {
+    "support": "Adhérer à Orgue Vivant sur HelloAsso",
     "on": "Orgue Vivant sur {name}"
   },
   "footer": {
