@@ -158,13 +158,29 @@ if (concert.value) {
 
 <template>
   <div v-if="concert" class="container-premium py-16 md:py-24 bg-background min-h-screen">
-    <NuxtLink
-      :to="localePath('/concerts')"
-      class="inline-flex items-center gap-2 text-xs uppercase tracking-widest text-text-secondary hover:text-gold transition-colors mb-10"
-    >
-      <Icon name="heroicons:arrow-left" class="w-4 h-4" />
-      {{ t('nav.concerts') }}
-    </NuxtLink>
+    <!-- Barre de page : retour à gauche, partage à droite. Copier le lien est
+         une action sur la page, pas sur le concert : elle ne se mêle pas aux
+         boutons calendrier / itinéraire. -->
+    <div class="mb-10 flex items-center justify-between gap-4">
+      <NuxtLink
+        :to="localePath('/concerts')"
+        class="inline-flex items-center gap-2 text-xs uppercase tracking-widest text-text-secondary hover:text-gold transition-colors"
+      >
+        <Icon name="heroicons:arrow-left" class="w-4 h-4" />
+        {{ t('nav.concerts') }}
+      </NuxtLink>
+      <button
+        type="button"
+        class="inline-flex h-9 items-center gap-2 rounded-full border px-4 text-xs uppercase tracking-widest transition-all duration-300"
+        :class="copied
+          ? 'border-gold/60 text-gold'
+          : 'border-white/10 text-text-secondary hover:border-gold/40 hover:text-gold'"
+        @click="copyLink"
+      >
+        <Icon :name="copied ? 'heroicons:check' : 'heroicons:link'" class="h-4 w-4" />
+        {{ copied ? t('modal.copied') : t('modal.copyLink') }}
+      </button>
+    </div>
 
     <div class="grid lg:grid-cols-2 gap-12 lg:gap-20 items-start">
       <!-- Image -->
@@ -260,8 +276,7 @@ if (concert.value) {
           </div>
         </section>
 
-        <!-- Actions : pleine largeur et empilées sur mobile, en ligne ensuite.
-             Copier le lien est une action secondaire, en texte plutôt qu'en bouton. -->
+        <!-- Actions : pleine largeur et empilées sur mobile, en ligne ensuite. -->
         <div class="grid grid-cols-1 gap-3 sm:flex sm:flex-wrap sm:items-center">
           <a
             v-if="safeExternalLink"
@@ -288,14 +303,6 @@ if (concert.value) {
             <Icon name="heroicons:map-pin" class="w-4 h-4 text-gold" />
             {{ t('modal.directions') }}
           </a>
-          <button
-            type="button"
-            class="inline-flex h-12 items-center justify-center gap-2 px-3 text-sm text-text-secondary transition-colors hover:text-gold sm:ml-1"
-            @click="copyLink"
-          >
-            <Icon :name="copied ? 'heroicons:check' : 'heroicons:link'" class="w-4 h-4" />
-            {{ copied ? t('modal.copied') : t('modal.copyLink') }}
-          </button>
         </div>
       </div>
     </div>
