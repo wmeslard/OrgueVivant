@@ -158,29 +158,13 @@ if (concert.value) {
 
 <template>
   <div v-if="concert" class="container-premium py-16 md:py-24 bg-background min-h-screen">
-    <!-- Barre de page : retour à gauche, partage à droite. Copier le lien est
-         une action sur la page, pas sur le concert : elle ne se mêle pas aux
-         boutons calendrier / itinéraire. -->
-    <div class="mb-10 flex items-center justify-between gap-4">
-      <NuxtLink
-        :to="localePath('/concerts')"
-        class="inline-flex items-center gap-2 text-xs uppercase tracking-widest text-text-secondary hover:text-gold transition-colors"
-      >
-        <Icon name="heroicons:arrow-left" class="w-4 h-4" />
-        {{ t('nav.concerts') }}
-      </NuxtLink>
-      <button
-        type="button"
-        class="inline-flex h-9 items-center gap-2 rounded-full border px-4 text-xs uppercase tracking-widest transition-all duration-300"
-        :class="copied
-          ? 'border-gold/60 text-gold'
-          : 'border-white/10 text-text-secondary hover:border-gold/40 hover:text-gold'"
-        @click="copyLink"
-      >
-        <Icon :name="copied ? 'heroicons:check' : 'heroicons:link'" class="h-4 w-4" />
-        {{ copied ? t('modal.copied') : t('modal.copyLink') }}
-      </button>
-    </div>
+    <NuxtLink
+      :to="localePath('/concerts')"
+      class="inline-flex items-center gap-2 text-xs uppercase tracking-widest text-text-secondary hover:text-gold transition-colors mb-10"
+    >
+      <Icon name="heroicons:arrow-left" class="w-4 h-4" />
+      {{ t('nav.concerts') }}
+    </NuxtLink>
 
     <div class="grid lg:grid-cols-2 gap-12 lg:gap-20 items-start">
       <!-- Image -->
@@ -283,12 +267,12 @@ if (concert.value) {
             :href="safeExternalLink"
             target="_blank"
             rel="noopener noreferrer"
-            class="btn-premium-primary !h-12 !w-full !px-7 sm:!w-auto"
+            class="btn-premium-primary !h-12 !w-full !px-5 text-sm sm:!w-auto"
           >
             {{ t('modal.book') }}
           </a>
           <button
-            class="btn-premium-secondary !h-12 !w-full !px-7 sm:!w-auto"
+            class="btn-premium-secondary !h-12 !w-full !px-5 text-sm sm:!w-auto"
             @click="downloadIcs(concert)"
           >
             <Icon name="heroicons:calendar" class="w-4 h-4 text-gold" />
@@ -298,11 +282,21 @@ if (concert.value) {
             :href="directionsUrl"
             target="_blank"
             rel="noopener noreferrer"
-            class="btn-premium-secondary !h-12 !w-full !px-7 sm:!w-auto"
+            class="btn-premium-secondary !h-12 !w-full !px-5 text-sm sm:!w-auto"
           >
             <Icon name="heroicons:map-pin" class="w-4 h-4 text-gold" />
             {{ t('modal.directions') }}
           </a>
+          <!-- Même bouton que les deux autres, en retrait : texte et icône
+               atténués, l'action est secondaire. -->
+          <button
+            type="button"
+            class="btn-premium-secondary !h-12 !w-full !px-5 text-sm !text-text-secondary hover:!text-text-primary sm:!w-auto"
+            @click="copyLink"
+          >
+            <Icon :name="copied ? 'heroicons:check' : 'heroicons:link'" class="w-4 h-4" :class="copied ? 'text-gold' : ''" />
+            {{ copied ? t('modal.copied') : t('modal.copyLink') }}
+          </button>
         </div>
       </div>
     </div>
