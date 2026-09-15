@@ -11,7 +11,9 @@ const { t } = useI18n()
 </script>
 
 <template>
-  <ul class="flex flex-wrap items-center gap-x-6 gap-y-3">
+  <!-- Avec libellés, la liste s'empile sur mobile : trois liens en ligne se
+       repliaient en deux rangées mal alignées. -->
+  <ul :class="labels ? 'flex flex-col items-start gap-y-2.5 sm:flex-row sm:flex-wrap sm:items-center sm:gap-x-6' : 'flex flex-wrap items-center gap-x-6 gap-y-3'">
     <li v-for="s in socialLinks" :key="s.id">
       <a
         :href="s.url"
@@ -31,12 +33,9 @@ const { t } = useI18n()
             <path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z" />
             <line x1="17.5" y1="6.5" x2="17.51" y2="6.5" />
           </template>
-          <!-- HelloAsso : l'anneau du logo, trois arcs qui se relaient -->
-          <template v-else-if="s.id === 'helloasso'">
-            <path d="M12 3.5a8.5 8.5 0 0 1 7.6 4.7" />
-            <path d="M19.9 14.2a8.5 8.5 0 0 1-7.4 6.3" />
-            <path d="M4.3 15.6A8.5 8.5 0 0 1 8 5.3" />
-          </template>
+          <!-- HelloAsso : un cœur, le geste de soutenir — l'anneau du logo,
+               réduit au trait, ressemblait à un chargement en cours -->
+          <path v-else-if="s.id === 'helloasso'" d="M21 8.6c0-2.6-2.1-4.6-4.6-4.6-1.8 0-3.4 1-4.4 2.5A5.1 5.1 0 0 0 7.6 4C5.1 4 3 6 3 8.6c0 5.4 9 11.4 9 11.4s9-6 9-11.4z" />
         </svg>
         <span v-if="labels" class="text-sm">{{ s.name }}</span>
       </a>
