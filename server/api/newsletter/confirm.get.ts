@@ -3,6 +3,7 @@ import { sendRedirect } from 'h3'
 
 const hits = new Map<string, { count: number; reset: number }>()
 
+/** Lien reçu par email : marque l'abonné confirmé, puis renvoie vers l'accueil. */
 export default defineEventHandler(async (event) => {
   const ip = getRequestHeader(event, 'x-forwarded-for')?.split(',')[0]?.trim() || 'unknown'
   const now = Date.now()
@@ -16,19 +17,21 @@ export default defineEventHandler(async (event) => {
   }
 
   const { token } = getQuery(event)
-
-  if (!token || typeof token !== 'string' || token.length < 10) {
-    throw createError({ statusCode: 400, statusMessage: 'Token invalide' })
-  }
+  if (!token || typeof token !== 'string' || token.length < 10)
+    throw createError({ statusCode: 400, statusMessage: 'Lien invalide' })
 
   const client = getServiceClient()
-
-  const { error } = await client
+  const { data, error } = await client
     .from('newsletter_subscribers')
-    .delete()
+    .update({ confirmed_at: new Date().toISOString() })
     .eq('unsubscribe_token', token)
+    .is('confirmed_at', null)
+    .select('id')
 
-  if (error) throw createError({ statusCode: 500, statusMessage: 'Erreur lors de la désinscription' })
+  if (error) throw createError({ statusCode: 500, statusMessage: 'Erreur lors de la confirmation' })
 
-  return sendRedirect(event, '/?newsletter=unsubscribed#newsletter', 302)
+  // Déjà confirmé ou jeton inconnu : même destination, le message reste vrai
+  // pour le premier cas et ne renseigne pas le second.
+  void data
+  return sendRedirect(event, '/?newsletter=confirmed#newsletter', 302)
 })

@@ -146,7 +146,9 @@
   "newsletter": {
     "placeholder": "Your email",
     "cta": "Subscribe",
-    "thanks": "Thanks for subscribing!",
+    "sent": "Thank you! We just sent you an email: click the link to confirm your subscription.",
+    "confirmed": "Subscription confirmed. See you at a concert!",
+    "unsubscribed": "You are unsubscribed. You will not receive our emails any more.",
     "error": "Something went wrong. Please try again."
   },
   "social": {
@@ -250,6 +252,7 @@
     "newsletterSubscribers": "Subscribers",
     "newsletterSince": "Subscribed on",
     "newsletterRefresh": "Refresh",
+    "newsletterPending": "Awaiting confirmation",
     "newsletterEmpty": "No subscribers yet.",
     "newsletterEdit": "Email content",
     "newsletterEditHelp": "These fields feed the email only. The concert or news item published on the site stays unchanged.",

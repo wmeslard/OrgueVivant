@@ -109,3 +109,35 @@ export function newsHtml(news: NewsItem, unsubscribeUrl: string, siteUrl: string
 </body>
 </html>`
 }
+
+/** Email de confirmation d'inscription : un seul bouton, le lien en clair dessous. */
+export function confirmHtml(confirmUrl: string, siteUrl: string) {
+  const url = escapeHtml(confirmUrl)
+  return `
+<!DOCTYPE html>
+<html lang="fr">
+<head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"></head>
+<body style="margin:0;padding:0;background:#0a0a0a;font-family:Georgia,serif;color:#e5e5e5">
+  <table width="100%" cellpadding="0" cellspacing="0" style="background:#0a0a0a;padding:40px 20px">
+    <tr><td align="center">
+      <table width="600" cellpadding="0" cellspacing="0" style="max-width:600px;width:100%;background:#141414;border-radius:16px;overflow:hidden;border:1px solid #2a2a2a">
+        <tr><td align="center" style="padding:36px 40px 8px">
+          <img src="${siteUrl}/img/logo/horizontal-dore-600.png" alt="Orgue Vivant" width="200" style="width:200px;max-width:60%;height:auto;display:block;margin:0 auto">
+        </td></tr>
+        <tr><td style="padding:32px 40px">
+          <p style="margin:0 0 16px;font-size:11px;letter-spacing:4px;text-transform:uppercase;color:#c9a84c">Newsletter</p>
+          <h1 style="margin:0 0 20px;font-size:26px;font-weight:300;color:#ffffff;line-height:1.3">Confirmez votre inscription</h1>
+          <p style="margin:0 0 28px;font-size:15px;color:#cccccc;line-height:1.7">Un clic, et vous recevrez les dates des concerts, les artistes et les actualités du festival. Si vous n'êtes pas à l'origine de cette demande, ignorez simplement ce message : rien ne sera envoyé.</p>
+          <a href="${url}" style="display:inline-block;padding:14px 28px;background:#c9a84c;color:#000;text-decoration:none;border-radius:100px;font-size:13px;font-weight:600;letter-spacing:1px">Confirmer mon inscription</a>
+          <p style="margin:28px 0 0;font-size:12px;color:#777;line-height:1.6">Si le bouton ne fonctionne pas, copiez ce lien dans votre navigateur :<br><a href="${url}" style="color:#c9a84c;word-break:break-all">${url}</a></p>
+        </td></tr>
+        <tr><td style="padding:0 40px 32px;font-size:11px;color:#666;line-height:1.6">
+          Orgue Vivant · Concerts d'orgue à Lille<br>
+          <a href="${siteUrl}" style="color:#666">orguevivant.fr</a>
+        </td></tr>
+      </table>
+    </td></tr>
+  </table>
+</body>
+</html>`
+}

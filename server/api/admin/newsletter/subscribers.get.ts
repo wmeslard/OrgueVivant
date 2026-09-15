@@ -6,7 +6,7 @@ export default defineEventHandler(async (event) => {
   const client = getServiceClient()
   const { data, error } = await client
     .from('newsletter_subscribers')
-    .select('id, email, subscribed_at')
+    .select('id, email, subscribed_at, confirmed_at')
     .order('subscribed_at', { ascending: false })
 
   if (error) throw createError({ statusCode: 500, statusMessage: error.message })

@@ -15,9 +15,11 @@ const { all: concerts, fetchConcerts } = useConcerts()
 const { all: news, fetchNews } = useNews()
 const { show: showToast } = useToast()
 
-interface Subscriber { id: string; email: string; subscribed_at: string }
+interface Subscriber { id: string; email: string; subscribed_at: string; confirmed_at: string | null }
 
 const subscribers = ref<Subscriber[]>([])
+// Seuls les abonnés ayant confirmé leur adresse reçoivent les envois.
+const confirmed = computed(() => subscribers.value.filter(s => s.confirmed_at))
 const loadingSubs = ref(false)
 
 async function loadSubscribers() {
@@ -143,7 +145,7 @@ const lastSent = ref<number | null>(null)
 async function send() {
   if (!selectedId.value || !subscribers.value.length) return
   if (!confirm(t('admin.newsletterConfirm', {
-    n: subscribers.value.length, title: draft.value.title || ''
+    n: confirmed.value.length, title: draft.value.title || ''
   }))) return
 
   sending.value = true
@@ -285,14 +287,14 @@ async function logout() {
       <div class="mt-8 flex flex-wrap items-center gap-4">
         <button
           class="btn-primary"
-          :disabled="!selectedId || sending || !subscribers.length"
+          :disabled="!selectedId || sending || !confirmed.length"
           @click="send"
         >
           <Icon v-if="sending" name="heroicons:arrow-path" class="mr-2 h-4 w-4 animate-spin" />
           {{ t('admin.newsletterSend') }}
         </button>
         <span class="text-sm text-ink-500">
-          {{ t('admin.newsletterRecipients', { n: subscribers.length }) }}
+          {{ t('admin.newsletterRecipients', { n: confirmed.length }) }}
         </span>
         <span v-if="lastSent !== null" class="text-sm text-gold">
           {{ t('admin.newsletterSent', { n: lastSent }) }}
@@ -323,7 +325,10 @@ async function logout() {
           </thead>
           <tbody>
             <tr v-for="s in subscribers" :key="s.id" class="border-t border-ink-100 dark:border-ink-800">
-              <td class="px-4 py-3 font-medium">{{ s.email }}</td>
+              <td class="px-4 py-3 font-medium">
+                {{ s.email }}
+                <span v-if="!s.confirmed_at" class="ml-2 rounded-full bg-amber-500/15 px-2 py-0.5 text-[11px] font-medium text-amber-600 dark:text-amber-400">{{ t('admin.newsletterPending') }}</span>
+              </td>
               <td class="px-4 py-3 text-ink-500">{{ formatDate(s.subscribed_at) }}</td>
               <td class="px-4 py-3 text-right">
                 <button class="text-sm text-red-600 underline" @click="removeSubscriber(s)">

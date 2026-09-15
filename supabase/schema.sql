@@ -88,7 +88,10 @@ create table if not exists newsletter_subscribers (
   -- 24 octets aléatoires en hexadécimal : jeton non devinable, porté par le
   -- lien de désinscription de chaque email envoyé.
   unsubscribe_token text not null default encode(extensions.gen_random_bytes(24), 'hex'),
-  subscribed_at     timestamptz default now()
+  subscribed_at     timestamptz default now(),
+  -- Renseigné au clic sur le lien de confirmation : seuls les abonnés
+  -- confirmés reçoivent les envois (voir newsletter-confirmation.sql).
+  confirmed_at      timestamptz
 );
 
 -- AUCUNE politique, volontairement : la clé « anon » est publiquement lisible

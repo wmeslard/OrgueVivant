@@ -146,7 +146,9 @@
   "newsletter": {
     "placeholder": "Votre email",
     "cta": "S'inscrire",
-    "thanks": "Merci pour votre inscription !",
+    "sent": "Merci ! Un email vient de vous être envoyé : cliquez sur le lien pour confirmer votre inscription.",
+    "confirmed": "Inscription confirmée. À bientôt en concert !",
+    "unsubscribed": "Vous êtes désinscrit. Vous ne recevrez plus nos emails.",
     "error": "Une erreur est survenue. Veuillez réessayer."
   },
   "social": {
@@ -250,6 +252,7 @@
     "newsletterSubscribers": "Abonnés",
     "newsletterSince": "Inscrit le",
     "newsletterRefresh": "Actualiser",
+    "newsletterPending": "En attente de confirmation",
     "newsletterEmpty": "Aucun abonné pour le moment.",
     "newsletterEdit": "Contenu de l'email",
     "newsletterEditHelp": "Ces champs alimentent uniquement l'email. Le concert ou l'actualité publiée sur le site reste inchangé.",
