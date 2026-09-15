@@ -106,7 +106,6 @@
     "duration": "Durée",
     "price": "Tarif",
     "artistOpen": "Pr\u00e9sentation",
-    "page": "Page du concert",
     "copyLink": "Copier le lien",
     "copied": "Lien copi\u00e9",
     "book": "Réserver",
@@ -116,11 +115,7 @@
     "moreInfo": "Plus d'informations",
     "addToCalendar": "Ajouter au calendrier",
     "directions": "Y aller",
-    "previousTile": "Tuile précédente",
-    "nextTile": "Tuile suivante",
-    "backToConcert": "Retour au concert",
-    "artist": "Artiste",
-    "goToTile": "Aller à la tuile {n}"
+    "artist": "Artiste"
   },
   "about": {
     "eyebrow": "À propos",

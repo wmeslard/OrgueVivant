@@ -1,12 +1,11 @@
 <script setup lang="ts">
-import type { Concert } from '~/composables/useConcerts'
+import { parisIso } from '~/utils/event'
 
 const { t, locale } = useI18n()
 const { upcoming, past, pending, fetchConcerts } = useConcerts()
 await callOnce('concerts', fetchConcerts)
 
 const tab = ref<'upcoming' | 'past'>('upcoming')
-const selected = ref<Concert | null>(null)
 
 // Filtres
 const filterLocation = ref<string>('all')
@@ -27,18 +26,16 @@ function resetFilters() {
   filterPrice.value = 'all'
 }
 
-// Open concert from ?id= deep link
+// Anciens liens profonds `/concerts?id=…` (partages, agendas) : ils mènent
+// désormais à la fiche du concert.
 const route = useRoute()
-watchEffect(() => {
-  const id = route.query.id as string | undefined
-  if (!id) return
-  const all = [...upcoming.value, ...past.value]
-  const found = all.find(c => c.id === id)
-  if (found) selected.value = found
-})
+const localePath = useLocalePath()
+const deepLink = route.query.id
+if (typeof deepLink === 'string' && deepLink) {
+  await navigateTo(localePath(`/concerts/${deepLink}`), { replace: true, redirectCode: 301 })
+}
 
 const siteUrl = useRuntimeConfig().public.siteUrl
-const localePath = useLocalePath()
 
 const jsonLd = computed(() => safeJsonLd({
   '@context': 'https://schema.org',
@@ -50,7 +47,8 @@ const jsonLd = computed(() => safeJsonLd({
     item: {
       '@type': 'MusicEvent',
       name: localized(c.title, c.title_en, locale.value),
-      startDate: `${c.date}T${c.time || '20:00'}:00`,
+      startDate: parisIso(c.date, c.time || '20:00'),
+      url: `${siteUrl}${localePath(`/concerts/${c.id}`)}`,
       location: {
         '@type': 'Place',
         name: c.location === 'saint_maurice' ? 'Église Saint-Maurice de Lille' : 'Église Saint-Étienne de Lille',
@@ -168,7 +166,6 @@ useSeoMeta({
         v-for="c in list"
         :key="c.id"
         :concert="c"
-        @open="selected = $event"
       />
     </div>
 
@@ -179,6 +176,5 @@ useSeoMeta({
       <CalendarSubscribe />
     </div>
 
-    <LazyConcertModal :concert="selected" @close="selected = null" />
   </div>
 </template>

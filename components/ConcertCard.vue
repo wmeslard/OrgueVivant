@@ -3,7 +3,6 @@ import { concertPlaceholder } from '~/utils/placeholders'
 import type { Concert } from '~/composables/useConcerts'
 
 const props = defineProps<{ concert: Concert }>()
-defineEmits<{ (e: 'open', c: Concert): void }>()
 
 const { locale, t } = useI18n()
 const localePath = useLocalePath()
@@ -26,17 +25,11 @@ const formattedFullDate = computed(() => {
 </script>
 
 <template>
-  <!-- La carte ouvre la fenêtre de détail ; « Découvrir » mène à la fiche, une
-       page à part entière que l'on peut partager et que Google peut indexer.
-       Un lien ne pouvant pas vivre dans un <button>, la carte est un <article>
-       rendu actionnable au clavier. -->
-  <article
-    role="button"
-    tabindex="0"
-    class="card-premium group relative flex w-full cursor-pointer flex-col items-start text-left"
-    @click="$emit('open', concert)"
-    @keydown.enter.prevent="$emit('open', concert)"
-    @keydown.space.prevent="$emit('open', concert)"
+  <!-- Toute la carte mène à la fiche du concert : une page à part entière,
+       que l'on peut partager et que Google indexe. -->
+  <NuxtLink
+    :to="localePath(`/concerts/${concert.id}`)"
+    class="card-premium group relative flex w-full flex-col items-start text-left"
   >
     <!-- Image with gradient overlay -->
     <div class="relative aspect-[4/5] w-full overflow-hidden">
@@ -75,15 +68,11 @@ const formattedFullDate = computed(() => {
           <span class="text-xs text-text-secondary font-medium uppercase tracking-widest">
             {{ concert.time }}
           </span>
-          <NuxtLink
-            :to="localePath(`/concerts/${concert.id}`)"
-            class="text-xs text-gold underline underline-offset-4 decoration-gold/30 group-hover:decoration-gold transition-all duration-300"
-            @click.stop
-          >
+          <span class="text-xs text-gold underline underline-offset-4 decoration-gold/30 group-hover:decoration-gold transition-all duration-300">
             {{ t('concerts.discover') }}
-          </NuxtLink>
+          </span>
         </div>
       </div>
     </div>
-  </article>
+  </NuxtLink>
 </template>

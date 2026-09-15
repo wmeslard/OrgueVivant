@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import type { Concert } from '~/composables/useConcerts'
-import { artistList, artistTiles, type Artist } from '~/utils/artists'
+import { artistList, artistNames } from '~/utils/artists'
 import { concertPlaceholder } from '~/utils/placeholders'
 import type { NewsItem } from '~/composables/useNews'
 
@@ -10,31 +10,18 @@ const { latest, fetchNews } = useNews()
 const { downloadIcs } = useIcs()
 
 const nextConcert = computed(() => upcoming.value[0] || null)
-const selected = ref<Concert | null>(null)
 
-// Carte du prochain concert : le lieu renvoie vers la carte, et chaque artiste
-// détaillé vers sa tuile dans la fiche.
+// Carte du prochain concert : le lieu renvoie vers la carte, tout le reste
+// vers la fiche du concert.
 const nextLocation = computed(() => nextConcert.value?.location ?? '')
 const { placeUrl: nextPlaceUrl, directionsUrl: nextDirectionsUrl } = useMapsUrls(nextLocation)
-const startTile = ref(0)
-
-/** Rang de la tuile d'un artiste dans la fiche, 0 s'il n'en a pas. Même règle
- *  que la fenêtre de détail : seuls les artistes détaillés ont une tuile. */
-function tileOfArtist(a: Artist) {
-  const i = artistTiles(nextConcert.value?.artists).findIndex(t => t.name === a.name)
-  return i < 0 ? 0 : i + 1
-}
-
-function openNextConcert(tile = 0) {
-  startTile.value = tile
-  selected.value = nextConcert.value
-}
+const nextConcertPath = computed(() => localePath(`/concerts/${nextConcert.value?.id}`))
 
 /** Un clic n'importe où sur la carte ouvre la fiche, sauf sur les éléments qui
  *  ont déjà leur propre action — liens et boutons. */
 function onNextCardClick(e: MouseEvent) {
   if ((e.target as HTMLElement).closest('a, button')) return
-  openNextConcert()
+  navigateTo(nextConcertPath.value)
 }
 
 await callOnce('concerts', fetchConcerts)
@@ -155,9 +142,9 @@ function needsMore(n: NewsItem) {
               <NuxtLink :to="localePath('/concerts')" class="btn-premium-primary">
                 {{ t('home.ctaConcerts') }}
               </NuxtLink>
-              <button v-if="nextConcert" class="btn-premium-secondary cursor-pointer" @click="selected = nextConcert">
+              <NuxtLink v-if="nextConcert" :to="nextConcertPath" class="btn-premium-secondary">
                 {{ t('home.nextConcert') }}
-              </button>
+              </NuxtLink>
             </div>
           </div>
         </div>
@@ -181,8 +168,8 @@ function needsMore(n: NewsItem) {
           tabindex="0"
           :aria-label="t('modal.moreInfo')"
           @click="onNextCardClick"
-          @keydown.enter="openNextConcert()"
-          @keydown.space.prevent="openNextConcert()"
+          @keydown.enter="navigateTo(nextConcertPath)"
+          @keydown.space.prevent="navigateTo(nextConcertPath)"
         >
           <div class="md:w-1/2 overflow-hidden relative">
             <img
@@ -212,24 +199,14 @@ function needsMore(n: NewsItem) {
               </div>
               <div v-if="artistList(nextConcert.artists).length" class="flex items-center gap-3">
                 <Icon name="heroicons:user" class="w-5 h-5 text-gold shrink-0" />
-                <span class="flex flex-wrap gap-x-2 gap-y-1">
-                  <template v-for="(a, i) in artistList(nextConcert.artists)" :key="i">
-                    <span v-if="i" aria-hidden="true">·</span>
-                    <button
-                      type="button"
-                      :disabled="!tileOfArtist(a)"
-                      class="text-left enabled:underline enabled:decoration-gold/40 enabled:underline-offset-4 enabled:transition-colors enabled:hover:text-gold disabled:cursor-default"
-                      @click="openNextConcert(tileOfArtist(a))"
-                    >{{ a.name }}</button>
-                  </template>
-                </span>
+                <span>{{ artistNames(nextConcert.artists, locale) }}</span>
               </div>
             </div>
             <div class="grid grid-cols-1 sm:flex sm:flex-wrap items-stretch gap-4">
-              <button class="btn-premium-primary !h-14 !px-8" @click="openNextConcert()">
+              <NuxtLink :to="nextConcertPath" class="btn-premium-primary !h-14 !px-8">
                 <span class="text-gold text-2xl leading-none">+</span>
                 <span>{{ t('modal.moreInfo') }}</span>
-              </button>
+              </NuxtLink>
               <button class="btn-premium-secondary !h-14 !px-8" @click="downloadIcs(nextConcert)">
                 <Icon name="heroicons:calendar" class="w-5 h-5 text-gold" />
                 <span>{{ t('modal.addToCalendar') }}</span>
@@ -277,7 +254,6 @@ function needsMore(n: NewsItem) {
             v-for="c in preview"
             :key="c.id"
             :concert="c"
-            @open="selected = $event"
           />
         </div>
       </div>
@@ -410,7 +386,6 @@ function needsMore(n: NewsItem) {
       </div>
     </section>
 
-<LazyConcertModal :concert="selected" :start-tile="startTile" @close="selected = null" />
 <LazyNewsModal :news="selectedNews" @close="selectedNews = null" />
   </div>
 </template>

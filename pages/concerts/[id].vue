@@ -27,6 +27,28 @@ const detailed = computed(() => artists.value.filter(a => a.image_url || a.bio))
 /** Artiste ouvert en grand depuis sa carte. */
 const openArtist = ref<Artist | null>(null)
 
+/** Partage : copie l'adresse de la fiche. L'API moderne peut être refusée
+ *  (contexte intégré, permission) : on retombe alors sur la copie par sélection. */
+const copied = ref(false)
+async function copyLink() {
+  let ok = false
+  try {
+    await navigator.clipboard.writeText(pageUrl.value)
+    ok = true
+  } catch {
+    const ta = document.createElement('textarea')
+    ta.value = pageUrl.value
+    ta.setAttribute('readonly', '')
+    ta.style.position = 'fixed'; ta.style.opacity = '0'
+    document.body.appendChild(ta); ta.select()
+    try { ok = document.execCommand('copy') } catch { ok = false }
+    ta.remove()
+  }
+  if (!ok) return
+  copied.value = true
+  setTimeout(() => (copied.value = false), 2000)
+}
+
 const title = computed(() => localized(concert.value?.title, concert.value?.title_en, locale.value))
 const description = computed(() =>
   localized(concert.value?.description, concert.value?.description_en, locale.value))
@@ -260,6 +282,10 @@ if (concert.value) {
             <Icon name="heroicons:map-pin" class="w-4 h-4 text-gold" />
             {{ t('modal.directions') }}
           </a>
+          <button type="button" class="btn-premium-secondary !h-12 !w-auto !px-7 flex items-center gap-2" @click="copyLink">
+            <Icon :name="copied ? 'heroicons:check' : 'heroicons:link'" class="w-4 h-4 text-gold" />
+            {{ copied ? t('modal.copied') : t('modal.copyLink') }}
+          </button>
         </div>
       </div>
     </div>
