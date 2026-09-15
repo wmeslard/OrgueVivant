@@ -2,6 +2,16 @@
 const { t } = useI18n()
 
 const form = reactive({ name: '', email: '', message: '' })
+const website = ref('')          // pot de miel : jamais affiché, jamais rempli par un humain
+
+// Jeton anti-robot demandé au chargement ; la page étant pré-rendue, il ne
+// peut venir que du navigateur. Voir server/utils/formToken.ts.
+let token: Promise<string> | null = null
+function fetchToken() {
+  token ??= $fetch<{ token: string }>('/api/form-token').then(r => r.token)
+  return token
+}
+onMounted(() => { fetchToken().catch(() => { token = null }) })
 const status = ref<'idle' | 'sending' | 'success' | 'error'>('idle')
 const error = ref('')
 
@@ -35,12 +45,13 @@ async function submit() {
 
   status.value = 'sending'
   try {
-    await $fetch('/api/contact', { method: 'POST', body: form })
+    await $fetch('/api/contact', { method: 'POST', body: { ...form, website: website.value, token: await fetchToken() } })
     status.value = 'success'
     form.name = ''; form.email = ''; form.message = ''
   } catch (e: any) {
     status.value = 'error'
-    error.value = e?.data?.message || t('contact.errorGeneric')
+    token = null                                  // un jeton refusé ne sert plus
+    error.value = e?.data?.statusMessage || t('contact.errorGeneric')
   }
 }
 </script>
@@ -112,10 +123,21 @@ async function submit() {
               {{ t('contact.success') }}
             </div>
 
+            <!-- Pot de miel : hors écran plutôt que display:none, que certains robots savent détecter -->
+            <div class="absolute -left-[9999px] top-auto h-px w-px overflow-hidden" aria-hidden="true">
+              <label>Site web <input v-model="website" type="text" name="website" tabindex="-1" autocomplete="off"></label>
+            </div>
+
             <button type="submit" :disabled="status === 'sending'" class="btn-premium-primary w-full !h-14">
               <Icon v-if="status === 'sending'" name="heroicons:arrow-path" class="w-5 h-5 animate-spin mr-2" />
               {{ status === 'sending' ? t('contact.sending') : t('contact.send') }}
             </button>
+
+            <i18n-t keypath="contact.privacyNote" tag="p" class="text-xs leading-relaxed text-text-secondary/70">
+              <template #link>
+                <NuxtLink :to="localePath('/privacy')" class="underline underline-offset-2 hover:text-gold">{{ t('privacy.linkLabel') }}</NuxtLink>
+              </template>
+            </i18n-t>
           </form>
         </div>
       </div>

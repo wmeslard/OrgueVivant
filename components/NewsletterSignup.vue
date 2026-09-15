@@ -12,7 +12,7 @@ const loading = ref(false)
 // pour que le délai mesuré soit celui d'un vrai visiteur.
 let token: Promise<string> | null = null
 function fetchToken() {
-  token ??= $fetch<{ token: string }>('/api/newsletter/token').then(r => r.token)
+  token ??= $fetch<{ token: string }>('/api/form-token').then(r => r.token)
   return token
 }
 

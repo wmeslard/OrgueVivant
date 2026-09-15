@@ -1,4 +1,11 @@
 import { Resend } from 'resend'
+import { verifyFormToken } from '~/server/utils/formToken'
+
+// Limite par adresse IP, en mémoire : chaque instance Vercel a la sienne, c'est
+// un filet de sécurité, pas une garantie. Le jeton signé, lui, tient partout.
+const hits = new Map<string, { count: number; reset: number }>()
+const WINDOW_MS = 3_600_000
+const MAX_PER_WINDOW = 5
 
 const escapeHtml = (s: string) =>
   s.replace(/&/g, '&amp;')
@@ -10,7 +17,24 @@ const escapeHtml = (s: string) =>
 const sanitizeHeader = (s: string) => s.replace(/[\r\n]/g, ' ').trim()
 
 export default defineEventHandler(async (event) => {
-  const body = await readBody<{ name?: string; email?: string; message?: string }>(event)
+  const ip = getRequestHeader(event, 'x-forwarded-for')?.split(',')[0]?.trim() || 'unknown'
+  const now = Date.now()
+  const entry = hits.get(ip)
+  if (!entry || now > entry.reset) {
+    hits.set(ip, { count: 1, reset: now + WINDOW_MS })
+  } else {
+    if (entry.count >= MAX_PER_WINDOW)
+      throw createError({ statusCode: 429, statusMessage: 'Trop de messages, réessayez plus tard.' })
+    entry.count++
+  }
+
+  const body = await readBody<{ name?: string; email?: string; message?: string; token?: string; website?: string }>(event)
+
+  // Pot de miel rempli : un robot. On répond comme si tout allait bien.
+  if (body?.website) return { ok: true }
+  // Jeton émis à l'affichage du formulaire (voir server/utils/formToken.ts).
+  if (!verifyFormToken(body?.token))
+    throw createError({ statusCode: 400, statusMessage: 'Formulaire expiré, rechargez la page.' })
 
   const name = body?.name?.trim()
   const email = body?.email?.trim()

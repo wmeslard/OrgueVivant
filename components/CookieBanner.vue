@@ -1,16 +1,19 @@
 <script setup lang="ts">
+/**
+ * Notice d'information, pas de recueil de consentement : le site ne dépose que
+ * des cookies techniques (langue, et cette notice), exemptés de consentement.
+ * Proposer « Accepter / Refuser » pour des cookies qu'on ne peut pas refuser
+ * serait trompeur ; on informe, et on retient que la notice a été lue.
+ */
 const { t } = useI18n()
 const localePath = useLocalePath()
-const accepted = useCookie<string | null>('ov_cookie_consent', { maxAge: 60 * 60 * 24 * 365 })
+const seen = useCookie<string | null>('ov_cookie_consent', { maxAge: 60 * 60 * 24 * 365, sameSite: 'lax' })
 const ready = ref(false)
-const visible = computed(() => ready.value && accepted.value !== 'accepted' && accepted.value !== 'declined')
-
+const visible = computed(() => ready.value && !seen.value)
 onMounted(() => {
   setTimeout(() => { ready.value = true }, 800)
 })
-
-function accept() { accepted.value = 'accepted' }
-function decline() { accepted.value = 'declined' }
+function dismiss() { seen.value = 'seen' }
 </script>
 
 <template>
@@ -28,10 +31,7 @@ function decline() { accepted.value = 'declined' }
           {{ t('cookies.message') }}
           <NuxtLink :to="localePath('/privacy')" class="underline">{{ t('cookies.learnMore') }}</NuxtLink>
         </p>
-        <div class="flex gap-2">
-          <button class="btn-ghost !py-2 !px-4 !text-xs" @click="decline">{{ t('cookies.decline') }}</button>
-          <button class="btn-primary !py-2 !px-4 !text-xs" @click="accept">{{ t('cookies.accept') }}</button>
-        </div>
+        <button class="btn-primary shrink-0 !py-2 !px-4 !text-xs" @click="dismiss">{{ t('cookies.ok') }}</button>
       </div>
     </div>
   </Transition>

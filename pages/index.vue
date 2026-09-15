@@ -295,9 +295,11 @@ function needsMore(n: NewsItem) {
           </p>
           <div class="w-full max-w-lg">
             <NewsletterSignup />
-            <p class="mt-6 text-[10px] text-text-secondary/50 uppercase tracking-widest">
-              {{ t('home.newsletterConsent') }}
-            </p>
+            <i18n-t keypath="home.newsletterConsent" tag="p" class="mt-6 text-[10px] text-text-secondary/50 uppercase tracking-widest">
+              <template #link>
+                <NuxtLink :to="localePath('/privacy')" class="underline underline-offset-2 hover:text-gold">{{ t('privacy.linkLabel') }}</NuxtLink>
+              </template>
+            </i18n-t>
           </div>
 
           <div class="mt-12 w-full max-w-2xl border-t border-white/5 pt-10">

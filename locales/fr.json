@@ -51,7 +51,7 @@
     "heritageBody": "Au-delà des concerts, c'est un dialogue millénaire entre l'architecture et la musique que nous vous proposons. Chaque note résonne dans l'histoire de Lille, offrant une parenthèse hors du temps au cœur de la ville.",
     "newsletterTitle": "Recevez la programmation en avant-première.",
     "newsletterSubtitle": "Les dates des concerts, les artistes et les actualités du festival.",
-    "newsletterConsent": "En vous inscrivant, vous acceptez notre politique de confidentialité.",
+    "newsletterConsent": "En vous inscrivant, vous acceptez notre {link}.",
     "readMore": "Lire la suite"
   },
   "news": {
@@ -140,6 +140,7 @@
     "success": "Message envoyé. Merci !",
     "errorRequired": "Tous les champs sont requis.",
     "errorEmail": "Email invalide.",
+    "privacyNote": "Vos nom, email et message servent uniquement à vous répondre et sont conservés un an au plus. {link}",
     "errorGeneric": "Une erreur est survenue. Merci de réessayer.",
     "social": "Réseaux sociaux"
   },
@@ -164,9 +165,8 @@
     "rights": "Tous droits réservés."
   },
   "cookies": {
-    "message": "Nous utilisons uniquement des cookies strictement nécessaires au bon fonctionnement du site.",
-    "accept": "Accepter",
-    "decline": "Refuser",
+    "message": "Ce site ne dépose que des cookies techniques (langue) et mesure sa fréquentation sans cookie ni suivi. Aucun consentement n'est requis.",
+    "ok": "Compris",
     "learnMore": "En savoir plus"
   },
   "legal": {
@@ -175,20 +175,28 @@
     "publisherTitle": "Directeur de la publication",
     "publisher": "Le secrétaire de l'association ORGUE VIVANT\n19 Parvis Saint-Maurice, 59800 Lille\nContact : contact{'@'}orguevivant.fr",
     "hostingTitle": "Hébergement",
-    "hosting": "Vercel Inc.\n440 N Barranca Ave #4133, Covina, CA 91723, États-Unis\nLe nom de domaine orguevivant.fr est enregistré auprès d'OVH SAS, 2 rue Kellermann, 59100 Roubaix, France.",
+    "hosting": "Vercel Inc.\n440 N Barranca Ave #4133, Covina, CA 91723, États-Unis\nContact : https://vercel.com/help — Vercel ne publie pas de numéro de téléphone.\n\nBase de données : Supabase Inc., données hébergées à Londres (Royaume-Uni).\nLe nom de domaine orguevivant.fr est enregistré auprès d'OVH SAS, 2 rue Kellermann, 59100 Roubaix, France.",
     "ipTitle": "Propriété intellectuelle et contrefaçons",
     "ip": "Le directeur de la publication est propriétaire des droits de propriété intellectuelle, ou détient les droits d'usage, sur tous les éléments accessibles sur le site, notamment les textes, images, graphismes, logos, icônes, sons et logiciels.\n\nToute reproduction, représentation, modification, publication ou adaptation de tout ou partie des éléments du site, quel que soit le moyen ou le procédé utilisé, est interdite sauf autorisation écrite préalable du directeur de la publication.\n\nToute exploitation non autorisée du site ou de l'un quelconque des éléments qu'il contient sera considérée comme constitutive d'une contrefaçon et poursuivie conformément aux articles L.335-2 et suivants du Code de la propriété intellectuelle.\n\nL'ensemble du contenu du site est protégé par le droit d'auteur.",
     "lawsTitle": "Textes applicables",
     "laws": "Loi n° 78-17 du 6 janvier 1978 relative à l'informatique, aux fichiers et aux libertés, notamment modifiée par la loi n° 2004-801 du 6 août 2004.\nLoi n° 2004-575 du 21 juin 2004 pour la confiance dans l'économie numérique."
   },
   "privacy": {
-    "intro": "Cette politique décrit comment nous traitons vos données personnelles, conformément au RGPD.",
-    "dataTitle": "Données collectées",
-    "data": "Nous collectons uniquement les informations que vous nous transmettez via le formulaire de contact (nom, email, message).",
+    "intro": "Le responsable du traitement est l'association Orgue Vivant, 19 Parvis Saint-Maurice, 59800 Lille, joignable à contact{'@'}orguevivant.fr.\n\nCette page décrit les données personnelles traitées par le site orguevivant.fr, pourquoi, pendant combien de temps, qui y a accès, et les droits dont vous disposez. Elle est établie conformément au Règlement général sur la protection des données (RGPD) et à la loi Informatique et Libertés.",
+    "purposesTitle": "Données traitées et finalités",
+    "purposes": "Formulaire de contact — nom, adresse email et message. Finalité : répondre à votre demande. Base légale : notre intérêt légitime à répondre aux personnes qui nous écrivent. Le message est transmis par email à l'association.\n\nNewsletter — adresse email, dates d'inscription et de confirmation. Finalité : vous envoyer les dates des concerts, les artistes et les actualités du festival. Base légale : votre consentement, recueilli par une inscription que vous confirmez depuis votre boîte mail. Vous pouvez le retirer à tout moment par le lien de désinscription présent dans chaque email ; votre adresse est alors supprimée immédiatement.\n\nEspace d'administration — adresse email et mot de passe (stocké chiffré) des bénévoles qui publient le contenu du site. Base légale : notre intérêt légitime à faire fonctionner le site.\n\nMesure d'audience — nombre de visites et pages consultées, mesurés par Vercel Web Analytics. Aucun cookie ni identifiant n'est stocké sur votre appareil ; les données sont agrégées et ne permettent pas de vous suivre d'un site à l'autre. Aucun consentement n'est donc requis.\n\nJournaux techniques — adresse IP et requêtes, enregistrées par l'hébergeur pour la sécurité et le bon fonctionnement du site.",
+    "processorsTitle": "Destinataires et sous-traitants",
+    "processors": "Vos données ne sont ni vendues ni cédées. Elles sont traitées pour notre compte, sous contrat, par :\n\n– Vercel Inc. (États-Unis) — hébergement du site et mesure d'audience ;\n– Supabase Inc. — base de données et comptes administrateurs, données hébergées à Londres (Royaume-Uni) ;\n– Resend Inc. (États-Unis) — envoi des emails : newsletter, confirmation d'inscription, messages du formulaire de contact.\n\nChacun est lié par un accord de traitement des données conforme à l'article 28 du RGPD.",
+    "transfersTitle": "Transferts hors de l'Union européenne",
+    "transfers": "Le Royaume-Uni bénéficie d'une décision d'adéquation de la Commission européenne. Les traitements réalisés aux États-Unis par Vercel et Resend sont encadrés par les clauses contractuelles types de la Commission européenne, intégrées à leurs accords de traitement des données.",
+    "retentionTitle": "Durées de conservation",
+    "retention": "– Messages du formulaire de contact : un an après le dernier échange.\n– Newsletter : jusqu'à votre désinscription. Une inscription non confirmée est effacée après trente jours.\n– Comptes administrateurs : le temps de la mission du bénévole.\n– Mesure d'audience : données agrégées, sans identifiant individuel.\n– Journaux techniques : quelques jours.",
     "cookiesTitle": "Cookies",
-    "cookies": "Seuls des cookies techniques sont utilisés (préférence de langue et de thème).",
+    "cookies": "Le site ne dépose que des cookies techniques, exemptés de consentement :\n\n– i18n_redirected : la langue choisie (un an) ;\n– ov_cookie_consent : mémorise que vous avez lu l'information sur les cookies (un an) ;\n– pour les seuls administrateurs connectés, les cookies de session Supabase.\n\nAucun cookie publicitaire ou de suivi n'est utilisé.",
     "rightsTitle": "Vos droits",
-    "rights": "Vous disposez d'un droit d'accès, de rectification et de suppression de vos données. Contactez-nous à contact{'@'}orguevivant.fr."
+    "rights": "Vous disposez des droits d'accès, de rectification, d'effacement, de limitation du traitement, d'opposition et de portabilité de vos données, ainsi que du droit de retirer votre consentement à tout moment pour la newsletter.\n\nPour les exercer, écrivez à contact{'@'}orguevivant.fr ; nous répondons dans un délai d'un mois et pouvons vous demander de justifier de votre identité.\n\nSi vous estimez que vos droits ne sont pas respectés, vous pouvez adresser une réclamation à la CNIL (www.cnil.fr).",
+    "linkLabel": "politique de confidentialité",
+    "updated": "Dernière mise à jour : 15 septembre 2026."
   },
   "admin": {
     "eyebrow": "Administration",

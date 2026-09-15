@@ -61,7 +61,7 @@ export function concertHtml(concert: Concert, unsubscribeUrl: string, siteUrl: s
         </td></tr>
         <tr><td style="padding:24px 40px;border-top:1px solid #2a2a2a">
           <p style="margin:0;font-size:11px;color:#555;text-align:center">
-            Orgue Vivant · Concerts d'orgue à Lille<br>
+            Association Orgue Vivant · Concerts d'orgue à Lille<br>19 Parvis Saint-Maurice, 59800 Lille<br>
             <a href="${unsubscribeUrl}" style="color:#555;text-decoration:underline">Se désabonner</a>
           </p>
         </td></tr>
@@ -99,7 +99,7 @@ export function newsHtml(news: NewsItem, unsubscribeUrl: string, siteUrl: string
         </td></tr>
         <tr><td style="padding:24px 40px;border-top:1px solid #2a2a2a">
           <p style="margin:0;font-size:11px;color:#555;text-align:center">
-            Orgue Vivant · Concerts d'orgue à Lille<br>
+            Association Orgue Vivant · Concerts d'orgue à Lille<br>19 Parvis Saint-Maurice, 59800 Lille<br>
             <a href="${unsubscribeUrl}" style="color:#555;text-decoration:underline">Se désabonner</a>
           </p>
         </td></tr>
@@ -132,7 +132,7 @@ export function confirmHtml(confirmUrl: string, siteUrl: string) {
           <p style="margin:28px 0 0;font-size:12px;color:#777;line-height:1.6">Si le bouton ne fonctionne pas, copiez ce lien dans votre navigateur :<br><a href="${url}" style="color:#c9a84c;word-break:break-all">${url}</a></p>
         </td></tr>
         <tr><td style="padding:0 40px 32px;font-size:11px;color:#666;line-height:1.6">
-          Orgue Vivant · Concerts d'orgue à Lille<br>
+          Association Orgue Vivant · Concerts d'orgue à Lille<br>19 Parvis Saint-Maurice, 59800 Lille<br>
           <a href="${siteUrl}" style="color:#666">orguevivant.fr</a>
         </td></tr>
       </table>
