@@ -27,7 +27,7 @@ const articles = computed(() => [
         </h2>
         <LegalText class="mt-4" :text="a.body" />
         <p v-if="a.link" class="mt-3">
-          <NuxtLink :to="localePath('/privacy')" class="text-gold underline underline-offset-4 hover:text-gold-light">{{ t('privacy.linkLabel') }} →</NuxtLink>
+          <NuxtLink :to="localePath('/privacy')" class="text-gold underline underline-offset-4 hover:text-gold-light">{{ t('privacy.title') }} →</NuxtLink>
         </p>
       </section>
 
