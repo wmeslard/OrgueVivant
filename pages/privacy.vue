@@ -1,28 +1,32 @@
 <script setup lang="ts">
 const { t } = useI18n()
-useHead({ title: `${t('footer.privacy')} — Orgue Vivant` })
+useHead({ title: `${t('privacy.title')} — Orgue Vivant` })
 
-// Les blocs contiennent des retours à la ligne signifiants (listes, alinéas) :
-// ils sont rendus avec `whitespace-pre-line`, comme les mentions légales.
-const sections = computed(() => [
+const articles = computed(() => [
+  { title: t('privacy.controllerTitle'), body: t('privacy.controller') },
   { title: t('privacy.purposesTitle'), body: t('privacy.purposes') },
   { title: t('privacy.processorsTitle'), body: t('privacy.processors') },
   { title: t('privacy.transfersTitle'), body: t('privacy.transfers') },
   { title: t('privacy.retentionTitle'), body: t('privacy.retention') },
   { title: t('privacy.cookiesTitle'), body: t('privacy.cookies') },
-  { title: t('privacy.rightsTitle'), body: t('privacy.rights') }
+  { title: t('privacy.securityTitle'), body: t('privacy.security') },
+  { title: t('privacy.rightsTitle'), body: t('privacy.rights') },
+  { title: t('privacy.changesTitle'), body: t('privacy.changes') }
 ])
 </script>
 
 <template>
   <div class="container-apple py-20 md:py-28">
     <div class="mx-auto max-w-2xl">
-      <h1 class="heading-section">{{ t('footer.privacy') }}</h1>
-      <p class="mt-6 whitespace-pre-line leading-relaxed text-ink-700 dark:text-ink-300">{{ t('privacy.intro') }}</p>
+      <p class="text-[10px] font-bold uppercase tracking-[0.3em] text-gold">{{ t('legal.eyebrow') }}</p>
+      <h1 class="heading-section mt-3">{{ t('privacy.title') }}</h1>
+      <LegalText class="mt-8" :text="t('privacy.intro')" />
 
-      <section v-for="s in sections" :key="s.title" class="mt-12">
-        <h2 class="font-display text-2xl font-light">{{ s.title }}</h2>
-        <p class="mt-4 whitespace-pre-line leading-relaxed text-ink-700 dark:text-ink-300">{{ s.body }}</p>
+      <section v-for="(a, i) in articles" :key="a.title" class="mt-12 border-t border-ink-200/60 pt-8 dark:border-ink-800">
+        <h2 class="font-display text-2xl font-light">
+          <span class="mr-3 text-gold">{{ t('legal.article', { n: i + 1 }) }}</span>{{ a.title }}
+        </h2>
+        <LegalText class="mt-4" :text="a.body" />
       </section>
 
       <p class="mt-12 text-sm text-ink-500">{{ t('privacy.updated') }}</p>
