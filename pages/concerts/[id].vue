@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { concertPlaceholder } from '~/utils/placeholders'
-import { artistList, artistNames } from '~/utils/artists'
+import { artistList, artistNames, type Artist } from '~/utils/artists'
 import { venues } from '~/utils/venues'
 import { parisIso, parisEndIso, performerType, metaDescription } from '~/utils/event'
 const { t, locale } = useI18n()
@@ -23,6 +23,9 @@ const artists = computed(() => artistList(concert.value?.artists))
 /** Seuls les artistes détaillés méritent une carte ; les autres apparaissent
  *  simplement dans la liste en tête de page. */
 const detailed = computed(() => artists.value.filter(a => a.image_url || a.bio))
+
+/** Artiste ouvert en grand depuis sa carte. */
+const openArtist = ref<Artist | null>(null)
 
 const title = computed(() => localized(concert.value?.title, concert.value?.title_en, locale.value))
 const description = computed(() =>
@@ -196,35 +199,38 @@ if (concert.value) {
           {{ description }}
         </p>
 
-        <!-- Artistes : une carte par personne, la page ayant la place
-             de les empiler, là où la fenêtre de détail les fait défiler. -->
+        <!-- Artistes : des cartes réduites au nom et à la photo ; la
+             présentation complète s'ouvre en grand, dans la même mise en page
+             que les tuiles du carrousel de la fenêtre de concert. -->
         <section v-if="detailed.length" class="mb-10">
           <div class="mb-4 text-[10px] font-bold uppercase tracking-widest text-gold">
             {{ t('modal.artists') }}
           </div>
           <div class="grid gap-6 sm:grid-cols-2">
-            <article
+            <button
               v-for="(a, i) in detailed"
               :key="i"
-              class="card-premium overflow-hidden"
+              type="button"
+              class="card-premium group overflow-hidden text-left transition-transform duration-500 ease-apple hover:-translate-y-1"
+              :aria-label="`${a.name} — ${t('modal.artistOpen')}`"
+              @click="openArtist = a"
             >
-              <img
-                v-if="a.image_url"
-                :src="a.image_url"
-                :alt="a.name"
-                loading="lazy"
-                class="aspect-[4/5] w-full object-cover"
-              >
-              <div class="p-6">
-                <h2 class="font-display text-2xl font-light text-text-primary">{{ a.name }}</h2>
-                <p
-                  v-if="a.bio"
-                  class="mt-3 whitespace-pre-wrap text-sm font-light leading-relaxed text-text-secondary"
+              <div v-if="a.image_url" class="overflow-hidden">
+                <img
+                  :src="a.image_url"
+                  :alt="a.name"
+                  loading="lazy"
+                  class="aspect-[4/5] w-full object-cover transition-transform duration-700 ease-apple group-hover:scale-105"
                 >
-                  {{ localized(a.bio, a.bio_en, locale) }}
-                </p>
               </div>
-            </article>
+              <div class="p-5">
+                <h2 class="font-display text-xl font-light text-text-primary">{{ a.name }}</h2>
+                <span class="mt-2 inline-flex items-center gap-1.5 text-[11px] uppercase tracking-widest text-gold">
+                  {{ t('modal.artistOpen') }}
+                  <Icon name="heroicons:arrows-pointing-out" class="h-4 w-4" />
+                </span>
+              </div>
+            </button>
           </div>
         </section>
 
@@ -257,5 +263,6 @@ if (concert.value) {
         </div>
       </div>
     </div>
+    <ArtistModal :artist="openArtist" @close="openArtist = null" />
   </div>
 </template>
