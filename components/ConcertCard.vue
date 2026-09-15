@@ -6,6 +6,7 @@ const props = defineProps<{ concert: Concert }>()
 defineEmits<{ (e: 'open', c: Concert): void }>()
 
 const { locale, t } = useI18n()
+const localePath = useLocalePath()
 const formattedDay = computed(() => {
   const d = new Date(`${props.concert.date}T${props.concert.time || '00:00'}`)
   return d.getDate()
@@ -25,10 +26,17 @@ const formattedFullDate = computed(() => {
 </script>
 
 <template>
-  <button
-    type="button"
-    class="card-premium group relative flex w-full flex-col items-start text-left"
+  <!-- La carte ouvre la fenêtre de détail ; « Découvrir » mène à la fiche, une
+       page à part entière que l'on peut partager et que Google peut indexer.
+       Un lien ne pouvant pas vivre dans un <button>, la carte est un <article>
+       rendu actionnable au clavier. -->
+  <article
+    role="button"
+    tabindex="0"
+    class="card-premium group relative flex w-full cursor-pointer flex-col items-start text-left"
     @click="$emit('open', concert)"
+    @keydown.enter.prevent="$emit('open', concert)"
+    @keydown.space.prevent="$emit('open', concert)"
   >
     <!-- Image with gradient overlay -->
     <div class="relative aspect-[4/5] w-full overflow-hidden">
@@ -67,11 +75,15 @@ const formattedFullDate = computed(() => {
           <span class="text-xs text-text-secondary font-medium uppercase tracking-widest">
             {{ concert.time }}
           </span>
-          <span class="text-xs text-gold underline underline-offset-4 decoration-gold/30 group-hover:decoration-gold transition-all duration-300">
-            {{ t('concerts.discover') || 'Découvrir' }}
-          </span>
+          <NuxtLink
+            :to="localePath(`/concerts/${concert.id}`)"
+            class="text-xs text-gold underline underline-offset-4 decoration-gold/30 group-hover:decoration-gold transition-all duration-300"
+            @click.stop
+          >
+            {{ t('concerts.discover') }}
+          </NuxtLink>
         </div>
       </div>
     </div>
-  </button>
+  </article>
 </template>

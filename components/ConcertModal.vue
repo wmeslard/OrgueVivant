@@ -8,6 +8,19 @@ const emit = defineEmits<{ (e: 'close'): void }>()
 
 const { locale, t } = useI18n()
 const { downloadIcs } = useIcs()
+const localePath = useLocalePath()
+const siteUrl = useRuntimeConfig().public.siteUrl
+
+/** Adresse publique de la fiche : la fenêtre n'en a pas, la fiche si. */
+const pageUrl = computed(() => `${siteUrl}${localePath(`/concerts/${props.concert?.id}`)}`)
+const copied = ref(false)
+async function copyLink() {
+  try {
+    await navigator.clipboard.writeText(pageUrl.value)
+    copied.value = true
+    setTimeout(() => (copied.value = false), 2000)
+  } catch { /* presse-papiers indisponible : le lien reste visible */ }
+}
 
 const title = computed(() => localized(props.concert?.title, props.concert?.title_en, locale.value))
 const description = computed(() =>
@@ -409,6 +422,17 @@ onBeforeUnmount(() => window.removeEventListener('keydown', onKey))
                       <Icon name="heroicons:map-pin" class="w-4 h-4 text-gold" />
                       <span>{{ t('modal.directions') }}</span>
                     </a>
+                  </div>
+                  <!-- Partage : la fiche a une adresse, la fenêtre non -->
+                  <div class="pt-4 flex flex-wrap items-center gap-x-5 gap-y-2 text-xs text-text-secondary">
+                    <NuxtLink :to="localePath(`/concerts/${concert.id}`)" class="inline-flex items-center gap-1.5 underline underline-offset-4 decoration-text-secondary/40 hover:text-gold hover:decoration-gold">
+                      <Icon name="heroicons:document-text" class="w-4 h-4" />
+                      {{ t('modal.page') }}
+                    </NuxtLink>
+                    <button type="button" class="inline-flex items-center gap-1.5 hover:text-gold" @click="copyLink">
+                      <Icon :name="copied ? 'heroicons:check' : 'heroicons:link'" class="w-4 h-4" />
+                      {{ copied ? t('modal.copied') : t('modal.copyLink') }}
+                    </button>
                   </div>
                 </div>
                 </div>

@@ -57,7 +57,7 @@ export function concertHtml(concert: Concert, unsubscribeUrl: string, siteUrl: s
           ${artistNames(concert.artists) ? `<p style="margin:0 0 12px;font-size:14px;color:#999">🎵 ${escapeHtml(artistNames(concert.artists))}</p>` : ''}
           <p style="margin:0 0 24px;font-size:14px;color:#999">📍 ${concert.location === 'saint_maurice' ? 'Église Saint-Maurice' : 'Église Saint-Étienne'} · ${concert.price_type === 'free' ? 'Entrée libre — participation libre' : 'Payant'}</p>
           ${concert.description ? `<p style="margin:0 0 32px;font-size:15px;color:#cccccc;line-height:1.7">${escapeHtmlWithBreaks(concert.description)}</p>` : ''}
-          <a href="${siteUrl}/concerts" style="display:inline-block;padding:14px 28px;background:#c9a84c;color:#000;text-decoration:none;border-radius:100px;font-size:13px;font-weight:600;letter-spacing:1px">Voir le programme</a>
+          <a href="${concert.id ? `${siteUrl}/concerts/${escapeHtml(concert.id)}` : `${siteUrl}/concerts`}" style="display:inline-block;padding:14px 28px;background:#c9a84c;color:#000;text-decoration:none;border-radius:100px;font-size:13px;font-weight:600;letter-spacing:1px">Voir le concert</a>
         </td></tr>
         <tr><td style="padding:24px 40px;border-top:1px solid #2a2a2a">
           <p style="margin:0;font-size:11px;color:#555;text-align:center">
