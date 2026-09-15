@@ -96,18 +96,20 @@ useSeoMeta({
     </header>
 
     <!-- Switch + Filtres -->
-    <div class="mb-10 flex flex-wrap items-center gap-3">
+    <!-- Sur mobile : commutateur et filtres empilés, chacun sur toute la
+         largeur. En ligne à partir de `sm`. -->
+    <div class="mb-10 flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-center">
       <!-- Switch À venir / Archives (à gauche) -->
-      <div class="inline-flex rounded-full border border-white/5 bg-surface p-1 shadow-2xl">
+      <div class="flex w-full rounded-full border border-white/5 bg-surface p-1 shadow-2xl sm:inline-flex sm:w-auto">
         <button
-          class="rounded-full px-5 py-3 text-xs font-bold uppercase tracking-widest transition-all duration-300"
+          class="flex-1 rounded-full px-5 py-3 text-xs font-bold uppercase tracking-widest transition-all duration-300 sm:flex-none"
           :class="tab === 'upcoming' ? 'bg-gold text-background shadow-lg' : 'text-text-secondary hover:text-text-primary'"
           @click="tab = 'upcoming'"
         >
           {{ t('concerts.upcoming') }} <span class="ml-2 opacity-50">{{ upcoming.length }}</span>
         </button>
         <button
-          class="rounded-full px-5 py-3 text-xs font-bold uppercase tracking-widest transition-all duration-300"
+          class="flex-1 rounded-full px-5 py-3 text-xs font-bold uppercase tracking-widest transition-all duration-300 sm:flex-none"
           :class="tab === 'past' ? 'bg-gold text-background shadow-lg' : 'text-text-secondary hover:text-text-primary'"
           @click="tab = 'past'"
         >
@@ -115,11 +117,12 @@ useSeoMeta({
         </button>
       </div>
 
+      <div class="grid grid-cols-1 gap-3 sm:contents">
       <!-- Filtre lieu -->
-      <div class="relative inline-flex items-center rounded-full border border-white/5 bg-surface p-1 shadow-2xl">
+      <div class="relative flex items-center rounded-full border border-white/5 bg-surface p-1 shadow-2xl sm:inline-flex">
         <select
           v-model="filterLocation"
-          class="rounded-full pl-6 pr-9 py-3 text-xs font-bold uppercase tracking-widest bg-transparent text-text-secondary focus:outline-none cursor-pointer transition-colors hover:text-text-primary appearance-none"
+          class="w-full rounded-full pl-6 pr-9 py-3 text-xs font-bold uppercase tracking-widest bg-transparent text-text-secondary focus:outline-none cursor-pointer transition-colors hover:text-text-primary appearance-none"
         >
           <option value="all">{{ t('concerts.filterAllLocations') }}</option>
           <option value="saint_maurice">Saint-Maurice</option>
@@ -129,16 +132,18 @@ useSeoMeta({
       </div>
 
       <!-- Filtre tarif -->
-      <div class="relative inline-flex items-center rounded-full border border-white/5 bg-surface p-1 shadow-2xl">
+      <div class="relative flex items-center rounded-full border border-white/5 bg-surface p-1 shadow-2xl sm:inline-flex">
         <select
           v-model="filterPrice"
-          class="rounded-full pl-6 pr-9 py-3 text-xs font-bold uppercase tracking-widest bg-transparent text-text-secondary focus:outline-none cursor-pointer transition-colors hover:text-text-primary appearance-none"
+          class="w-full rounded-full pl-6 pr-9 py-3 text-xs font-bold uppercase tracking-widest bg-transparent text-text-secondary focus:outline-none cursor-pointer transition-colors hover:text-text-primary appearance-none"
         >
           <option value="all">{{ t('concerts.filterAllPrices') }}</option>
           <option value="free">{{ t('modal.free') }}</option>
           <option value="paid">{{ t('modal.paid') }}</option>
         </select>
         <Icon name="heroicons:chevron-down" class="pointer-events-none absolute right-4 top-1/2 -translate-y-1/2 w-3 h-3 text-text-secondary" />
+      </div>
+
       </div>
 
       <!-- Reset -->

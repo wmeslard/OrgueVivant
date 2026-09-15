@@ -168,14 +168,18 @@ if (concert.value) {
 
     <div class="grid lg:grid-cols-2 gap-12 lg:gap-20 items-start">
       <!-- Image -->
-      <div class="aspect-[4/5] overflow-hidden rounded-[28px] sticky top-24">
-        <img
-          :src="concert.image_url || concertPlaceholder(concert.id)"
-          :alt="title"
-          loading="eager"
-          decoding="async"
-          class="w-full h-full object-cover"
-        >
+      <!-- Collée en haut à côté du texte sur grand écran seulement : en une
+           colonne, elle recouvrirait le contenu pendant le défilement. -->
+      <div class="mx-auto w-full max-w-md overflow-hidden rounded-[28px] lg:sticky lg:top-24 lg:max-w-none">
+        <div class="aspect-[4/5]">
+          <img
+            :src="concert.image_url || concertPlaceholder(concert.id)"
+            :alt="title"
+            loading="eager"
+            decoding="async"
+            class="w-full h-full object-cover"
+          >
+        </div>
       </div>
 
       <!-- Contenu -->
@@ -256,18 +260,20 @@ if (concert.value) {
           </div>
         </section>
 
-        <div class="flex flex-wrap gap-3">
+        <!-- Actions : pleine largeur et empilées sur mobile, en ligne ensuite.
+             Copier le lien est une action secondaire, en texte plutôt qu'en bouton. -->
+        <div class="grid grid-cols-1 gap-3 sm:flex sm:flex-wrap sm:items-center">
           <a
             v-if="safeExternalLink"
             :href="safeExternalLink"
             target="_blank"
             rel="noopener noreferrer"
-            class="btn-premium-primary !h-12 !w-auto !px-7"
+            class="btn-premium-primary !h-12 !w-full !px-7 sm:!w-auto"
           >
             {{ t('modal.book') }}
           </a>
           <button
-            class="btn-premium-secondary !h-12 !w-auto !px-7 flex items-center gap-2"
+            class="btn-premium-secondary !h-12 !w-full !px-7 sm:!w-auto"
             @click="downloadIcs(concert)"
           >
             <Icon name="heroicons:calendar" class="w-4 h-4 text-gold" />
@@ -277,13 +283,17 @@ if (concert.value) {
             :href="directionsUrl"
             target="_blank"
             rel="noopener noreferrer"
-            class="btn-premium-secondary !h-12 !w-auto !px-7 flex items-center gap-2"
+            class="btn-premium-secondary !h-12 !w-full !px-7 sm:!w-auto"
           >
             <Icon name="heroicons:map-pin" class="w-4 h-4 text-gold" />
             {{ t('modal.directions') }}
           </a>
-          <button type="button" class="btn-premium-secondary !h-12 !w-auto !px-7 flex items-center gap-2" @click="copyLink">
-            <Icon :name="copied ? 'heroicons:check' : 'heroicons:link'" class="w-4 h-4 text-gold" />
+          <button
+            type="button"
+            class="inline-flex h-12 items-center justify-center gap-2 px-3 text-sm text-text-secondary transition-colors hover:text-gold sm:ml-1"
+            @click="copyLink"
+          >
+            <Icon :name="copied ? 'heroicons:check' : 'heroicons:link'" class="w-4 h-4" />
             {{ copied ? t('modal.copied') : t('modal.copyLink') }}
           </button>
         </div>

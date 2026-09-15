@@ -138,11 +138,11 @@ function needsMore(n: NewsItem) {
               {{ t('home.heroSubtitle') }}
             </p>
             
-            <div class="mt-12 flex flex-wrap gap-6">
-              <NuxtLink :to="localePath('/concerts')" class="btn-premium-primary">
+            <div class="mt-12 grid grid-cols-1 gap-4 sm:flex sm:flex-wrap sm:gap-6">
+              <NuxtLink :to="localePath('/concerts')" class="btn-premium-primary w-full sm:w-auto">
                 {{ t('home.ctaConcerts') }}
               </NuxtLink>
-              <NuxtLink v-if="nextConcert" :to="nextConcertPath" class="btn-premium-secondary">
+              <NuxtLink v-if="nextConcert" :to="nextConcertPath" class="btn-premium-secondary w-full sm:w-auto">
                 {{ t('home.nextConcert') }}
               </NuxtLink>
             </div>
