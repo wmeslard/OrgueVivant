@@ -5,13 +5,8 @@ const form = reactive({ name: '', email: '', message: '' })
 const website = ref('')          // pot de miel : jamais affiché, jamais rempli par un humain
 
 // Jeton anti-robot demandé au chargement ; la page étant pré-rendue, il ne
-// peut venir que du navigateur. Voir server/utils/formToken.ts.
-let token: Promise<string> | null = null
-function fetchToken() {
-  token ??= $fetch<{ token: string }>('/api/form-token').then(r => r.token)
-  return token
-}
-onMounted(() => { fetchToken().catch(() => { token = null }) })
+// peut venir que du navigateur.
+const formToken = useFormToken()
 const status = ref<'idle' | 'sending' | 'success' | 'error'>('idle')
 const error = ref('')
 
@@ -45,12 +40,12 @@ async function submit() {
 
   status.value = 'sending'
   try {
-    await $fetch('/api/contact', { method: 'POST', body: { ...form, website: website.value, token: await fetchToken() } })
+    await $fetch('/api/contact', { method: 'POST', body: { ...form, website: website.value, token: await formToken.ready() } })
     status.value = 'success'
     form.name = ''; form.email = ''; form.message = ''
   } catch (e: any) {
     status.value = 'error'
-    token = null                                  // un jeton refusé ne sert plus
+    formToken.reset()
     error.value = e?.data?.statusMessage || t('contact.errorGeneric')
   }
 }

@@ -8,16 +8,10 @@ const error = ref('')
 const loading = ref(false)
 
 // Jeton anti-robot émis par le serveur au chargement : sans lui, ou trop tôt
-// après lui, l'inscription est refusée. Demandé une seule fois, au montage,
-// pour que le délai mesuré soit celui d'un vrai visiteur.
-let token: Promise<string> | null = null
-function fetchToken() {
-  token ??= $fetch<{ token: string }>('/api/form-token').then(r => r.token)
-  return token
-}
+// après lui, l'inscription est refusée.
+const formToken = useFormToken()
 
 onMounted(() => {
-  fetchToken().catch(() => { token = null })
   // Retour depuis un lien reçu par email : on affiche le message, puis on
   // nettoie l'adresse pour qu'un rechargement ne le répète pas.
   const state = route.query.newsletter
@@ -34,12 +28,12 @@ async function submit() {
   try {
     await $fetch('/api/newsletter/subscribe', {
       method: 'POST',
-      body: { email: email.value, website: website.value, token: await fetchToken() }
+      body: { email: email.value, website: website.value, token: await formToken.ready() }
     })
     status.value = 'sent'
     email.value = ''
   } catch (e: any) {
-    token = null                                  // un jeton refusé ne sert plus
+    formToken.reset()
     error.value = e?.data?.statusMessage || t('newsletter.error')
   } finally {
     loading.value = false
