@@ -29,7 +29,7 @@ function dismiss() { seen.value = 'seen' }
       <div class="flex flex-col gap-4 md:flex-row md:items-center">
         <p class="flex-1 text-sm text-ink-700 dark:text-ink-300">
           {{ t('cookies.message') }}
-          <NuxtLink :to="localePath('/privacy')" class="underline">{{ t('cookies.learnMore') }}</NuxtLink>
+          <NuxtLink :to="localePath('/privacy')" class="mt-1 block underline">{{ t('cookies.learnMore') }}</NuxtLink>
         </p>
         <button class="btn-primary shrink-0 !py-2 !px-4 !text-xs" @click="dismiss">{{ t('cookies.ok') }}</button>
       </div>
