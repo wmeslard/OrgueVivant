@@ -21,7 +21,7 @@ const { placeUrl: stEtienneUrl } = useMapsUrls(ref('saint_etienne'))
               src="/img/logo/horizontal-blanc-720.png"
               alt="Orgue Vivant — Concerts d'orgue à Lille"
               width="720"
-              height="194"
+              height="201"
               class="h-auto w-[300px] max-w-full md:w-[360px]"
             >
           </NuxtLink>
