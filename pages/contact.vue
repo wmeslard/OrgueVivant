@@ -135,7 +135,7 @@ async function submit() {
 
             <i18n-t keypath="contact.privacyNote" tag="p" class="text-xs leading-relaxed text-text-secondary/70">
               <template #link>
-                <NuxtLink :to="localePath('/privacy')" class="underline underline-offset-2 hover:text-gold">{{ t('privacy.linkLabel') }}</NuxtLink>
+                <NuxtLink :to="localePath('/privacy')" class="mt-1 block underline underline-offset-2 hover:text-gold">{{ t('privacy.title') }}</NuxtLink>
               </template>
             </i18n-t>
           </form>
