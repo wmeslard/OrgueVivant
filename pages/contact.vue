@@ -95,7 +95,7 @@ async function submit() {
               </div>
               <div>
                 <div class="text-[10px] uppercase tracking-widest text-text-secondary font-bold mb-1">{{ t('contact.social') }}</div>
-                <SocialLinks labels class="mt-1 [&_a]:text-text-primary [&_a:hover]:text-gold" />
+                <SocialLinks labels class="mt-3 [&_a]:text-text-primary [&_a:hover]:text-gold" />
               </div>
             </div>
           </div>
