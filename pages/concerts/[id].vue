@@ -191,7 +191,9 @@ if (concert.value) {
           {{ title }}
         </h1>
 
-        <dl class="grid grid-cols-2 gap-6 border-y border-text-primary/5 py-8 mb-8">
+        <!-- Une colonne sur téléphone : à deux, « Entrée libre — participation
+             libre » se cassait sur deux lignes, icône flottant entre les deux. -->
+        <dl class="grid grid-cols-1 gap-6 border-y border-text-primary/5 py-8 mb-8 sm:grid-cols-2">
           <div>
             <dt class="text-[10px] uppercase tracking-widest text-text-secondary mb-1.5 font-bold">{{ t('modal.location') }}</dt>
             <dd class="text-text-primary flex items-center gap-2 text-sm">
@@ -206,8 +208,8 @@ if (concert.value) {
           </div>
           <div>
             <dt class="text-[10px] uppercase tracking-widest text-text-secondary mb-1.5 font-bold">{{ t('modal.price') }}</dt>
-            <dd class="text-text-primary flex items-center gap-2 text-sm">
-              <Icon name="heroicons:ticket" class="w-4 h-4 text-gold shrink-0" />
+            <dd class="text-text-primary flex items-start gap-2 text-sm">
+              <Icon name="heroicons:ticket" class="mt-0.5 w-4 h-4 text-gold shrink-0" />
               {{ concert.price_type === 'free' ? t('modal.freeLong') : t('modal.paid') }}
             </dd>
           </div>
