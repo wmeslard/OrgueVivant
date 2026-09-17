@@ -1,4 +1,5 @@
 import { Resend } from 'resend'
+import { senderAddress } from '~/server/utils/sender'
 import { getServiceClient } from '~/server/utils/superAdminClient'
 import { verifyFormToken } from '~/server/utils/formToken'
 import { confirmHtml } from '~/server/utils/newsletterTemplates'
@@ -73,7 +74,7 @@ export default defineEventHandler(async (event) => {
   // refus arrive dans `error`, qu'il faut lire pour ne pas répondre « envoyé ».
   const resend = new Resend(config.resendApiKey)
   const { error: sendError } = await resend.emails.send({
-    from: `Orgue Vivant <${config.contactFrom || 'contact@orguevivant.fr'}>`,
+    from: senderAddress(),
     to: address,
     subject: 'Confirmez votre inscription à la newsletter',
     html: confirmHtml(confirmUrl, siteUrl)

@@ -1,4 +1,5 @@
 import { Resend } from 'resend'
+import { senderAddress } from '~/server/utils/sender'
 import { verifyFormToken } from '~/server/utils/formToken'
 
 // Limite par adresse IP, en mémoire : chaque instance Vercel a la sienne, c'est
@@ -68,7 +69,7 @@ export default defineEventHandler(async (event) => {
   // Le SDK Resend ne lève pas d'exception quand l'API refuse l'envoi : le
   // refus arrive dans `error`, qu'il faut lire pour ne pas répondre « envoyé ».
   const { error: sendError } = await resend.emails.send({
-    from: `Orgue Vivant <${config.contactFrom || 'contact@orguevivant.fr'}>`,
+    from: senderAddress(),
     to: config.contactTo || 'contact@orguevivant.fr',
     replyTo: `${sanitizeHeader(name)} <${sanitizeHeader(email)}>`,
     subject: `[Orgue Vivant] Message de ${sanitizeHeader(name)}`,

@@ -1,4 +1,5 @@
 import { Resend } from 'resend'
+import { senderAddress } from '~/server/utils/sender'
 import { requireAdmin, getServiceClient } from '~/server/utils/superAdminClient'
 import { concertHtml, newsHtml } from '~/server/utils/newsletterTemplates'
 import type { NewsItem } from '~/composables/useNews'
@@ -35,7 +36,7 @@ export default defineEventHandler(async (event) => {
   if (!subscribers?.length) return { ok: true, sent: 0 }
 
   const resend = new Resend(config.resendApiKey)
-  const from = `Orgue Vivant <${config.contactFrom || 'contact@orguevivant.fr'}>`
+  const from = senderAddress()
 
   const subject = customSubject?.trim() || (type === 'concert'
     ? `Nouveau concert : ${(data as Concert).title}`
