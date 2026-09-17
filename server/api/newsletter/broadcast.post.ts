@@ -51,9 +51,14 @@ export default defineEventHandler(async (event) => {
 
   // Resend plafonne chaque envoi groupé à 100 destinataires : au-delà, l'appel
   // échouerait en bloc. On découpe donc en lots.
+  // Le SDK ne lève pas d'exception sur un refus de l'API : on lit `error`.
   const BATCH_SIZE = 100
   for (let i = 0; i < emails.length; i += BATCH_SIZE) {
-    await resend.batch.send(emails.slice(i, i + BATCH_SIZE))
+    const { error: sendError } = await resend.batch.send(emails.slice(i, i + BATCH_SIZE)).catch(e => ({ error: e }))
+    if (sendError) {
+      console.error(`[newsletter] envoi refusé à partir du destinataire ${i + 1} :`, sendError)
+      throw createError({ statusCode: 502, statusMessage: `Envoi refusé par Resend après ${i} destinataire(s) : ${sendError.message || 'erreur inconnue'}` })
+    }
   }
 
   return { ok: true, sent: emails.length }

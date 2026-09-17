@@ -69,16 +69,17 @@ export default defineEventHandler(async (event) => {
     return { ok: true }
   }
 
-  try {
-    const resend = new Resend(config.resendApiKey)
-    await resend.emails.send({
-      from: `Orgue Vivant <${config.contactFrom || 'contact@orguevivant.fr'}>`,
-      to: address,
-      subject: 'Confirmez votre inscription à la newsletter',
-      html: confirmHtml(confirmUrl, siteUrl)
-    })
-  } catch (e) {
-    console.error('[newsletter] envoi de la confirmation impossible :', e)
+  // Le SDK Resend ne lève pas d'exception quand l'API refuse l'envoi : le
+  // refus arrive dans `error`, qu'il faut lire pour ne pas répondre « envoyé ».
+  const resend = new Resend(config.resendApiKey)
+  const { error: sendError } = await resend.emails.send({
+    from: `Orgue Vivant <${config.contactFrom || 'contact@orguevivant.fr'}>`,
+    to: address,
+    subject: 'Confirmez votre inscription à la newsletter',
+    html: confirmHtml(confirmUrl, siteUrl)
+  }).catch(e => ({ error: e }))
+  if (sendError) {
+    console.error('[newsletter] envoi de la confirmation refusé :', sendError)
     throw createError({ statusCode: 500, statusMessage: 'Envoi de l\'email de confirmation impossible, réessayez.' })
   }
 

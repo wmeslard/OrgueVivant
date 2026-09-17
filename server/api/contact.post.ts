@@ -65,7 +65,9 @@ export default defineEventHandler(async (event) => {
   const safeEmail = escapeHtml(email)
   const safeMessage = escapeHtml(message)
 
-  await resend.emails.send({
+  // Le SDK Resend ne lève pas d'exception quand l'API refuse l'envoi : le
+  // refus arrive dans `error`, qu'il faut lire pour ne pas répondre « envoyé ».
+  const { error: sendError } = await resend.emails.send({
     from: `Orgue Vivant <${config.contactFrom || 'contact@orguevivant.fr'}>`,
     to: config.contactTo || 'contact@orguevivant.fr',
     replyTo: `${sanitizeHeader(name)} <${sanitizeHeader(email)}>`,
@@ -75,7 +77,11 @@ export default defineEventHandler(async (event) => {
       <hr/>
       <pre style="font-family:inherit;white-space:pre-wrap">${safeMessage}</pre>
     `
-  })
+  }).catch(e => ({ error: e }))
+  if (sendError) {
+    console.error('[contact] envoi refusé :', sendError)
+    throw createError({ statusCode: 500, statusMessage: 'Envoi du message impossible, réessayez plus tard.' })
+  }
 
   return { ok: true }
 })
