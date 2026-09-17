@@ -101,7 +101,7 @@ export default defineNuxtConfig({
     // Les fiches concert viennent de la base (voir server/api/__sitemap__/urls.ts)
     sources: ['/api/__sitemap__/urls'],
     // L'admin est déjà bloqué par robots.txt : ne pas le soumettre non plus au sitemap
-    exclude: ['/_nuxt/**', '/_**', '/admin', '/admin/**', '/auth-setup', '/newsletter/**', '/en/newsletter/**']
+    exclude: ['/_nuxt/**', '/_**', '/admin', '/admin/**', '/auth-setup', '/newsletter/**', '/en/newsletter/**', '/tribune', '/en/tribune']
   },
 
   runtimeConfig: {

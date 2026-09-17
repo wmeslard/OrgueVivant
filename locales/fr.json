@@ -174,6 +174,16 @@
       "note": "Vous pouvez vous inscrire à nouveau depuis la page d'accueil."
     }
   },
+  "tribune": {
+    "link": "Monter à la tribune",
+    "keyboard": "Jouez la signature",
+    "eyebrow": "Vous êtes à la tribune",
+    "title": "Vous avez trouvé la signature.",
+    "text": "B-A-C-H : Si bémol, La, Do, Si. Quatre notes que Jean-Sébastien Bach a glissées dans sa musique comme une signature, et que les organistes se transmettent depuis trois siècles. Peu de visiteurs les entendent ici.",
+    "claim": "Écrivez-nous à contact{'@'}orguevivant.fr en citant le mot ci-dessous : nous vous garderons une place à la tribune, auprès de l'organiste, lors d'un prochain concert.",
+    "word": "Contre-Bombarde",
+    "home": "Redescendre à l'accueil"
+  },
   "social": {
     "support": "Adhérer à Orgue Vivant sur HelloAsso",
     "on": "Orgue Vivant sur {name}"

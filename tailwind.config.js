@@ -56,7 +56,8 @@ export default {
         'fade-up': 'fadeUp 0.8s cubic-bezier(0.25, 0.1, 0.25, 1)',
         // Déplacement seul, sans fondu : un élément à opacité nulle n'est pas
         // « peint », et le LCP du hero attendait la fin du fondu.
-        'rise': 'rise 0.7s cubic-bezier(0.25, 0.1, 0.25, 1)'
+        'rise': 'rise 0.7s cubic-bezier(0.25, 0.1, 0.25, 1)',
+        'shake': 'shake 0.35s ease-in-out'
       },
       keyframes: {
         fadeIn: {
@@ -70,6 +71,11 @@ export default {
         rise: {
           '0%': { transform: 'translateY(16px)' },
           '100%': { transform: 'translateY(0)' }
+        },
+        shake: {
+          '0%, 100%': { transform: 'translateX(-50%)' },
+          '25%': { transform: 'translateX(calc(-50% - 6px))' },
+          '75%': { transform: 'translateX(calc(-50% + 6px))' }
         }
       }
     }

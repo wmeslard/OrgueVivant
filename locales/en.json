@@ -174,6 +174,16 @@
       "note": "You can subscribe again from the home page."
     }
   },
+  "tribune": {
+    "link": "Climb to the organ loft",
+    "keyboard": "Play the signature",
+    "eyebrow": "You are in the organ loft",
+    "title": "You found the signature.",
+    "text": "B-A-C-H: B flat, A, C, B natural. Four notes Johann Sebastian Bach slipped into his music as a signature, handed down among organists for three centuries. Few visitors hear them here.",
+    "claim": "Write to contact{'@'}orguevivant.fr quoting the word below: we will keep you a seat in the organ loft, next to the organist, at a forthcoming concert.",
+    "word": "Contre-Bombarde",
+    "home": "Back down to the home page"
+  },
   "social": {
     "support": "Join Orgue Vivant on HelloAsso",
     "on": "Orgue Vivant on {name}"

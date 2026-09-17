@@ -4,6 +4,22 @@ const localePath = useLocalePath()
 const route = useRoute()
 const open = ref(false)
 const isScrolled = ref(false)
+// Œuf de Pâques B-A-C-H : le logo s'illumine lettre après lettre, puis le
+// lien vers la tribune apparaît (voir plugins/bach.client.ts).
+const { progress: bach, found: bachFound } = useBach()
+const halo = computed(() => bach.value ? `drop-shadow(0 0 ${4 * bach.value}px rgba(198,165,106,${0.2 * bach.value}))` : 'none')
+// Le point doré ouvre le mini-clavier après un appui long (souris ou doigt) :
+// un simple clic reste un lien vers l'accueil, comme le reste du logo.
+const clavier = ref(false)
+let appui: ReturnType<typeof setTimeout> | null = null
+function appuiDebut(e: PointerEvent) {
+  appui = setTimeout(() => { appui = null; clavier.value = true }, 1200)
+  e.stopPropagation()
+}
+function appuiFin() { if (appui) { clearTimeout(appui); appui = null } }
+// Signature jouée au clavier physique : le mini-clavier s'ouvre de lui-même
+// pour présenter le lien, comme après un appui long.
+watch(bachFound, (v) => { if (v) clavier.value = true })
 
 const nav = computed(() => [
   { to: '/', label: t('nav.home') },
@@ -57,14 +73,24 @@ onBeforeUnmount(() => {
           aria-hidden="true"
           width="109"
           height="128"
-          class="h-8 w-auto shrink-0 md:h-9"
+          class="h-8 w-auto shrink-0 transition-[filter] duration-500 md:h-9"
+          :style="{ filter: halo }"
         >
         <span class="flex items-center gap-2">
-          <span class="transition-colors duration-300 group-hover:text-gold">Orgue</span>
-          <span class="text-gold">·</span>
-          <span class="transition-colors duration-300 group-hover:text-gold">Vivant</span>
+          <span class="transition-colors duration-700 group-hover:text-gold" :class="{ 'text-gold': bachFound }">Orgue</span>
+          <span
+            class="select-none text-gold"
+            @pointerdown="appuiDebut"
+            @pointerup="appuiFin"
+            @pointerleave="appuiFin"
+            @pointercancel="appuiFin"
+            @contextmenu.prevent
+            @click.prevent
+          >·</span>
+          <span class="transition-colors duration-700 group-hover:text-gold" :class="{ 'text-gold': bachFound }">Vivant</span>
         </span>
       </NuxtLink>
+      <BachClavier v-if="clavier" @close="clavier = false" />
 
       <nav class="hidden gap-10 lg:flex">
         <NuxtLink
