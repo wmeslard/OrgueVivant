@@ -121,6 +121,15 @@ export default defineNuxtConfig({
     cssPath: '~/assets/css/main.css'
   },
 
+  experimental: {
+    // Les scripts sont nommés par empreinte et disparaissent à chaque
+    // déploiement. Un visiteur (ou le robot de Google) qui a reçu le HTML
+    // d'un build et demande ses scripts après le suivant tombait sur la page
+    // d'erreur : Search Console classait l'accueil en « Soft 404 ». On
+    // recharge la page sur-le-champ, ce qui ramène un HTML cohérent.
+    emitRouteChunkError: 'automatic-immediate'
+  },
+
   nitro: {
     preset: 'vercel',
     vercel: {
