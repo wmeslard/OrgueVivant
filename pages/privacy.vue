@@ -22,14 +22,14 @@ const articles = computed(() => [
       <h1 class="heading-section mt-3">{{ t('privacy.title') }}</h1>
       <LegalText class="mt-8" :text="t('privacy.intro')" />
 
-      <section v-for="(a, i) in articles" :key="a.title" class="mt-12 border-t border-ink-200/60 pt-8 dark:border-ink-800">
+      <section v-for="(a, i) in articles" :key="a.title" class="mt-12 border-t border-white/10 pt-8">
         <h2 class="font-display text-2xl font-light">
           <span class="mr-3 text-gold">{{ t('legal.article', { n: i + 1 }) }}</span>{{ a.title }}
         </h2>
         <LegalText class="mt-4" :text="a.body" />
       </section>
 
-      <p class="mt-12 text-sm text-ink-500">{{ t('privacy.updated') }}</p>
+      <p class="mt-12 text-sm text-text-secondary/70">{{ t('privacy.updated') }}</p>
     </div>
   </div>
 </template>

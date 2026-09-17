@@ -8,36 +8,23 @@ export default defineNuxtConfig({
 
   modules: [
     '@nuxtjs/tailwindcss',
-    '@nuxtjs/color-mode',
     '@nuxtjs/i18n',
     '@nuxtjs/supabase',
     '@nuxtjs/sitemap',
     '@nuxt/icon',
-    '@nuxtjs/google-fonts',
     // Mesure d'audience Vercel : sans cookie, servie depuis notre propre
     // domaine, elle ne requiert donc pas de consentement préalable.
     '@vercel/analytics/nuxt'
   ],
 
-  googleFonts: {
-    families: {
-      Fraunces: { wght: [300, 400], ital: [300] },
-      Inter: [400, 500, 600, 700]
-    },
-    subsets: ['latin'],
-    display: 'swap',
-    download: true,
-    inject: true,
-    preload: true,
-    preconnect: true
-  },
-
-
-  css: ['~/assets/css/main.css'],
+  css: ['~/assets/css/fonts.css', '~/assets/css/main.css'],
 
   app: {
     head: {
-      htmlAttrs: { lang: 'fr' },
+      // Le site n'a qu'un thème : la classe `dark` est posée en dur plutôt
+      // que par un module qui la faisait dépendre d'une préférence mémorisée
+      // dans chaque navigateur (d'où des pages légales grises sur certains).
+      htmlAttrs: { lang: 'fr', class: 'dark' },
       title: 'Orgue Vivant — Concerts d\'orgue à Lille',
       meta: [
         { charset: 'utf-8' },
@@ -59,6 +46,10 @@ export default defineNuxtConfig({
         { rel: 'icon', type: 'image/png', sizes: '96x96', href: '/img/logo/favicon-96.png' },
         { rel: 'icon', type: 'image/png', sizes: '192x192', href: '/img/logo/favicon-192.png' },
         { rel: 'apple-touch-icon', href: '/img/logo/apple-touch-icon.png' },
+        // Les deux polices du premier écran, demandées dès le HTML plutôt
+        // qu'après l'analyse du CSS : le texte s'affiche plus tôt.
+        { rel: 'preload', as: 'font', type: 'font/woff2', href: '/fonts/fraunces-latin.woff2', crossorigin: 'anonymous' },
+        { rel: 'preload', as: 'font', type: 'font/woff2', href: '/fonts/inter-latin.woff2', crossorigin: 'anonymous' },
         { rel: 'preconnect', href: process.env.SUPABASE_URL ?? 'https://your-project.supabase.co' },
         { rel: 'dns-prefetch', href: process.env.SUPABASE_URL ?? 'https://your-project.supabase.co' }
       ]
@@ -130,12 +121,6 @@ export default defineNuxtConfig({
     cssPath: '~/assets/css/main.css'
   },
 
-  colorMode: {
-    preference: 'dark',
-    fallback: 'dark',
-    classSuffix: ''
-  },
-
   nitro: {
     preset: 'vercel',
     vercel: {
@@ -168,6 +153,11 @@ export default defineNuxtConfig({
     '/en/privacy':  { prerender: true },
     // Admin : toujours SSR, jamais mis en cache
     '/admin/**': { ssr: true, robots: false, headers: { 'Cache-Control': 'no-store' } },
+    // Ressources statiques hors /_nuxt (noms non hachés) : Vercel les servait
+    // sans cache. Les polices ne changent jamais ; les images rarement, d'où
+    // une semaine, rafraîchie en arrière-plan.
+    '/fonts/**': { headers: { 'Cache-Control': 'public, max-age=31536000, immutable' } },
+    '/img/**':   { headers: { 'Cache-Control': 'public, max-age=604800, stale-while-revalidate=86400' } },
 
     '/**': {
       headers: {
@@ -175,7 +165,7 @@ export default defineNuxtConfig({
         'X-Content-Type-Options': 'nosniff',
         'Referrer-Policy': 'strict-origin-when-cross-origin',
         'Permissions-Policy': 'camera=(), microphone=(), geolocation=()',
-        'Strict-Transport-Security': 'max-age=31536000; includeSubDomains',
+        'Strict-Transport-Security': 'max-age=31536000; includeSubDomains; preload',
         'Content-Security-Policy': "default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob: https:; font-src 'self' data:; connect-src 'self' https://*.supabase.co wss://*.supabase.co; frame-src 'self'; frame-ancestors 'self'; object-src 'none'; base-uri 'self'",
         'Cross-Origin-Opener-Policy': 'same-origin'
       }

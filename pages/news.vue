@@ -93,7 +93,7 @@ useSeoMeta({
       {{ t('news.empty') }}
     </div>
     <div v-else class="grid gap-8 md:grid-cols-2 lg:grid-cols-3">
-      <article
+      <div
         v-for="n in list"
         :key="n.id"
         class="group flex flex-col h-full border-b border-white/5 pb-6 transition-colors hover:border-gold/30 cursor-pointer"
@@ -126,7 +126,7 @@ useSeoMeta({
           {{ t('home.readMore') }}
           <Icon name="heroicons:chevron-right" class="w-4 h-4 transition-transform group-hover:translate-x-1" />
         </span>
-      </article>
+      </div>
     </div>
 
     <LazyNewsModal :news="selectedNews" @close="selectedNews = null" />

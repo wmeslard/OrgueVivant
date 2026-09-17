@@ -25,7 +25,7 @@ const blocs = computed<Bloc[]>(() =>
 </script>
 
 <template>
-  <div class="space-y-4 leading-relaxed text-ink-700 dark:text-ink-300">
+  <div class="space-y-4 leading-relaxed text-text-secondary">
     <template v-for="(b, i) in blocs" :key="i">
       <ul v-if="b.type === 'ul'" class="list-disc space-y-1.5 pl-6 marker:text-gold">
         <li v-for="(l, j) in b.lines" :key="j">{{ l }}</li>

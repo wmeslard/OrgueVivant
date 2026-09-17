@@ -36,7 +36,7 @@ const siteUrl = useRuntimeConfig().public.siteUrl
 const localePath = useLocalePath()
 
 useHead({
-  title: 'Orgue Vivant — Concerts d\'orgue à Lille',
+  title: t('seo.homeTitle'),
   meta: [{ name: 'description', content: t('seo.homeDesc') }],
   link: [
     // Précharge le WebP réellement affiché, à la largeur adaptée à l'écran.
@@ -121,7 +121,7 @@ function needsMore(n: NewsItem) {
 
       <div class="container-premium relative z-20 w-full">
         <div class="max-w-[1400px] mx-auto">
-          <div class="animate-fade-up">
+          <div class="animate-rise">
             <div class="inline-flex items-center gap-3 mb-8">
               <span class="h-[1px] w-8 bg-gold"></span>
               <span class="text-xs uppercase tracking-[0.4em] text-gold font-bold">
@@ -166,7 +166,6 @@ function needsMore(n: NewsItem) {
           class="card-premium group flex cursor-pointer flex-col items-stretch min-h-[400px] md:flex-row"
           role="button"
           tabindex="0"
-          :aria-label="t('modal.moreInfo')"
           @click="onNextCardClick"
           @keydown.enter="navigateTo(nextConcertPath)"
           @keydown.space.prevent="navigateTo(nextConcertPath)"
@@ -271,7 +270,7 @@ function needsMore(n: NewsItem) {
           </p>
           <div class="w-full max-w-lg">
             <NewsletterSignup />
-            <i18n-t keypath="home.newsletterConsent" tag="p" class="mt-6 text-[10px] text-text-secondary/50 uppercase tracking-widest">
+            <i18n-t keypath="home.newsletterConsent" tag="p" class="mt-6 text-[10px] text-text-secondary/70 uppercase tracking-widest">
               <template #link>
                 <NuxtLink :to="localePath('/privacy')" class="underline underline-offset-2 hover:text-gold">{{ t('privacy.linkLabel') }}</NuxtLink>
               </template>
@@ -331,7 +330,7 @@ function needsMore(n: NewsItem) {
           </NuxtLink>
         </div>
         <div class="grid gap-8 md:grid-cols-3">
-          <article
+          <div
             v-for="n in latest"
             :key="n.id"
             class="group flex flex-col h-full border-b border-white/5 pb-6 transition-colors hover:border-gold/30 cursor-pointer"
@@ -352,7 +351,7 @@ function needsMore(n: NewsItem) {
               {{ t('home.readMore') }}
               <Icon name="heroicons:chevron-right" class="w-4 h-4 transition-transform group-hover:translate-x-1" />
             </span>
-          </article>
+          </div>
         </div>
       </div>
     </section>

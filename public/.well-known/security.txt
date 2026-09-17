@@ -1,0 +1,5 @@
+# Signalement d'une vulnérabilité sur orguevivant.fr (RFC 9116)
+Contact: mailto:contact@orguevivant.fr
+Preferred-Languages: fr, en
+Canonical: https://orguevivant.fr/.well-known/security.txt
+Expires: 2027-09-30T00:00:00.000Z

@@ -71,21 +71,21 @@ const { placeUrl: stEtienneUrl } = useMapsUrls(ref('saint_etienne'))
           <ul class="space-y-4 text-sm">
             <li><NuxtLink :to="localePath('/legal')" class="text-text-secondary hover:text-text-primary transition-colors">{{ t('footer.legalMentions') }}</NuxtLink></li>
             <li><NuxtLink :to="localePath('/privacy')" class="text-text-secondary hover:text-text-primary transition-colors">{{ t('footer.privacy') }}</NuxtLink></li>
-            <li><NuxtLink to="/admin" class="text-text-secondary/50 hover:text-text-primary transition-colors text-xs">{{ t('footer.admin') }}</NuxtLink></li>
+            <li><NuxtLink to="/admin" class="text-text-secondary/75 hover:text-text-primary transition-colors text-xs">{{ t('footer.admin') }}</NuxtLink></li>
           </ul>
         </div>
         </div>
       </div>
 
       <div class="mt-20 pt-10 border-t border-white/5 flex flex-col md:flex-row justify-between items-center gap-6">
-        <div class="text-[10px] uppercase tracking-widest text-text-secondary/60">
+        <div class="text-[10px] uppercase tracking-widest text-text-secondary/75">
           © {{ year }} Orgue Vivant — {{ t('footer.rights') }}
         </div>
         <a
           href="https://www.linkedin.com/in/william-meslard-81377a14b"
           target="_blank"
           rel="noopener noreferrer"
-          class="text-[10px] uppercase tracking-widest text-text-secondary/40 transition-colors hover:text-text-secondary"
+          class="text-[10px] uppercase tracking-widest text-text-secondary/75 transition-colors hover:text-text-secondary"
         >
           Design by William Meslard
         </a>

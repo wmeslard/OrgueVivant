@@ -94,7 +94,8 @@ const image = computed(() =>
   concert.value?.image_url || `${siteUrl}${concertPlaceholder(concert.value?.id)}`)
 
 useHead({
-  title: concert.value ? `${title.value} — Orgue Vivant` : 'Concert — Orgue Vivant',
+  // Google tronque vers 60 caractères : au-delà de 45, le titre seul.
+  title: concert.value ? (title.value.length > 45 ? title.value : `${title.value} — Orgue Vivant`) : 'Concert — Orgue Vivant',
   meta: [{ name: 'description', content: seoDescription.value }],
   script: concert.value ? [{
     type: 'application/ld+json',

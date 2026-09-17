@@ -15,12 +15,13 @@
     "saint_etienne": "Église Saint-Étienne"
   },
   "seo": {
+    "homeTitle": "Orgue Vivant — Concerts d'orgue à Lille",
     "homeDesc": "Concerts d'orgue dans le centre-ville de Lille — Saint-Maurice & Saint-Étienne.",
-    "concertsDesc": "Tous les concerts d'orgue à venir et passés à Lille.",
+    "concertsDesc": "Tous les concerts d'orgue d'Orgue Vivant à Lille : programme, artistes et dates à venir dans les églises Saint-Maurice et Saint-Étienne. Entrée libre.",
     "newsDesc": "Toutes les actualités et annonces d'Orgue Vivant — concerts, restaurations, partenariats.",
     "aboutDesc": "Découvrez Orgue Vivant et les églises Saint-Maurice et Saint-Étienne.",
     "concertFallback": "Concert d'orgue le {date} à {time}, {venue}, Lille — {artists}.",
-    "contactDesc": "Contactez l'équipe d'Orgue Vivant."
+    "contactDesc": "Contactez l'association Orgue Vivant, à Lille : questions sur les concerts d'orgue, partenariats, presse. Formulaire, adresse et réseaux sociaux."
   },
   "home": {
     "eyebrow": "Saison 2026",

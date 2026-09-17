@@ -1,5 +1,6 @@
 <script setup lang="ts">
-defineProps<{ error: { statusCode: number; statusMessage?: string } }>()
+const props = defineProps<{ error: { statusCode: number; statusMessage?: string } }>()
+useHead({ title: props.error.statusCode === 404 ? 'Page introuvable — Orgue Vivant' : 'Erreur — Orgue Vivant' })
 const { t } = useI18n()
 </script>
 

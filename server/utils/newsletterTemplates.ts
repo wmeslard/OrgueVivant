@@ -10,9 +10,9 @@ import { artistNames } from '~/utils/artists'
  * deux implémentations auraient fini par diverger.
  *
  * Tous partagent le même châssis, aux couleurs et polices de la charte. Les
- * polices viennent de Google Fonts : Apple Mail, iOS et la plupart des clients
- * les affichent ; Gmail et Outlook retombent sur Georgia et Helvetica, cités
- * en repli. Les visuels sont affichés en entier, à largeur fixe et hauteur
+ * polices sont celles du site, servies par lui (pas de requête vers Google à
+ * l'ouverture) : Apple Mail, iOS et la plupart des clients les affichent ;
+ * Gmail et Outlook retombent sur Georgia et Helvetica, cités en repli. Les visuels sont affichés en entier, à largeur fixe et hauteur
  * automatique : `object-fit` n'est pas supporté par Outlook, et un recadrage
  * en bandeau amputait les affiches, qui sont au format 4:5.
  */
@@ -26,7 +26,10 @@ const FAINT = '#7c7a75'
 const GOLD = '#C6A56A'
 const SERIF = "'Fraunces', Georgia, 'Times New Roman', serif"
 const SANS = "'Inter', 'Helvetica Neue', Helvetica, Arial, sans-serif"
-const FONTS_URL = 'https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300;0,9..144,400;1,9..144,300&family=Inter:wght@400;500;600&display=swap'
+/** Les polices du site, servies par lui : aucune requête vers un tiers à l'ouverture. */
+const fontFaces = (siteUrl: string) => `
+    @font-face { font-family: 'Fraunces'; font-style: normal; font-weight: 300 400; font-display: swap; src: url('${siteUrl}/fonts/fraunces-latin.woff2') format('woff2'); }
+    @font-face { font-family: 'Inter'; font-style: normal; font-weight: 400 700; font-display: swap; src: url('${siteUrl}/fonts/inter-latin.woff2') format('woff2'); }`
 
 function escapeHtml(s: string) {
   return s
@@ -87,9 +90,7 @@ function shell(opts: { subject: string; preheader: string; content: string; foot
   <meta name="color-scheme" content="dark">
   <meta name="supported-color-schemes" content="dark">
   <title>${escapeHtml(opts.subject)}</title>
-  <!--[if !mso]><!--><link href="${FONTS_URL}" rel="stylesheet"><!--<![endif]-->
-  <style>
-    @import url('${FONTS_URL}');
+  <style>${fontFaces(opts.siteUrl)}
     body { margin:0; padding:0; background:${BG}; }
     @media (max-width:620px) { .pad { padding-left:24px !important; padding-right:24px !important; } }
   </style>

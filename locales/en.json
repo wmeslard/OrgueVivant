@@ -15,12 +15,13 @@
     "saint_etienne": "Saint-Étienne Church"
   },
   "seo": {
+    "homeTitle": "Orgue Vivant — Organ concerts in Lille",
     "homeDesc": "Organ concerts in the heart of Lille — Saint-Maurice & Saint-Étienne churches.",
-    "concertsDesc": "All upcoming and past organ concerts in Lille.",
+    "concertsDesc": "All Orgue Vivant organ concerts in Lille: programme, artists and upcoming dates at the Saint-Maurice and Saint-Étienne churches. Free admission.",
     "newsDesc": "All news and announcements from Orgue Vivant — concerts, restorations, partnerships.",
     "aboutDesc": "Discover Orgue Vivant and the Saint-Maurice and Saint-Étienne churches.",
     "concertFallback": "Organ concert on {date} at {time}, {venue}, Lille — {artists}.",
-    "contactDesc": "Get in touch with the Orgue Vivant team."
+    "contactDesc": "Get in touch with Orgue Vivant, the Lille organ-concert association: questions about concerts, partnerships, press. Form, address and social links."
   },
   "home": {
     "eyebrow": "2026 Season",
