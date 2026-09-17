@@ -186,11 +186,6 @@
     "admin": "Admin",
     "rights": "All rights reserved."
   },
-  "cookies": {
-    "message": "This site only sets technical cookies (language) and measures its audience without cookies or tracking. No consent is required.",
-    "ok": "Got it",
-    "learnMore": "Learn more"
-  },
   "legal": {
     "eyebrow": "Legal information",
     "article": "Article {n}",
@@ -224,7 +219,7 @@
     "retentionTitle": "Retention periods",
     "retention": "– Contact form messages: one year from the last exchange\n– Newsletter: until unsubscription; an unconfirmed subscription is deleted after thirty days\n– Audience measurement: aggregated data, no individual identifier\n– Technical logs: a few days",
     "cookiesTitle": "Cookies",
-    "cookies": "The Site only places cookies strictly necessary for its operation, exempt from consent under Article 82 of the French Data Protection Act:\n\n– i18n_redirected: stores the chosen language (duration: one year)\n– ov_cookie_consent: records that the cookie information has been read (duration: one year)\n\nNo advertising, audience-measurement or tracking cookie is used.",
+    "cookies": "The Site only places one cookie strictly necessary for its operation, exempt from consent under Article 82 of the French Data Protection Act:\n\n– i18n_redirected: stores the chosen language (duration: one year)\n\nNo advertising, audience-measurement or tracking cookie is used, so no consent banner is displayed.",
     "securityTitle": "Security",
     "security": "The association implements appropriate technical and organisational measures to ensure the security and confidentiality of data: encryption of communications (HTTPS), restricted access to the database, protection of forms against automated submissions, and reliance on providers offering sufficient guarantees.",
     "rightsTitle": "Rights of data subjects",

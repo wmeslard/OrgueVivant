@@ -22,7 +22,6 @@ Minimalist, Apple-inspired website showcasing organ concerts in downtown Lille (
 │   ├── AppFooter.vue
 │   ├── ConcertCard.vue
 │   ├── ConcertModal.vue
-│   ├── CookieBanner.vue
 │   ├── DarkModeToggle.vue
 │   ├── LanguageToggle.vue
 │   ├── NewsletterSignup.vue

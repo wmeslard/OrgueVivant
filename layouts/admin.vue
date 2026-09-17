@@ -157,7 +157,6 @@ onBeforeUnmount(() => {
     </main>
     <AppFooter />
     <ClientOnly>
-      <CookieBanner />
     </ClientOnly>
   </div>
 

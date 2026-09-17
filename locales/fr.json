@@ -186,11 +186,6 @@
     "admin": "Espace admin",
     "rights": "Tous droits réservés."
   },
-  "cookies": {
-    "message": "Ce site ne dépose que des cookies techniques (langue) et mesure sa fréquentation sans cookie ni suivi. Aucun consentement n'est requis.",
-    "ok": "Compris",
-    "learnMore": "En savoir plus"
-  },
   "legal": {
     "eyebrow": "Informations légales",
     "article": "Article {n}",
@@ -224,7 +219,7 @@
     "retentionTitle": "Durées de conservation",
     "retention": "– Messages du formulaire de contact : un an à compter du dernier échange\n– Lettre d'information : jusqu'à la désinscription ; une inscription non confirmée est supprimée à l'issue d'un délai de trente jours\n– Mesure d'audience : données agrégées, sans identifiant individuel\n– Journaux techniques : quelques jours",
     "cookiesTitle": "Cookies",
-    "cookies": "Le Site ne dépose que des cookies strictement nécessaires à son fonctionnement, exemptés de consentement en application de l'article 82 de la loi Informatique et Libertés :\n\n– i18n_redirected : mémorisation de la langue choisie (durée : un an)\n– ov_cookie_consent : mémorisation de la prise de connaissance de l'information relative aux cookies (durée : un an)\n\nAucun cookie publicitaire, de mesure d'audience ou de suivi n'est utilisé.",
+    "cookies": "Le Site ne dépose qu'un cookie strictement nécessaire à son fonctionnement, exempté de consentement en application de l'article 82 de la loi Informatique et Libertés :\n\n– i18n_redirected : mémorisation de la langue choisie (durée : un an)\n\nAucun cookie publicitaire, de mesure d'audience ou de suivi n'est utilisé. Aucun bandeau de consentement n'est donc affiché.",
     "securityTitle": "Sécurité",
     "security": "L'association met en œuvre des mesures techniques et organisationnelles appropriées afin de garantir la sécurité et la confidentialité des données : chiffrement des échanges (HTTPS), restriction des accès à la base de données, protection des formulaires contre les envois automatisés, et recours à des prestataires présentant des garanties suffisantes.",
     "rightsTitle": "Droits des personnes concernées",
