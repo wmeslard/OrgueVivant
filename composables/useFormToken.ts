@@ -4,9 +4,9 @@
  * Demandé une seule fois, au montage, pour que le délai mesuré soit celui d'un
  * vrai visiteur. À la soumission, on attend si nécessaire que le jeton ait
  * l'âge minimal exigé par le serveur, plutôt que d'essuyer un refus : un
- * visiteur dont l'adresse est pré-remplie valide parfois en moins de 3 s.
+ * visiteur dont l'adresse est pré-remplie valide parfois très vite.
  */
-const MIN_AGE_MS = 3_200 // un peu plus que le minimum côté serveur
+const MIN_AGE_MS = 1_600 // un peu plus que le minimum côté serveur
 
 export function useFormToken() {
   let token: Promise<string> | null = null
@@ -30,8 +30,11 @@ export function useFormToken() {
     return value
   }
 
-  /** À appeler après un refus : un jeton rejeté ne sert plus. */
-  function reset() { token = null }
+  /**
+   * À appeler après une erreur : si c'est le jeton que le serveur a refusé
+   * (403), il ne sert plus ; sinon on le garde, il reste valable des heures.
+   */
+  function reset(e: any) { if (e?.statusCode === 403) token = null }
 
   return { ready, reset }
 }

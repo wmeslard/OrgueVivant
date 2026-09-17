@@ -33,7 +33,7 @@ async function submit() {
     status.value = 'sent'
     email.value = ''
   } catch (e: any) {
-    formToken.reset()
+    formToken.reset(e)
     error.value = e?.data?.statusMessage || t('newsletter.error')
   } finally {
     loading.value = false
@@ -64,9 +64,12 @@ async function submit() {
       </button>
     </form>
     <div v-if="error && status === 'idle'" class="mt-2 text-sm text-red-500 text-center">{{ error }}</div>
-    <div v-if="status !== 'idle'" class="min-h-[54px] flex items-center justify-center text-center text-gold font-medium animate-fade-in">
-      <Icon :name="status === 'unsubscribed' ? 'heroicons:hand-raised' : 'heroicons:check-circle'" class="w-6 h-6 mr-2 shrink-0" />
-      {{ t(`newsletter.${status}`) }}
+    <div v-if="status !== 'idle'" role="status" class="animate-fade-in rounded-2xl border border-gold/20 bg-gold/[0.06] px-6 py-7 text-center sm:px-10">
+      <div class="mx-auto mb-4 flex h-11 w-11 items-center justify-center rounded-full bg-gold text-background">
+        <Icon :name="status === 'unsubscribed' ? 'heroicons:hand-raised' : 'heroicons:check'" class="h-5 w-5" />
+      </div>
+      <p class="font-display text-2xl font-light text-text-primary">{{ t(`newsletter.${status}.title`) }}</p>
+      <p class="mx-auto mt-2 max-w-md text-sm leading-relaxed text-text-secondary">{{ t(`newsletter.${status}.text`) }}</p>
     </div>
   </div>
 </template>

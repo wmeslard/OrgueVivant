@@ -146,9 +146,18 @@
   "newsletter": {
     "placeholder": "Your email",
     "cta": "Subscribe",
-    "sent": "Thank you! We just sent you an email: click the link to confirm your subscription.",
-    "confirmed": "Subscription confirmed. See you at a concert!",
-    "unsubscribed": "You are unsubscribed. You will not receive our emails any more.",
+    "sent": {
+      "title": "Thank you!",
+      "text": "We just sent you an email: click the link it contains to confirm your subscription."
+    },
+    "confirmed": {
+      "title": "Subscription confirmed",
+      "text": "See you at a concert!"
+    },
+    "unsubscribed": {
+      "title": "You are unsubscribed",
+      "text": "You will not receive our emails any more."
+    },
     "error": "Something went wrong. Please try again."
   },
   "social": {

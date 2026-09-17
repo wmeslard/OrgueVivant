@@ -45,7 +45,7 @@ async function submit() {
     form.name = ''; form.email = ''; form.message = ''
   } catch (e: any) {
     status.value = 'error'
-    formToken.reset()
+    formToken.reset(e)
     error.value = e?.data?.statusMessage || t('contact.errorGeneric')
   }
 }

@@ -29,7 +29,7 @@ export function issueFormToken(): string {
 }
 
 /** Vrai si le jeton est authentique et émis dans la fenêtre [minAge, maxAge]. */
-export function verifyFormToken(token: unknown, { minAgeMs = 3_000, maxAgeMs = 12 * 3_600_000 } = {}): boolean {
+export function verifyFormToken(token: unknown, { minAgeMs = 1_500, maxAgeMs = 12 * 3_600_000 } = {}): boolean {
   if (typeof token !== 'string') return false
   const [issued, sig] = token.split('.')
   if (!issued || !sig) return false

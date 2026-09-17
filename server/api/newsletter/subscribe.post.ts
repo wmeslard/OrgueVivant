@@ -30,7 +30,7 @@ export default defineEventHandler(async (event) => {
   // saisie humaine, c'est un script. Le message invite à recharger, seul cas
   // où un visiteur réel peut le rencontrer (page restée ouverte des heures).
   if (!verifyFormToken(token))
-    throw createError({ statusCode: 400, statusMessage: 'Formulaire expiré, rechargez la page.' })
+    throw createError({ statusCode: 403, statusMessage: 'Formulaire expiré, rechargez la page.' })
 
   if (!email?.trim() || !/^\S+@\S+\.\S+$/.test(email) || email.length > 254)
     throw createError({ statusCode: 400, statusMessage: 'Email invalide' })

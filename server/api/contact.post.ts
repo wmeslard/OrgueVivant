@@ -35,7 +35,7 @@ export default defineEventHandler(async (event) => {
   if (body?.website) return { ok: true }
   // Jeton émis à l'affichage du formulaire (voir server/utils/formToken.ts).
   if (!verifyFormToken(body?.token))
-    throw createError({ statusCode: 400, statusMessage: 'Formulaire expiré, rechargez la page.' })
+    throw createError({ statusCode: 403, statusMessage: 'Formulaire expiré, rechargez la page.' })
 
   const name = body?.name?.trim()
   const email = body?.email?.trim()
