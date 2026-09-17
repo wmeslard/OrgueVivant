@@ -130,6 +130,28 @@ export default defineNuxtConfig({
     emitRouteChunkError: 'automatic-immediate'
   },
 
+  vite: {
+    build: {
+      rollupOptions: {
+        output: {
+          // Sans consigne, Vite produit une vingtaine de petits fichiers
+          // (une page, un composant) que l'accueil doit tous charger. Le
+          // robot de rendu de Google, au débit bridé, n'y parvenait pas
+          // toujours dans son délai et tombait sur la page d'erreur (Search
+          // Console : « Soft 404 »). Un seul fichier pour le site public —
+          // séparer bibliothèques et application créait un cycle d'imports
+          // entre les deux et cassait l'hydratation ; l'admin et le
+          // recadrage d'images restent chargés à la demande.
+          manualChunks(id) {
+            if (id.includes('cropperjs') || /[\/](pages|layouts)[\/]admin|[\/]components[\/](Admin|Image)/.test(id)) return
+            if (id.includes('nuxt/dist/app/entry')) return
+            return 'app'
+          }
+        }
+      }
+    }
+  },
+
   nitro: {
     preset: 'vercel',
     vercel: {
