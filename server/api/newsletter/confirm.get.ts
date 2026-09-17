@@ -3,7 +3,7 @@ import { sendRedirect } from 'h3'
 
 const hits = new Map<string, { count: number; reset: number }>()
 
-/** Lien reçu par email : marque l'abonné confirmé, puis renvoie vers l'accueil. */
+/** Lien reçu par email : marque l'abonné confirmé, puis renvoie vers la page de confirmation. */
 export default defineEventHandler(async (event) => {
   const ip = getRequestHeader(event, 'x-forwarded-for')?.split(',')[0]?.trim() || 'unknown'
   const now = Date.now()
@@ -18,7 +18,7 @@ export default defineEventHandler(async (event) => {
 
   const { token } = getQuery(event)
   if (!token || typeof token !== 'string' || token.length < 10)
-    throw createError({ statusCode: 400, statusMessage: 'Lien invalide' })
+    return sendRedirect(event, '/newsletter/confirmation?etat=invalide', 302)
 
   const client = getServiceClient()
   const { data, error } = await client
@@ -33,5 +33,5 @@ export default defineEventHandler(async (event) => {
   // Déjà confirmé ou jeton inconnu : même destination, le message reste vrai
   // pour le premier cas et ne renseigne pas le second.
   void data
-  return sendRedirect(event, '/?newsletter=confirmed#newsletter', 302)
+  return sendRedirect(event, '/newsletter/confirmation?etat=confirmee', 302)
 })

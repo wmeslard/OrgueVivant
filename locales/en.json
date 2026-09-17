@@ -150,15 +150,28 @@
       "title": "Thank you!",
       "text": "We just sent you an email: click the link it contains to confirm your subscription."
     },
-    "confirmed": {
-      "title": "Subscription confirmed",
-      "text": "See you at a concert!"
-    },
-    "unsubscribed": {
-      "title": "You are unsubscribed",
-      "text": "You will not receive our emails any more."
-    },
     "error": "Something went wrong. Please try again."
+  },
+  "newsletterPage": {
+    "overline": "Newsletter",
+    "concerts": "See the next concerts",
+    "home": "Back to home",
+    "next": "Next concerts",
+    "confirmee": {
+      "title": "Subscription confirmed",
+      "text": "You will now receive the concert dates, the artists and the festival news, straight to your inbox.",
+      "note": "You can unsubscribe at any time using the link in every email."
+    },
+    "desinscrit": {
+      "title": "You are unsubscribed",
+      "text": "You will not receive our emails any more. Thank you for following us, and see you at a concert perhaps.",
+      "note": "You can subscribe again at any time from the home page."
+    },
+    "invalide": {
+      "title": "Invalid or expired link",
+      "text": "This link does not match any pending subscription. It may have been used already, or the subscription has expired.",
+      "note": "You can subscribe again from the home page."
+    }
   },
   "social": {
     "support": "Join Orgue Vivant on HelloAsso",

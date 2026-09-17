@@ -1,9 +1,8 @@
 <script setup lang="ts">
 const { t } = useI18n()
-const route = useRoute()
 const email = ref('')
 const website = ref('')          // pot de miel : jamais affiché, jamais rempli par un humain
-const status = ref<'idle' | 'sent' | 'confirmed' | 'unsubscribed'>('idle')
+const status = ref<'idle' | 'sent'>('idle')
 const error = ref('')
 const loading = ref(false)
 
@@ -11,15 +10,6 @@ const loading = ref(false)
 // après lui, l'inscription est refusée.
 const formToken = useFormToken()
 
-onMounted(() => {
-  // Retour depuis un lien reçu par email : on affiche le message, puis on
-  // nettoie l'adresse pour qu'un rechargement ne le répète pas.
-  const state = route.query.newsletter
-  if (state === 'confirmed' || state === 'unsubscribed') {
-    status.value = state
-    history.replaceState(history.state, '', `${route.path}#newsletter`)
-  }
-})
 
 async function submit() {
   if (!email.value) return
@@ -66,7 +56,7 @@ async function submit() {
     <div v-if="error && status === 'idle'" class="mt-2 text-sm text-red-500 text-center">{{ error }}</div>
     <div v-if="status !== 'idle'" role="status" class="animate-fade-in rounded-2xl border border-gold/20 bg-gold/[0.06] px-6 py-7 text-center sm:px-10">
       <div class="mx-auto mb-4 flex h-11 w-11 items-center justify-center rounded-full bg-gold text-background">
-        <Icon :name="status === 'unsubscribed' ? 'heroicons:hand-raised' : 'heroicons:check'" class="h-5 w-5" />
+        <Icon name="heroicons:check" class="h-5 w-5" />
       </div>
       <p class="font-display text-2xl font-light text-text-primary">{{ t(`newsletter.${status}.title`) }}</p>
       <p class="mx-auto mt-2 max-w-md text-sm leading-relaxed text-text-secondary">{{ t(`newsletter.${status}.text`) }}</p>

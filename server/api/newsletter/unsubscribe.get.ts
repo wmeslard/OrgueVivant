@@ -17,9 +17,8 @@ export default defineEventHandler(async (event) => {
 
   const { token } = getQuery(event)
 
-  if (!token || typeof token !== 'string' || token.length < 10) {
-    throw createError({ statusCode: 400, statusMessage: 'Token invalide' })
-  }
+  if (!token || typeof token !== 'string' || token.length < 10)
+    return sendRedirect(event, '/newsletter/confirmation?etat=invalide', 302)
 
   const client = getServiceClient()
 
@@ -30,5 +29,5 @@ export default defineEventHandler(async (event) => {
 
   if (error) throw createError({ statusCode: 500, statusMessage: 'Erreur lors de la désinscription' })
 
-  return sendRedirect(event, '/?newsletter=unsubscribed#newsletter', 302)
+  return sendRedirect(event, '/newsletter/confirmation?etat=desinscrit', 302)
 })

@@ -150,15 +150,28 @@
       "title": "Merci !",
       "text": "Un email vient de vous être envoyé : cliquez sur le lien qu'il contient pour confirmer votre inscription."
     },
-    "confirmed": {
-      "title": "Inscription confirmée",
-      "text": "À bientôt en concert !"
-    },
-    "unsubscribed": {
-      "title": "Désinscription prise en compte",
-      "text": "Vous ne recevrez plus nos emails."
-    },
     "error": "Une erreur est survenue. Veuillez réessayer."
+  },
+  "newsletterPage": {
+    "overline": "Newsletter",
+    "concerts": "Voir les prochains concerts",
+    "home": "Retour à l'accueil",
+    "next": "Prochains concerts",
+    "confirmee": {
+      "title": "Inscription confirmée",
+      "text": "Vous recevrez désormais les dates des concerts, les artistes et les actualités du festival, directement dans votre boîte mail.",
+      "note": "Vous pouvez vous désinscrire à tout moment, via le lien présent dans chaque email."
+    },
+    "desinscrit": {
+      "title": "Désinscription prise en compte",
+      "text": "Vous ne recevrez plus nos emails. Merci de nous avoir suivis, et à bientôt en concert peut-être.",
+      "note": "Vous pouvez vous réinscrire à tout moment depuis la page d'accueil."
+    },
+    "invalide": {
+      "title": "Lien invalide ou expiré",
+      "text": "Ce lien ne correspond à aucune inscription en attente. Il a peut-être déjà été utilisé, ou l'inscription a expiré.",
+      "note": "Vous pouvez vous inscrire à nouveau depuis la page d'accueil."
+    }
   },
   "social": {
     "support": "Adhérer à Orgue Vivant sur HelloAsso",
