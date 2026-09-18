@@ -11,18 +11,31 @@ const localeHead = useLocaleHead()
 useHead(() => ({
   htmlAttrs: localeHead.value.htmlAttrs,
   link: localeHead.value.link,
-  meta: localeHead.value.meta,
+  meta: [...localeHead.value.meta, { property: 'og:site_name', content: 'Orgue Vivant' }],
+  // Organization + WebSite : le second donne à Google le « nom du site » à
+  // afficher dans les résultats (« Orgue Vivant » plutôt que « orguevivant.fr »).
   script: [{
     type: 'application/ld+json',
     innerHTML: JSON.stringify({
       '@context': 'https://schema.org',
-      '@type': 'Organization',
-      name: 'Orgue Vivant',
-      url: siteUrl,
-      logo: `${siteUrl}/img/logo/apple-touch-icon.png`,
-      description: 'Concerts d\'orgue dans le centre-ville de Lille — Saint-Maurice & Saint-Étienne.',
-      address: { '@type': 'PostalAddress', addressLocality: 'Lille', addressCountry: 'FR' },
-      sameAs: socialLinks.filter(s => s.kind === 'social').map(s => s.url)
+      '@graph': [{
+        '@type': 'Organization',
+        '@id': `${siteUrl}/#organization`,
+        name: 'Orgue Vivant',
+        url: siteUrl,
+        logo: `${siteUrl}/img/logo/apple-touch-icon.png`,
+        description: 'Concerts d\'orgue dans le centre-ville de Lille — Saint-Maurice & Saint-Étienne.',
+        address: { '@type': 'PostalAddress', addressLocality: 'Lille', addressCountry: 'FR' },
+        sameAs: socialLinks.filter(s => s.kind === 'social').map(s => s.url)
+      }, {
+        '@type': 'WebSite',
+        '@id': `${siteUrl}/#website`,
+        name: 'Orgue Vivant',
+        alternateName: 'orguevivant.fr',
+        url: siteUrl,
+        publisher: { '@id': `${siteUrl}/#organization` },
+        inLanguage: ['fr-FR', 'en-US']
+      }]
     })
   }]
 }))
