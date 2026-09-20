@@ -1,8 +1,7 @@
 <script setup lang="ts">
 import { concertPlaceholder } from '~/utils/placeholders'
 import { artistList, artistNames, type Artist } from '~/utils/artists'
-import { venues } from '~/utils/venues'
-import { parisIso, parisEndIso, performerType, metaDescription } from '~/utils/event'
+import { metaDescription, musicEventJsonLd } from '~/utils/event'
 const { t, locale } = useI18n()
 const route = useRoute()
 const { all, fetchConcerts } = useConcerts()
@@ -99,48 +98,17 @@ useHead({
   meta: [{ name: 'description', content: seoDescription.value }],
   script: concert.value ? [{
     type: 'application/ld+json',
-    innerHTML: safeJsonLd((() => {
-      const c = concert.value
-      const venue = venues[c.location] ?? venues.saint_maurice
-      const time = c.time || '20:00'
-      const endDate = parisEndIso(c.date, time, c.duration)
-      const performer = artistList(c.artists).map(a => ({ '@type': performerType(a.name), name: a.name }))
-      return {
-        '@context': 'https://schema.org',
-        '@type': 'MusicEvent',
+    innerHTML: safeJsonLd({
+      '@context': 'https://schema.org',
+      ...musicEventJsonLd(concert.value, {
+        siteUrl,
+        url: pageUrl.value,
         name: title.value,
-        startDate: parisIso(c.date, time),
-        ...(endDate && { endDate }),
-        location: {
-          '@type': 'Place',
-          name: venue.name,
-          address: {
-            '@type': 'PostalAddress',
-            streetAddress: venue.streetAddress,
-            postalCode: venue.postalCode,
-            addressLocality: 'Lille',
-            addressCountry: 'FR'
-          },
-          geo: { '@type': 'GeoCoordinates', latitude: venue.latitude, longitude: venue.longitude }
-        },
-        ...(performer.length && { performer }),
-        organizer: { '@type': 'Organization', name: 'Orgue Vivant', url: siteUrl },
-        isAccessibleForFree: c.price_type === 'free',
-        // Entrée libre = offre gratuite ; sinon le prix n'est pas connu du site,
-        // on renvoie vers la billetterie si un lien existe.
-        offers: {
-          '@type': 'Offer',
-          ...(c.price_type === 'free' && { price: 0, priceCurrency: 'EUR' }),
-          availability: 'https://schema.org/InStock',
-          url: safeExternalLink.value || pageUrl.value
-        },
-        eventStatus: 'https://schema.org/EventScheduled',
-        eventAttendanceMode: 'https://schema.org/OfflineEventAttendanceMode',
-        image: image.value,
         description: seoDescription.value,
-        url: pageUrl.value
-      }
-    })())
+        image: image.value,
+        offerUrl: safeExternalLink.value || pageUrl.value
+      })
+    })
   }] : []
 })
 

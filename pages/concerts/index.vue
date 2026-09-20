@@ -1,5 +1,8 @@
 <script setup lang="ts">
-import { parisIso } from '~/utils/event'
+import type { Concert } from '~/composables/useConcerts'
+import { concertPlaceholder } from '~/utils/placeholders'
+import { artistNames } from '~/utils/artists'
+import { metaDescription, musicEventJsonLd } from '~/utils/event'
 
 const { t, locale } = useI18n()
 const { upcoming, past, pending, fetchConcerts } = useConcerts()
@@ -37,31 +40,39 @@ if (typeof deepLink === 'string' && deepLink) {
 
 const siteUrl = useRuntimeConfig().public.siteUrl
 
+/** Même repli que sur la fiche : une phrase construite quand le concert n'a pas de description. */
+function seoDescription(c: Concert): string {
+  const description = localized(c.description, c.description_en, locale.value)
+  if (description) return metaDescription(description)
+  const time = c.time || '20:00'
+  return t('seo.concertFallback', {
+    date: new Date(`${c.date}T${time}`).toLocaleDateString(locale.value === 'fr' ? 'fr-FR' : 'en-US',
+      { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' }),
+    time: locale.value === 'fr' ? time.replace(':', 'h') : time,
+    venue: t(`locations.${c.location}`),
+    artists: artistNames(c.artists, locale.value) || 'Orgue Vivant'
+  })
+}
+
 const jsonLd = computed(() => safeJsonLd({
   '@context': 'https://schema.org',
   '@type': 'ItemList',
   name: 'Concerts d\'orgue à Lille — Orgue Vivant',
-  itemListElement: upcoming.value.slice(0, 10).map((c, i) => ({
-    '@type': 'ListItem',
-    position: i + 1,
-    item: {
-      '@type': 'MusicEvent',
-      name: localized(c.title, c.title_en, locale.value),
-      startDate: parisIso(c.date, c.time || '20:00'),
-      url: `${siteUrl}${localePath(`/concerts/${c.id}`)}`,
-      location: {
-        '@type': 'Place',
-        name: c.location === 'saint_maurice' ? 'Église Saint-Maurice de Lille' : 'Église Saint-Étienne de Lille',
-        address: { '@type': 'PostalAddress', addressLocality: 'Lille', addressCountry: 'FR' }
-      },
-      organizer: { '@type': 'Organization', name: 'Orgue Vivant', url: siteUrl },
-      isAccessibleForFree: c.price_type === 'free',
-      eventStatus: 'https://schema.org/EventScheduled',
-      eventAttendanceMode: 'https://schema.org/OfflineEventAttendanceMode',
-      ...(c.image_url && { image: c.image_url }),
-      ...(c.description && { description: c.description })
+  itemListElement: upcoming.value.slice(0, 10).map((c, i) => {
+    const url = `${siteUrl}${localePath(`/concerts/${c.id}`)}`
+    return {
+      '@type': 'ListItem',
+      position: i + 1,
+      item: musicEventJsonLd(c, {
+        siteUrl,
+        url,
+        name: localized(c.title, c.title_en, locale.value),
+        description: seoDescription(c),
+        image: c.image_url || `${siteUrl}${concertPlaceholder(c.id)}`,
+        offerUrl: url
+      })
     }
-  }))
+  })
 }))
 
 useHead({
