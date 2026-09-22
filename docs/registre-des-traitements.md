@@ -98,9 +98,9 @@ séances sur le site et dans l'agenda.
 **Base légale** — intérêt légitime de l'association (organisation de son
 activité musicale) ; consentement explicite pour la publication du nom.
 
-**Données** — candidature : prénom, nom, email, téléphone, conservatoire,
-professeur, niveau, présentation, répertoire, accord de publication. Élève
-accepté : compte (email), prénom, nom. Séance : date, programme annoncé.
+**Données** — candidature : prénom, nom, email, téléphone (facultatif),
+demande libre, accord de publication. Élève accepté : compte (email), prénom,
+nom. Séance : date, programme annoncé.
 
 **Destinataires** — le bureau de l'association. Hébergement Supabase (Union
 européenne). Envois d'emails par Resend.

@@ -1,12 +1,12 @@
 <script setup lang="ts">
 /**
  * Grille mensuelle des Moments musicaux, du lundi au dimanche. Chaque jour
- * reçoit un état calculé par le parent (libre, pris, titulaire, fermé…) ;
+ * reçoit un état calculé par le parent (libre, pris, régulier, fermé…) ;
  * le composant ne fait qu'afficher et remonter le jour cliqué.
  */
 import { parseYmd, ymd } from '~/utils/moments'
 
-export type EtatJour = 'libre' | 'mienne' | 'prise' | 'titulaire' | 'fermee' | 'dimanche' | 'passe' | 'hors'
+export type EtatJour = 'libre' | 'mienne' | 'prise' | 'regulier' | 'fermee' | 'dimanche' | 'passe' | 'hors'
 
 const props = defineProps<{
   /** Mois affiché, « YYYY-MM ». */
@@ -54,7 +54,7 @@ const classes: Record<EtatJour, string> = {
   libre: 'cursor-pointer border-white/10 bg-white/[0.03] hover:border-gold hover:bg-gold/10',
   mienne: 'cursor-pointer border-gold bg-gold/20 text-text-primary',
   prise: 'border-white/5 bg-white/[0.02] text-text-secondary',
-  titulaire: 'border-white/5 bg-white/[0.02] text-text-secondary',
+  regulier: 'border-white/5 bg-white/[0.02] text-text-secondary',
   fermee: 'border-transparent bg-red-500/10 text-text-secondary',
   dimanche: 'border-transparent text-text-secondary/40',
   passe: 'border-transparent text-text-secondary/40',

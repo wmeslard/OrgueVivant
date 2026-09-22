@@ -1,7 +1,7 @@
 import { requireAdmin, getServiceClient } from '~/server/utils/superAdminClient'
 import { revalidatePublicPages } from '~/server/utils/revalidate'
 import { aujourdhuiParis, chargerFermetures, dateLongue, envoyerEmail, escapeHtml, paragraphe } from '~/server/utils/moments'
-import { estDimanche, estFermee, estJeudiTitulaire, MOMENT_DEBUT, MOMENT_FIN } from '~/utils/moments'
+import { estDimanche, estFermee, estJeudiRegulier, MOMENT_DEBUT, MOMENT_FIN } from '~/utils/moments'
 
 /**
  * Réservation faite par l'association pour un élève (au téléphone, par
@@ -14,7 +14,7 @@ export default defineEventHandler(async (event) => {
   const date = String(body?.date ?? '')
   if (!/^\d{4}-\d{2}-\d{2}$/.test(date) || date < aujourdhuiParis()) throw createError({ statusCode: 400, statusMessage: 'Date invalide' })
   if (estDimanche(date)) throw createError({ statusCode: 409, statusMessage: 'Pas de séance le dimanche.' })
-  if (estJeudiTitulaire(date)) throw createError({ statusCode: 409, statusMessage: 'Ce jeudi est celui de l\'organiste titulaire.' })
+  if (estJeudiRegulier(date)) throw createError({ statusCode: 409, statusMessage: 'Ce jeudi est celui de l\'organiste régulier.' })
   const programme = typeof body?.programme === 'string' ? body.programme.trim().slice(0, 600) : ''
 
   const client = getServiceClient()

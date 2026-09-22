@@ -10,7 +10,7 @@ const MESSAGES: Record<string, string> = {
   trop_tot: 'Réservez au moins deux jours à l\'avance.',
   trop_loin: `Les réservations sont ouvertes sur ${HORIZON_MOIS} mois.`,
   dimanche: 'Pas de séance le dimanche.',
-  titulaire: 'Ce jeudi est celui de l\'organiste titulaire.',
+  regulier: 'Ce jeudi est celui de l\'organiste régulier.',
   fermee: 'L\'orgue est indisponible à cette date.',
   prise: 'Cette date est déjà réservée.'
 }

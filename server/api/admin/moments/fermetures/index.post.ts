@@ -4,7 +4,7 @@ import { adresseAssociation, dateLongue, envoyerEmail, escapeHtml } from '~/serv
 
 /**
  * Période d'indisponibilité de l'orgue. Les séances d'élèves déjà réservées
- * dans la période sont annulées et les élèves prévenus ; celles du titulaire
+ * dans la période sont annulées et les élèves prévenus ; celles du régulier
  * disparaissent simplement du calendrier.
  */
 export default defineEventHandler(async (event) => {

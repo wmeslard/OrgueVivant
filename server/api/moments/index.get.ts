@@ -2,7 +2,7 @@ import { aujourdhuiParis, calendrierPublic } from '~/server/utils/moments'
 import { plusMois } from '~/utils/moments'
 
 /**
- * Calendrier public des Moments musicaux : séances du titulaire et des
+ * Calendrier public des Moments musicaux : séances du régulier et des
  * élèves, à venir, sur `mois` mois (3 par défaut, 12 au plus). Pas de donnée
  * personnelle au-delà du prénom et de l'initiale.
  */

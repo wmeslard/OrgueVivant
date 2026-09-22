@@ -62,7 +62,7 @@ const LIEUX = {
 } as const
 
 // ── Moments musicaux ─────────────────────────────────────────────────────────
-// Séances du titulaire (un jeudi sur deux) et séances réservées par les élèves,
+// Séances du régulier (un jeudi sur deux) et séances réservées par les élèves,
 // telles que le site les publie : voir server/utils/moments.ts.
 const MONTHS_AHEAD = 12
 
@@ -98,17 +98,17 @@ export default defineEventHandler(async (event) => {
 
   for (const s of await calendrierPublic(today, plusMois(today, MONTHS_AHEAD))) {
     const day = s.date.replaceAll('-', '')
-    const titre = s.type === 'titulaire'
+    const titre = s.type === 'regulier'
       ? `Moment musical — ${s.interprete}`
       : `Moment musical — ${s.interprete}${s.programme ? ` · ${s.programme}` : ''}`
-    const description = s.type === 'titulaire'
+    const description = s.type === 'regulier'
       ? `Une demi-heure de musique à l'orgue de chœur de l'église Saint-Maurice, par ${s.interprete}. Un jeudi sur deux, les semaines paires.`
       : `Une demi-heure de musique à l'orgue de chœur de l'église Saint-Maurice, par ${s.interprete}, élève organiste.${s.programme ? `\nProgramme : ${s.programme}` : ''}`
     vevents.push([
       'BEGIN:VEVENT',
       // Les séances d'élèves gardent leur identifiant de réservation : une
       // annulation retire l'événement, une nouvelle réservation en crée un autre.
-      `UID:${s.type === 'titulaire' ? `moment-${day}` : `moment-${s.id}`}@orgue-vivant`,
+      `UID:${s.type === 'regulier' ? `moment-${day}` : `moment-${s.id}`}@orgue-vivant`,
       `DTSTAMP:${stamp}`,
       `DTSTART:${day}T${s.debut.replace(':', '')}00`,
       `DTEND:${day}T${s.fin.replace(':', '')}00`,

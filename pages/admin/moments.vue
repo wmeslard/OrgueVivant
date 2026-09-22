@@ -3,7 +3,7 @@
  * Moments musicaux : candidatures des élèves organistes, calendrier des
  * séances, périodes d'indisponibilité de l'orgue et lien privé de candidature.
  */
-import { estDimanche, estJeudiTitulaire, MOMENT_DEBUT, MOMENT_FIN, TITULAIRE, type Fermeture } from '~/utils/moments'
+import { estDimanche, estJeudiRegulier, MOMENT_DEBUT, MOMENT_FIN, ORGANISTE_REGULIER, type Fermeture } from '~/utils/moments'
 
 definePageMeta({ middleware: 'auth', layout: 'admin' })
 
@@ -13,8 +13,8 @@ const { show: showToast } = useToast()
 interface Candidature {
   id: string
   prenom: string; nom: string; email: string
-  telephone: string | null; conservatoire: string | null; professeur: string | null; niveau: string | null
-  presentation: string | null; repertoire: string | null
+  telephone: string | null
+  presentation: string | null
   statut: 'en_attente' | 'acceptee' | 'refusee'
   message_reponse: string | null
   decided_at: string | null
@@ -111,7 +111,7 @@ const seanceInvalide = computed(() => {
   if (!d) return ''
   if (d < (data.value?.aujourdhui ?? '')) return 'Date passée.'
   if (estDimanche(d)) return 'Pas de séance le dimanche.'
-  if (estJeudiTitulaire(d)) return `Ce jeudi revient à ${TITULAIRE}.`
+  if (estJeudiRegulier(d)) return `Ce jeudi revient à ${ORGANISTE_REGULIER}.`
   return ''
 })
 
@@ -201,7 +201,6 @@ async function basculerEleve(e: Eleve) {
               <div class="font-medium">{{ c.prenom }} {{ c.nom }}</div>
               <div class="text-sm text-ink-500">
                 {{ c.email }}<template v-if="c.telephone"> · {{ c.telephone }}</template>
-                <template v-if="c.conservatoire"> · {{ c.conservatoire }}</template>
               </div>
             </div>
             <button class="btn-primary" @click="ouvrir(c)">Examiner</button>
@@ -234,7 +233,7 @@ async function basculerEleve(e: Eleve) {
       <div class="rounded-2xl border border-ink-200 p-6 dark:border-ink-800">
         <h2 class="mb-1 font-display text-xl">Ajouter une séance</h2>
         <p class="mb-4 text-sm text-ink-500">
-          Pour inscrire un élève à sa place. {{ MOMENT_DEBUT.replace(':', ' h ') }} – {{ MOMENT_FIN.replace(':', ' h ') }}, hors dimanches et jeudis de {{ TITULAIRE }}.
+          Pour inscrire un élève à sa place. {{ MOMENT_DEBUT.replace(':', ' h ') }} – {{ MOMENT_FIN.replace(':', ' h ') }}, hors dimanches et jeudis de {{ ORGANISTE_REGULIER }}.
         </p>
         <div class="grid gap-4 md:grid-cols-4">
           <div>
@@ -332,27 +331,9 @@ async function basculerEleve(e: Eleve) {
           <p class="mt-1 text-sm text-ink-500">
             {{ ouverte.email }}<template v-if="ouverte.telephone"> · {{ ouverte.telephone }}</template>
           </p>
-          <dl class="mt-6 grid gap-4 sm:grid-cols-3">
-            <div v-if="ouverte.conservatoire">
-              <dt class="text-[10px] font-bold uppercase tracking-widest text-ink-400">Conservatoire</dt>
-              <dd class="mt-1 text-sm">{{ ouverte.conservatoire }}</dd>
-            </div>
-            <div v-if="ouverte.professeur">
-              <dt class="text-[10px] font-bold uppercase tracking-widest text-ink-400">Professeur</dt>
-              <dd class="mt-1 text-sm">{{ ouverte.professeur }}</dd>
-            </div>
-            <div v-if="ouverte.niveau">
-              <dt class="text-[10px] font-bold uppercase tracking-widest text-ink-400">Niveau</dt>
-              <dd class="mt-1 text-sm">{{ ouverte.niveau }}</dd>
-            </div>
-          </dl>
           <div v-if="ouverte.presentation" class="mt-6">
-            <div class="text-[10px] font-bold uppercase tracking-widest text-ink-400">Présentation</div>
+            <div class="text-[10px] font-bold uppercase tracking-widest text-ink-400">Sa demande</div>
             <p class="mt-2 whitespace-pre-wrap text-sm leading-relaxed">{{ ouverte.presentation }}</p>
-          </div>
-          <div v-if="ouverte.repertoire" class="mt-5">
-            <div class="text-[10px] font-bold uppercase tracking-widest text-ink-400">Répertoire envisagé</div>
-            <p class="mt-2 whitespace-pre-wrap text-sm leading-relaxed">{{ ouverte.repertoire }}</p>
           </div>
 
           <label class="label mt-7">Message envoyé au candidat <span class="font-normal text-ink-400">({{ t('admin.optional') }})</span></label>

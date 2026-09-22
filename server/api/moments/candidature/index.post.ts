@@ -16,11 +16,7 @@ interface Corps {
   nom?: string
   email?: string
   telephone?: string
-  conservatoire?: string
-  professeur?: string
-  niveau?: string
   presentation?: string
-  repertoire?: string
   consentement_publication?: boolean
 }
 
@@ -56,11 +52,7 @@ export default defineEventHandler(async (event) => {
   const candidature = {
     prenom, nom, email,
     telephone: champ(body.telephone, 40, 'Téléphone'),
-    conservatoire: champ(body.conservatoire, 160, 'Conservatoire'),
-    professeur: champ(body.professeur, 120, 'Professeur'),
-    niveau: champ(body.niveau, 120, 'Niveau'),
-    presentation: champ(body.presentation, 4000, 'Présentation', true),
-    repertoire: champ(body.repertoire, 2000, 'Répertoire'),
+    presentation: champ(body.presentation, 4000, 'Demande', true),
     consentement_publication: body.consentement_publication === true
   }
   if (!candidature.consentement_publication)
@@ -78,11 +70,7 @@ export default defineEventHandler(async (event) => {
       html: `
         <h2 style="font-weight:300;font-size:22px;margin:0 0 16px">Nouvelle candidature</h2>
         <p><strong>${escapeHtml(prenom)} ${escapeHtml(nom)}</strong> — ${escapeHtml(email)}${candidature.telephone ? ' · ' + escapeHtml(candidature.telephone) : ''}</p>
-        ${candidature.conservatoire ? `<p><strong>Conservatoire :</strong> ${escapeHtml(candidature.conservatoire)}</p>` : ''}
-        ${candidature.professeur ? `<p><strong>Professeur :</strong> ${escapeHtml(candidature.professeur)}</p>` : ''}
-        ${candidature.niveau ? `<p><strong>Niveau :</strong> ${escapeHtml(candidature.niveau)}</p>` : ''}
-        <p><strong>Présentation</strong></p>${paragraphe(candidature.presentation!)}
-        ${candidature.repertoire ? `<p><strong>Répertoire envisagé</strong></p>${paragraphe(candidature.repertoire)}` : ''}
+        <p><strong>Sa demande</strong></p>${paragraphe(candidature.presentation!)}
         <p style="margin-top:22px"><a href="${siteUrl}/admin/moments" style="background:#1a1a1a;color:#fff;padding:10px 18px;border-radius:999px;text-decoration:none">Traiter la candidature</a></p>`
     }),
     envoyerEmail({

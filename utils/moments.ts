@@ -3,7 +3,7 @@
  * élèves, l'admin, le flux ICS et l'API. Sans dépendance à Nuxt.
  *
  * Deux sortes de séances :
- *  - celles de l'organiste titulaire, un jeudi sur deux (semaines paires),
+ *  - celles de l'organiste régulier, un jeudi sur deux (semaines paires),
  *    calculées et non stockées ;
  *  - celles des élèves, réservées un jour de leur choix, stockées en base.
  * Toutes ont lieu à l'orgue de chœur de Saint-Maurice, de 13 h 15 à 13 h 45.
@@ -11,7 +11,7 @@
 
 export const MOMENT_DEBUT = '13:15'
 export const MOMENT_FIN = '13:45'
-export const TITULAIRE = 'Louis-Paul Courtois'
+export const ORGANISTE_REGULIER = 'Louis-Paul Courtois'
 
 /** Horizon de réservation (mois) et nombre maximal de séances à venir par élève. */
 export const HORIZON_MOIS = 6
@@ -21,12 +21,12 @@ export const DELAI_ANNULATION_H = 48
 
 export interface Fermeture { date_debut: string; date_fin: string; motif?: string | null }
 
-/** Une séance publiée : titulaire ou élève. */
+/** Une séance publiée : régulier ou élève. */
 export interface SeancePublique {
   date: string
   debut: string
   fin: string
-  type: 'titulaire' | 'eleve'
+  type: 'regulier' | 'eleve'
   interprete: string
   programme?: string | null
   /** Identifiant de la réservation, pour les séances d'élèves. */
@@ -57,8 +57,8 @@ export function jourSemaine(date: string): number {
   return parseYmd(date).getDay()
 }
 
-/** Séance du titulaire : un jeudi de semaine ISO paire. */
-export function estJeudiTitulaire(date: string): boolean {
+/** Séance du régulier : un jeudi de semaine ISO paire. */
+export function estJeudiRegulier(date: string): boolean {
   const d = parseYmd(date)
   return d.getDay() === 4 && isoWeek(d) % 2 === 0
 }
@@ -79,14 +79,14 @@ export function nomPublic(prenom: string, nom: string): string {
   return n ? `${p} ${n[0].toUpperCase()}.` : p
 }
 
-/** Jeudis du titulaire entre deux dates incluses (« YYYY-MM-DD »). */
-export function jeudisTitulaire(du: string, au: string): string[] {
+/** Jeudis du régulier entre deux dates incluses (« YYYY-MM-DD »). */
+export function jeudisRegulier(du: string, au: string): string[] {
   const out: string[] = []
   const cursor = parseYmd(du)
   const fin = parseYmd(au)
   while (cursor <= fin) {
     const s = ymd(cursor)
-    if (estJeudiTitulaire(s)) out.push(s)
+    if (estJeudiRegulier(s)) out.push(s)
     cursor.setDate(cursor.getDate() + 1)
   }
   return out
@@ -114,7 +114,7 @@ export function debutSeance(date: string, heure = MOMENT_DEBUT): Date {
 }
 
 export type RaisonRefus =
-  | 'passe' | 'trop_tot' | 'trop_loin' | 'dimanche' | 'titulaire' | 'fermee' | 'prise'
+  | 'passe' | 'trop_tot' | 'trop_loin' | 'dimanche' | 'regulier' | 'fermee' | 'prise'
 
 export interface ContexteReservation {
   aujourdhui: string
@@ -134,7 +134,7 @@ export function raisonNonReservable(date: string, ctx: ContexteReservation): Rai
   if (date < plusJours(ctx.aujourdhui, 2)) return 'trop_tot'
   if (date > plusMois(ctx.aujourdhui, HORIZON_MOIS)) return 'trop_loin'
   if (estDimanche(date)) return 'dimanche'
-  if (estJeudiTitulaire(date)) return 'titulaire'
+  if (estJeudiRegulier(date)) return 'regulier'
   if (estFermee(date, ctx.fermetures)) return 'fermee'
   if (ctx.datesPrises.has(date)) return 'prise'
   return null

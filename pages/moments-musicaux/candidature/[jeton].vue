@@ -17,8 +17,7 @@ const { data: lien } = await useFetch<{ valide: boolean }>('/api/moments/candida
 
 const form = reactive({
   prenom: '', nom: '', email: '', telephone: '',
-  conservatoire: '', professeur: '', niveau: '',
-  presentation: '', repertoire: '', consentement_publication: false
+  presentation: '', consentement_publication: false
 })
 const website = ref('')          // pot de miel : jamais affiché, jamais rempli par un humain
 const formToken = useFormToken()
@@ -64,8 +63,9 @@ async function submit() {
 
       <div v-else-if="status === 'success'" class="card-premium p-8 text-center md:p-12">
         <Icon name="heroicons:check-circle" class="mx-auto h-9 w-9 text-gold" />
-        <h1 class="heading-section mt-5 text-3xl">{{ t('momentsCandidature.success') }}</h1>
-        <NuxtLink :to="localePath('/concerts')" class="btn-premium-secondary mx-auto mt-8">{{ t('nav.concerts') }}</NuxtLink>
+        <p class="mx-auto mt-5 max-w-md text-lg font-light leading-relaxed text-text-primary">
+          {{ t('momentsCandidature.success') }}
+        </p>
       </div>
 
       <template v-else>
@@ -105,38 +105,10 @@ async function submit() {
               </label>
               <input id="tel" v-model="form.telephone" type="tel" maxlength="40" class="input" autocomplete="tel">
             </div>
-            <div>
-              <label class="label" for="cons">
-                {{ t('momentsCandidature.school') }}
-                <span class="ml-1 font-normal text-text-secondary">({{ t('momentsCandidature.optional') }})</span>
-              </label>
-              <input id="cons" v-model="form.conservatoire" maxlength="160" class="input">
-            </div>
-            <div>
-              <label class="label" for="prof">
-                {{ t('momentsCandidature.teacher') }}
-                <span class="ml-1 font-normal text-text-secondary">({{ t('momentsCandidature.optional') }})</span>
-              </label>
-              <input id="prof" v-model="form.professeur" maxlength="120" class="input">
-            </div>
-            <div class="sm:col-span-2">
-              <label class="label" for="niveau">
-                {{ t('momentsCandidature.level') }}
-                <span class="ml-1 font-normal text-text-secondary">({{ t('momentsCandidature.optional') }})</span>
-              </label>
-              <input id="niveau" v-model="form.niveau" maxlength="120" class="input">
-            </div>
             <div class="sm:col-span-2">
               <label class="label" for="presentation">{{ t('momentsCandidature.presentation') }}</label>
-              <textarea id="presentation" v-model="form.presentation" rows="6" required maxlength="4000" class="input resize-y leading-relaxed" />
+              <textarea id="presentation" v-model="form.presentation" rows="7" required maxlength="4000" class="input resize-y leading-relaxed" />
               <p class="mt-1.5 text-xs text-text-secondary">{{ t('momentsCandidature.presentationHint') }}</p>
-            </div>
-            <div class="sm:col-span-2">
-              <label class="label" for="repertoire">
-                {{ t('momentsCandidature.repertoire') }}
-                <span class="ml-1 font-normal text-text-secondary">({{ t('momentsCandidature.optional') }})</span>
-              </label>
-              <textarea id="repertoire" v-model="form.repertoire" rows="3" maxlength="2000" class="input resize-y" />
             </div>
           </div>
 

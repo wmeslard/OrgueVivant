@@ -43,7 +43,7 @@ const jours = computed<Record<string, { etat: EtatJour; libelle?: string }>>(() 
     const raison = raisonNonReservable(date, ctx)
     if (!raison) { out[date] = { etat: 'libre' }; continue }
     if (raison === 'prise') { out[date] = { etat: 'prise', libelle: prise?.interprete }; continue }
-    if (raison === 'titulaire') { out[date] = { etat: 'titulaire', libelle: t('momentsEspace.legendTitulaire') }; continue }
+    if (raison === 'regulier') { out[date] = { etat: 'regulier', libelle: t('momentsEspace.legendRegulier') }; continue }
     if (raison === 'fermee') { out[date] = { etat: 'fermee', libelle: t('momentsEspace.legendClosed') }; continue }
     out[date] = { etat: raison === 'dimanche' ? 'dimanche' : 'passe' }
   }
@@ -87,7 +87,7 @@ const legende = computed(() => [
   { etat: 'libre', label: t('momentsEspace.legendFree'), classe: 'border-white/20 bg-white/[0.04]' },
   { etat: 'mienne', label: t('momentsEspace.legendMine'), classe: 'border-gold bg-gold/25' },
   { etat: 'prise', label: t('momentsEspace.legendTaken'), classe: 'border-white/10 bg-white/[0.02]' },
-  { etat: 'titulaire', label: t('momentsEspace.legendTitulaire'), classe: 'border-white/10 bg-white/[0.02]' },
+  { etat: 'regulier', label: t('momentsEspace.legendRegulier'), classe: 'border-white/10 bg-white/[0.02]' },
   { etat: 'fermee', label: t('momentsEspace.legendClosed'), classe: 'border-transparent bg-red-500/20' }
 ])
 </script>

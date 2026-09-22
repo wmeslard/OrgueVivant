@@ -1,13 +1,13 @@
 <script setup lang="ts">
 /**
  * Page publique des Moments musicaux : présentation et calendrier des
- * prochaines séances, celles de l'organiste titulaire comme celles des élèves.
+ * prochaines séances, celles de l'organiste régulier comme celles des élèves.
  *
  * Les séances sont chargées côté serveur pour être dans le HTML (référencement
  * et données structurées), et la page est régénérée toutes les heures.
  */
 import type { SeancePublique } from '~/utils/moments'
-import { MOMENT_DEBUT, MOMENT_FIN, TITULAIRE } from '~/utils/moments'
+import { MOMENT_DEBUT, MOMENT_FIN } from '~/utils/moments'
 import { venues } from '~/utils/venues'
 
 const { t, locale } = useI18n()
@@ -111,40 +111,45 @@ useSeoMeta({
   <div class="bg-background">
     <div class="container-premium py-16 md:py-24">
       <!-- Présentation -->
-      <header class="max-w-3xl">
+      <header>
         <div class="mb-6 inline-flex items-center gap-3">
           <span class="h-[1px] w-8 bg-gold" />
           <span class="text-xs font-bold uppercase tracking-[0.4em] text-gold">{{ t('moments.eyebrow') }}</span>
         </div>
         <h1 class="heading-section text-text-primary">{{ t('moments.pageTitle') }}</h1>
-        <p class="mt-6 text-xl font-light leading-relaxed text-text-secondary">{{ t('moments.intro') }}</p>
-        <p class="mt-4 font-light leading-relaxed text-text-secondary">{{ t('moments.who') }}</p>
+        <!-- Phrase d'accroche sur une seule ligne dès qu'il y a la place. -->
+        <p class="mt-6 text-xl font-light leading-relaxed text-text-secondary xl:whitespace-nowrap">
+          {{ t('moments.intro') }}
+        </p>
       </header>
 
-      <!-- Repères pratiques -->
-      <dl class="mt-12 grid gap-7 border-y border-white/5 py-8 sm:grid-cols-3">
-        <div>
-          <dt class="mb-2 text-[10px] font-bold uppercase tracking-widest text-text-secondary">{{ t('moments.scheduleLabel') }}</dt>
-          <dd class="flex items-start gap-2 text-sm text-text-primary">
-            <Icon name="heroicons:clock" class="mt-0.5 h-4 w-4 shrink-0 text-gold" />
-            <span>{{ MOMENT_DEBUT.replace(':', ' h ') }} – {{ MOMENT_FIN.replace(':', ' h ') }} · {{ t('moments.free') }}</span>
-          </dd>
-        </div>
-        <div>
-          <dt class="mb-2 text-[10px] font-bold uppercase tracking-widest text-text-secondary">{{ t('moments.placeLabel') }}</dt>
-          <dd class="flex items-start gap-2 text-sm text-text-primary">
-            <Icon name="heroicons:map-pin" class="mt-0.5 h-4 w-4 shrink-0 text-gold" />
-            <span>{{ t('moments.place') }}</span>
-          </dd>
-        </div>
-        <div>
-          <dt class="mb-2 text-[10px] font-bold uppercase tracking-widest text-text-secondary">{{ t('moments.performerLabel') }}</dt>
-          <dd class="flex items-start gap-2 text-sm text-text-primary">
-            <Icon name="heroicons:user" class="mt-0.5 h-4 w-4 shrink-0 text-gold" />
-            <span>{{ TITULAIRE }}</span>
-          </dd>
-        </div>
-      </dl>
+      <!-- Comment ça se passe, et les repères pratiques en regard -->
+      <div class="mt-12 grid gap-10 border-y border-white/5 py-9 lg:grid-cols-[1.35fr_1fr] lg:gap-16">
+        <p class="max-w-2xl font-light leading-relaxed text-text-secondary">{{ t('moments.who') }}</p>
+        <dl class="grid gap-6 sm:grid-cols-3 lg:grid-cols-1 lg:gap-5">
+          <div>
+            <dt class="mb-1.5 text-[10px] font-bold uppercase tracking-widest text-text-secondary">{{ t('moments.scheduleLabel') }}</dt>
+            <dd class="flex items-start gap-2 text-sm text-text-primary">
+              <Icon name="heroicons:clock" class="mt-0.5 h-4 w-4 shrink-0 text-gold" />
+              <span>{{ MOMENT_DEBUT.replace(':', ' h ') }} – {{ MOMENT_FIN.replace(':', ' h ') }} · {{ t('moments.free') }}</span>
+            </dd>
+          </div>
+          <div>
+            <dt class="mb-1.5 text-[10px] font-bold uppercase tracking-widest text-text-secondary">{{ t('moments.placeLabel') }}</dt>
+            <dd class="flex items-start gap-2 text-sm text-text-primary">
+              <Icon name="heroicons:map-pin" class="mt-0.5 h-4 w-4 shrink-0 text-gold" />
+              <span>{{ t('moments.place') }}</span>
+            </dd>
+          </div>
+          <div>
+            <dt class="mb-1.5 text-[10px] font-bold uppercase tracking-widest text-text-secondary">{{ t('moments.performerLabel') }}</dt>
+            <dd class="flex items-start gap-2 text-sm text-text-primary">
+              <Icon name="heroicons:user" class="mt-0.5 h-4 w-4 shrink-0 text-gold" />
+              <span>{{ t('moments.performer') }}</span>
+            </dd>
+          </div>
+        </dl>
+      </div>
 
       <!-- Calendrier -->
       <section class="mt-14">
@@ -163,10 +168,10 @@ useSeoMeta({
               <span class="text-sm text-text-secondary">{{ s.debut.replace(':', ' h ') }}</span>
               <span class="text-sm text-text-primary">{{ s.interprete }}</span>
               <span
-                class="rounded-full border px-2 py-0.5 text-[10px] uppercase tracking-widest"
-                :class="s.type === 'titulaire' ? 'border-white/10 text-text-secondary' : 'border-gold/30 text-gold'"
+                v-if="s.type === 'eleve'"
+                class="rounded-full border border-gold/30 px-2 py-0.5 text-[10px] uppercase tracking-widest text-gold"
               >
-                {{ s.type === 'titulaire' ? t('moments.titulaireTag') : t('moments.eleveTag') }}
+                {{ t('moments.eleveTag') }}
               </span>
               <span v-if="s.programme" class="w-full text-sm font-light text-text-secondary">{{ s.programme }}</span>
             </li>

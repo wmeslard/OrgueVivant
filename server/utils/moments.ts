@@ -5,8 +5,8 @@ import type { SupabaseClient } from '@supabase/supabase-js'
 import { getServiceClient } from '~/server/utils/superAdminClient'
 import { senderAddress } from '~/server/utils/sender'
 import {
-  MOMENT_DEBUT, MOMENT_FIN, TITULAIRE, type Fermeture, type SeancePublique,
-  estFermee, jeudisTitulaire, nomPublic
+  MOMENT_DEBUT, MOMENT_FIN, ORGANISTE_REGULIER, type Fermeture, type SeancePublique,
+  estFermee, jeudisRegulier, nomPublic
 } from '~/utils/moments'
 
 /** Date du jour à Paris (« YYYY-MM-DD ») : les fonctions Vercel tournent en UTC. */
@@ -86,16 +86,16 @@ export async function chargerSeances(client: SupabaseClient, du: string, au: str
 }
 
 /**
- * Le calendrier tel que le site le publie : les jeudis du titulaire (hors
+ * Le calendrier tel que le site le publie : les jeudis du régulier (hors
  * fermetures) et les séances d'élèves, par date croissante. Rien d'autre que le
  * prénom et l'initiale de l'élève n'en sort.
  */
 export async function calendrierPublic(du: string, au: string): Promise<SeancePublique[]> {
   const client = getServiceClient()
   const [fermetures, seances] = await Promise.all([chargerFermetures(client, du, au), chargerSeances(client, du, au)])
-  const out: SeancePublique[] = jeudisTitulaire(du, au)
+  const out: SeancePublique[] = jeudisRegulier(du, au)
     .filter(d => !estFermee(d, fermetures))
-    .map(date => ({ date, debut: MOMENT_DEBUT, fin: MOMENT_FIN, type: 'titulaire' as const, interprete: TITULAIRE }))
+    .map(date => ({ date, debut: MOMENT_DEBUT, fin: MOMENT_FIN, type: 'regulier' as const, interprete: ORGANISTE_REGULIER }))
   for (const s of seances) {
     out.push({
       id: s.id,

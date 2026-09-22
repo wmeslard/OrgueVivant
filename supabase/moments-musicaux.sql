@@ -43,11 +43,8 @@ create table if not exists moments_candidatures (
   nom                     text not null,
   email                   text not null,
   telephone               text,
-  conservatoire           text,
-  professeur              text,
-  niveau                  text,
+  -- Demande libre du candidat : parcours, pratique, répertoire envisagé.
   presentation            text,
-  repertoire              text,
   -- Accord explicite pour afficher « Prénom N. » sur le site et dans l'agenda.
   consentement_publication boolean not null default false,
   statut                  moments_statut_candidature not null default 'en_attente',
@@ -138,3 +135,14 @@ revoke all on moments_fermetures   from anon, authenticated;
 --   select cron.schedule('moments-candidatures-refusees', '0 4 * * 1',
 --     $$delete from public.moments_candidatures
 --       where statut = 'refusee' and decided_at < now() - interval '6 months'$$);
+
+-- ─────────────────────────────────────────────────────────────────────────────
+-- 22 septembre 2026 : formulaire de candidature raccourci
+-- ─────────────────────────────────────────────────────────────────────────────
+-- Le formulaire ne demande plus que nom, prénom, email, téléphone (facultatif)
+-- et une demande libre. À exécuter si les tables ont été créées avant cette
+-- date ; sans effet sinon. Aucune candidature n'existait encore.
+alter table moments_candidatures drop column if exists conservatoire;
+alter table moments_candidatures drop column if exists professeur;
+alter table moments_candidatures drop column if exists niveau;
+alter table moments_candidatures drop column if exists repertoire;
