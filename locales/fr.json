@@ -311,11 +311,10 @@
     "moments": "Moments musicaux"
   },
   "momentsEspace": {
-    "dashboardTitle": "Mes élèves inscrits",
+    "dashboardTitle": "Mes élèves",
     "logout": "Déconnexion",
     "moisPrecedent": "Mois précédent",
     "moisSuivant": "Mois suivant",
-    "addStudent": "Inscrire un élève",
     "chooseDateHint": "Cliquez un jour pour voir ses créneaux libres. Une séance dure une demi-heure ; les messes et les confessions n'apparaissent pas.",
     "slotsFor": "Créneaux du",
     "noSlots": "Aucun créneau libre ce jour-là.",
@@ -335,8 +334,8 @@
     "confirmCancel": "Annuler cette séance ?",
     "save": "Enregistrer",
     "edit": "Modifier",
-    "mySessions": "Séances à venir",
-    "emptyCta": "Choisissez un créneau pour inscrire votre premier élève.",
+    "mySessions": "Mes prochaines séances",
+    "emptyCta": "Aucun élève inscrit pour le moment : choisissez un jour dans le calendrier, puis un créneau libre.",
     "history": "Séances passées",
     "booked": "Élève inscrit.",
     "cancelled": "Séance annulée.",

@@ -1,10 +1,12 @@
 <script setup lang="ts">
 /**
- * Tableau de bord du professeur : les élèves qu'il a inscrits, et l'accès au
- * calendrier. C'est la page qu'il ouvre pour vérifier ses dates, souvent
- * depuis un téléphone ; le calendrier, plus dense, a la sienne.
+ * Espace du professeur, sur une seule page : le calendrier des créneaux — un
+ * clic sur un créneau libre inscrit un élève — et, à côté, la liste de ses
+ * prochaines séances. Souvent ouverte depuis un téléphone : sur petit écran,
+ * le calendrier passe au-dessus, les créneaux et la liste en dessous.
  */
-import { annulable, heureFr, nomPublic } from '~/utils/moments'
+import type { FicheEleve } from '~/components/MomentsCreneaux.vue'
+import { annulable, heureFr } from '~/utils/moments'
 
 definePageMeta({ middleware: 'professeur', layout: 'default' })
 
@@ -20,16 +22,31 @@ useHead({
   meta: [{ name: 'robots', content: 'noindex, nofollow' }]
 })
 
+// ── Calendrier et inscription ────────────────────────────────────────────────
+const calendrier = ref<{ choisir: (date: string) => void } | null>(null)
+const contexte = computed(() => ({
+  aujourdhui: espace.value?.aujourdhui ?? '',
+  horaires: espace.value?.horaires ?? [],
+  pris: espace.value?.pris ?? []
+}))
+const envoyer = (fiche: FicheEleve) => $fetch('/api/moments/seances', { method: 'POST', body: fiche })
+async function inscrit() {
+  await charger(true)
+  showToast(t('momentsEspace.booked'), { type: 'success' })
+}
+
+function formater(date: string, options: Intl.DateTimeFormatOptions) {
+  const [y, m, d] = date.split('-').map(Number)
+  const s = new Date(y, m - 1, d).toLocaleDateString(locale.value === 'fr' ? 'fr-FR' : 'en-US', options)
+  return s.charAt(0).toUpperCase() + s.slice(1)
+}
+const jourLong = (date: string) => formater(date, { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' })
+const jourCourt = (date: string) => formater(date, { weekday: 'short', day: 'numeric', month: 'short' })
+
+// ── Séances inscrites ────────────────────────────────────────────────────────
 const busy = ref(false)
 const erreur = ref('')
 const edition = ref<{ id: string; date: string; heure_debut: string; programme: string | null } | null>(null)
-
-function jourLong(date: string) {
-  const [y, m, d] = date.split('-').map(Number)
-  const s = new Date(y, m - 1, d).toLocaleDateString(locale.value === 'fr' ? 'fr-FR' : 'en-US',
-    { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' })
-  return s.charAt(0).toUpperCase() + s.slice(1)
-}
 
 async function enregistrer() {
   if (!edition.value) return
@@ -65,7 +82,7 @@ async function logout() {
 
 <template>
   <div class="container-premium py-16 md:py-20 bg-background">
-    <header class="mb-10 flex flex-wrap items-end justify-between gap-4">
+    <header class="mb-10 flex flex-wrap items-end justify-between gap-x-6 gap-y-3">
       <div>
         <div class="text-xs font-bold uppercase tracking-[0.3em] text-gold">{{ t('moments.eyebrow') }}</div>
         <h1 class="heading-section mt-3 text-text-primary">{{ t('momentsEspace.dashboardTitle') }}</h1>
@@ -73,55 +90,46 @@ async function logout() {
           {{ espace.professeur.prenom }} {{ espace.professeur.nom }} · {{ t('moments.place') }}
         </p>
       </div>
-      <button class="btn-premium-secondary md:w-auto" @click="logout">{{ t('momentsEspace.logout') }}</button>
+      <button class="text-sm text-text-secondary underline-offset-4 transition-colors hover:text-text-primary hover:underline" @click="logout">
+        {{ t('momentsEspace.logout') }}
+      </button>
     </header>
 
-    <!-- Aucun élève inscrit : on invite directement à choisir un créneau -->
-    <div v-if="!aVenir.length" class="card-premium p-8 text-center md:p-12">
-      <Icon name="heroicons:calendar-days" class="mx-auto h-9 w-9 text-gold" />
-      <p class="mx-auto mt-5 max-w-md text-text-secondary">{{ t('momentsEspace.emptyCta') }}</p>
-      <NuxtLink :to="localePath('/moments-musicaux/espace/inscrire')" class="btn-premium-primary mx-auto mt-8">
-        {{ t('momentsEspace.addStudent') }}
-      </NuxtLink>
-    </div>
+    <p class="mb-6 max-w-3xl text-sm text-text-secondary">{{ t('momentsEspace.chooseDateHint') }}</p>
 
-    <template v-else>
-      <div class="mb-6 flex flex-wrap items-center justify-between gap-4">
-        <h2 class="text-[10px] font-bold uppercase tracking-widest text-text-secondary">{{ t('momentsEspace.mySessions') }}</h2>
-        <NuxtLink :to="localePath('/moments-musicaux/espace/inscrire')" class="btn-premium-primary md:w-auto">
-          {{ t('momentsEspace.addStudent') }}
-        </NuxtLink>
-      </div>
-
-      <ul class="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-        <li v-for="s in aVenir" :key="s.id" class="card-premium p-6">
-          <div class="font-display text-xl font-light leading-tight text-text-primary">
-            {{ s.eleve_prenom }} {{ s.eleve_nom }}
-          </div>
-          <div class="mt-2 text-sm text-text-primary">{{ jourLong(s.date) }}</div>
-          <div class="mt-0.5 text-sm text-text-secondary">
-            {{ heureFr(s.heure_debut) }} – {{ heureFr(s.heure_fin) }}
-          </div>
-          <p class="mt-3 text-xs text-text-secondary">
-            {{ t('momentsEspace.studentNameHint', { nom: nomPublic(s.eleve_prenom, s.eleve_nom) }) }}
-          </p>
-          <p v-if="s.programme" class="mt-3 text-sm font-light leading-relaxed text-text-secondary">{{ s.programme }}</p>
-          <div class="mt-5 flex gap-4 border-t border-white/5 pt-4 text-xs">
-            <button class="text-gold underline-offset-4 hover:underline" @click="edition = { ...s }">
-              {{ t('momentsEspace.edit') }}
-            </button>
-            <button
-              v-if="annulable(s.date, s.heure_debut)"
-              class="text-text-secondary underline-offset-4 hover:underline"
-              :disabled="busy"
-              @click="annuler(s)"
-            >
-              {{ t('momentsEspace.cancelSession') }}
-            </button>
-          </div>
-        </li>
-      </ul>
-    </template>
+    <MomentsCreneaux v-if="espace" ref="calendrier" :contexte="contexte" :envoyer="envoyer" @inscrit="inscrit" @echec="charger(true)">
+      <template #colonne>
+        <!-- Mes prochaines séances -->
+        <section class="card-premium p-6 md:p-8">
+          <h2 class="mb-4 text-[10px] font-bold uppercase tracking-widest text-text-secondary">{{ t('momentsEspace.mySessions') }}</h2>
+          <p v-if="!aVenir.length" class="text-sm text-text-secondary">{{ t('momentsEspace.emptyCta') }}</p>
+          <ul v-else class="divide-y divide-white/5">
+            <li v-for="s in aVenir" :key="s.id" class="py-3 first:pt-0 last:pb-0">
+              <button class="w-full text-left" @click="calendrier?.choisir(s.date)">
+                <div class="flex items-baseline justify-between gap-3 text-sm">
+                  <span class="text-text-primary">{{ jourCourt(s.date) }} · {{ heureFr(s.heure_debut) }}</span>
+                  <span class="truncate text-gold">{{ s.eleve_prenom }} {{ s.eleve_nom }}</span>
+                </div>
+                <p v-if="s.programme" class="mt-1 truncate text-xs text-text-secondary">{{ s.programme }}</p>
+              </button>
+              <div class="mt-2 flex gap-4 text-xs">
+                <button class="text-gold underline-offset-4 hover:underline" @click="edition = { ...s }; erreur = ''">
+                  {{ t('momentsEspace.edit') }}
+                </button>
+                <button
+                  v-if="annulable(s.date, s.heure_debut)"
+                  class="text-text-secondary underline-offset-4 hover:underline"
+                  :disabled="busy"
+                  @click="annuler(s)"
+                >
+                  {{ t('momentsEspace.cancelSession') }}
+                </button>
+              </div>
+            </li>
+          </ul>
+        </section>
+      </template>
+    </MomentsCreneaux>
 
     <section v-if="passees.length" class="mt-14 border-t border-white/5 pt-8">
       <h2 class="mb-4 text-[10px] font-bold uppercase tracking-widest text-text-secondary">{{ t('momentsEspace.history') }}</h2>

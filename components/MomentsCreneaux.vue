@@ -10,7 +10,9 @@
  * seul juge au moment de l'enregistrement.
  *
  * Le slot `pris` permet à l'administration d'afficher le détail d'une séance
- * (nom complet, professeur, annulation) à la place du seul nom affiché.
+ * (nom complet, professeur, annulation) à la place du seul nom affiché ; le
+ * slot `colonne` ajoute un bloc sous les créneaux du jour (les prochaines
+ * séances du professeur). `choisir(date)` ouvre un jour depuis l'extérieur.
  */
 import type { EtatJour } from '~/components/MomentsCalendrier.vue'
 import { creneauxDuJour, heureFr, nomPublic, ymd, type ContexteJour, type CreneauJour } from '~/utils/moments'
@@ -32,7 +34,10 @@ const props = defineProps<{
   association?: boolean
 }>()
 const emit = defineEmits<{ (e: 'inscrit'): void; (e: 'echec'): void }>()
-defineSlots<{ pris?: (p: { creneau: CreneauJour; date: string }) => unknown }>()
+defineSlots<{
+  pris?: (p: { creneau: CreneauJour; date: string }) => unknown
+  colonne?: () => unknown
+}>()
 
 const { t, locale } = useI18n()
 
@@ -55,6 +60,13 @@ const jours = computed<Record<string, EtatJour>>(() => {
 })
 
 const creneaux = computed(() => jourChoisi.value ? creneauxDuJour(jourChoisi.value, props.contexte) : [])
+
+/** Ouvre un jour, en affichant son mois. */
+function choisir(date: string) {
+  mois.value = date.slice(0, 7)
+  jourChoisi.value = date
+}
+defineExpose({ choisir })
 
 function jourLong(date: string) {
   const [y, m, d] = date.split('-').map(Number)
@@ -123,36 +135,40 @@ const legende = computed(() => [
       </div>
     </div>
 
-    <!-- Créneaux du jour choisi -->
-    <aside class="card-premium p-6 md:p-8">
-      <p v-if="!jourChoisi" class="text-sm text-text-secondary">{{ t('momentsEspace.pickDay') }}</p>
-      <template v-else>
-        <h2 class="mb-1 text-[10px] font-bold uppercase tracking-widest text-text-secondary">{{ t('momentsEspace.slotsFor') }}</h2>
-        <div class="mb-5 font-display text-xl font-light text-text-primary">{{ jourLong(jourChoisi) }}</div>
-        <p v-if="!creneaux.length" class="text-sm text-text-secondary">{{ t('momentsEspace.noSlots') }}</p>
-        <ul v-else class="space-y-2">
-          <li v-for="c in creneaux" :key="c.debut">
-            <button
-              v-if="c.etat === 'libre'"
-              class="flex w-full items-center justify-between rounded-xl border border-white/10 bg-white/[0.03] px-4 py-3 text-sm transition hover:border-gold hover:bg-gold/10"
-              @click="ouvrir(c.debut)"
-            >
-              <span class="text-text-primary">{{ heureFr(c.debut) }} – {{ heureFr(c.fin) }}</span>
-              <Icon name="heroicons:plus" class="h-4 w-4 text-gold" />
-            </button>
-            <slot v-else-if="c.etat === 'pris' && $slots.pris" name="pris" :creneau="c" :date="jourChoisi" />
-            <div
-              v-else
-              class="flex items-center justify-between rounded-xl border px-4 py-3 text-sm"
-              :class="c.mien ? 'border-gold/40 bg-gold/10' : 'border-white/5 bg-white/[0.02]'"
-            >
-              <span class="text-text-secondary">{{ heureFr(c.debut) }}</span>
-              <span :class="c.mien ? 'text-gold' : 'text-text-secondary'">{{ c.interprete }}</span>
-            </div>
-          </li>
-        </ul>
-      </template>
-    </aside>
+    <div class="space-y-8">
+      <!-- Créneaux du jour choisi -->
+      <aside class="card-premium p-6 md:p-8">
+        <p v-if="!jourChoisi" class="text-sm text-text-secondary">{{ t('momentsEspace.pickDay') }}</p>
+        <template v-else>
+          <h2 class="mb-1 text-[10px] font-bold uppercase tracking-widest text-text-secondary">{{ t('momentsEspace.slotsFor') }}</h2>
+          <div class="mb-5 font-display text-xl font-light text-text-primary">{{ jourLong(jourChoisi) }}</div>
+          <p v-if="!creneaux.length" class="text-sm text-text-secondary">{{ t('momentsEspace.noSlots') }}</p>
+          <ul v-else class="space-y-2">
+            <li v-for="c in creneaux" :key="c.debut">
+              <button
+                v-if="c.etat === 'libre'"
+                class="flex w-full items-center justify-between rounded-xl border border-white/10 bg-white/[0.03] px-4 py-3 text-sm transition hover:border-gold hover:bg-gold/10"
+                @click="ouvrir(c.debut)"
+              >
+                <span class="text-text-primary">{{ heureFr(c.debut) }} – {{ heureFr(c.fin) }}</span>
+                <Icon name="heroicons:plus" class="h-4 w-4 text-gold" />
+              </button>
+              <slot v-else-if="c.etat === 'pris' && $slots.pris" name="pris" :creneau="c" :date="jourChoisi" />
+              <div
+                v-else
+                class="flex items-center justify-between rounded-xl border px-4 py-3 text-sm"
+                :class="c.mien ? 'border-gold/40 bg-gold/10' : 'border-white/5 bg-white/[0.02]'"
+              >
+                <span class="text-text-secondary">{{ heureFr(c.debut) }}</span>
+                <span :class="c.mien ? 'text-gold' : 'text-text-secondary'">{{ c.interprete }}</span>
+              </div>
+            </li>
+          </ul>
+        </template>
+      </aside>
+
+      <slot name="colonne" />
+    </div>
 
     <!-- Fiche de l'élève -->
     <Teleport to="body">
