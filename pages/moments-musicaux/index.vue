@@ -189,7 +189,7 @@ useSeoMeta({
             <div class="text-sm font-medium text-text-primary">{{ t('moments.teacherCta') }}</div>
             <p class="mt-1 text-sm text-text-secondary">{{ t('moments.teacherCtaText') }}</p>
           </div>
-          <NuxtLink :to="localePath('/moments-musicaux/professeurs')" class="btn-premium-secondary shrink-0">
+          <NuxtLink :to="localePath('/moments-musicaux/espace')" class="btn-premium-secondary shrink-0">
             {{ t('moments.teacherCtaButton') }}
           </NuxtLink>
         </div>

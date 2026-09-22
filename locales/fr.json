@@ -100,7 +100,7 @@
     "seeCalendar": "Voir le calendrier",
     "free": "Entrée libre",
     "teacherCta": "Vous enseignez l’orgue ?",
-    "teacherCtaText": "Inscrivez vos élèves sur les créneaux libres depuis l'espace des professeurs.",
+    "teacherCtaText": "Inscrivez vos élèves sur les créneaux libres, avec le lien que l'association transmet aux professeurs.",
     "teacherCtaButton": "Espace professeurs"
   },
   "calendar": {
@@ -235,7 +235,7 @@
     "retentionTitle": "Durées de conservation",
     "retention": "– Messages du formulaire de contact : un an à compter du dernier échange\n– Lettre d'information : jusqu'à la désinscription ; une inscription non confirmée est supprimée à l'issue d'un délai de trente jours\n– Mesure d'audience : données agrégées, sans identifiant individuel\n– Journaux techniques : quelques jours",
     "cookiesTitle": "Cookies",
-    "cookies": "Le Site ne dépose qu'un cookie strictement nécessaire à son fonctionnement, exempté de consentement en application de l'article 82 de la loi Informatique et Libertés :\n\n– i18n_redirected : mémorisation de la langue choisie (durée : un an)\n\nAucun cookie publicitaire, de mesure d'audience ou de suivi n'est utilisé. Aucun bandeau de consentement n'est donc affiché.",
+    "cookies": "Le Site ne dépose que des cookies strictement nécessaires à son fonctionnement, exemptés de consentement en application de l'article 82 de la loi Informatique et Libertés :\n\n– i18n_redirected : mémorisation de la langue choisie (durée : un an)\n– ov_moments : accès à l'espace des professeurs, déposé seulement chez ceux qui y entrent par le lien transmis par l'association (durée : un an)\n\nAucun cookie publicitaire, de mesure d'audience ou de suivi n'est utilisé. Aucun bandeau de consentement n'est donc affiché.",
     "securityTitle": "Sécurité",
     "security": "L'association met en œuvre des mesures techniques et organisationnelles appropriées afin de garantir la sécurité et la confidentialité des données : chiffrement des échanges (HTTPS), restriction des accès à la base de données, protection des formulaires contre les envois automatisés, et recours à des prestataires présentant des garanties suffisantes.",
     "rightsTitle": "Droits des personnes concernées",
@@ -317,23 +317,8 @@
     "moments": "Moments musicaux"
   },
   "momentsEspace": {
-    "title": "Espace professeurs",
     "dashboardTitle": "Mes élèves inscrits",
-    "subtitle": "Inscrivez vos élèves sur les créneaux libres.",
-    "emailLink": "Recevoir un lien de connexion",
-    "emailLinkSent": "Si un accès existe pour cette adresse, un lien de connexion vient de partir.",
-    "withPassword": "Se connecter avec un mot de passe",
-    "withEmail": "Recevoir un lien par email",
-    "email": "Email",
-    "password": "Mot de passe",
-    "signIn": "Se connecter",
-    "forgot": "Mot de passe oublié",
-    "resetSent": "Si un compte existe, un email vient de partir.",
-    "setPassword": "Définir un mot de passe",
-    "setPasswordHint": "Facultatif : vous pouvez aussi vous connecter par lien envoyé à votre adresse.",
-    "passwordSaved": "Mot de passe enregistré.",
     "logout": "Déconnexion",
-    "noAccess": "Accès réservé aux professeurs. Demandez le vôtre depuis cette page.",
     "moisPrecedent": "Mois précédent",
     "moisSuivant": "Mois suivant",
     "addStudent": "Inscrire un élève",
@@ -370,25 +355,23 @@
     "legendClosed": "Orgue indisponible",
     "cancelDeadline": "Une séance s’annule jusqu’à 48 h avant."
   },
-  "momentsDemande": {
+  "momentsAcces": {
     "title": "Espace professeurs",
-    "subtitle": "Vous enseignez l'orgue dans un conservatoire ou une école de musique et souhaitez faire jouer vos élèves aux Moments musicaux ? Demandez votre accès : vous pourrez ensuite les inscrire vous-même sur les créneaux libres.",
-    "already": "Vous avez déjà un accès ?",
-    "signIn": "Se connecter",
-    "request": "Demander un accès",
+    "intro": "Inscrivez vos élèves organistes aux Moments musicaux, sur les créneaux libres de l'orgue de chœur de Saint-Maurice. Présentez-vous : ce navigateur s'en souviendra.",
     "firstName": "Prénom",
     "lastName": "Nom",
     "email": "Email",
-    "phone": "Téléphone",
+    "emailHint": "Pour la confirmation de chaque inscription. Sur un autre appareil, la même adresse retrouve vos élèves.",
     "school": "Conservatoire ou école de musique",
-    "message": "Votre demande",
-    "messageHint": "Votre classe, le nombre d'élèves concernés, la période que vous visez.",
-    "send": "Envoyer ma demande",
-    "sending": "Envoi…",
-    "success": "Demande envoyée. Nous revenons vers vous par email pour ouvrir votre accès.",
+    "optional": "facultatif",
+    "submit": "Entrer dans l'espace",
+    "invalidTitle": "Ce lien n'est plus valide",
+    "noLinkText": "L'espace des professeurs s'ouvre avec le lien que l'association transmet aux professeurs d'orgue. Vous ne l'avez pas, ou il ne fonctionne plus ? Écrivez-nous.",
+    "disabledTitle": "Accès désactivé",
+    "disabledText": "Votre accès à l'espace des professeurs a été désactivé. Pour en savoir plus, écrivez-nous.",
+    "contact": "Nous écrire",
     "errorRequired": "Merci de remplir les champs obligatoires.",
     "errorEmail": "Email invalide.",
-    "errorGeneric": "Une erreur est survenue. Merci de réessayer.",
-    "optional": "facultatif"
+    "errorGeneric": "Une erreur est survenue. Merci de réessayer."
   }
 }

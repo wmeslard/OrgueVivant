@@ -15,7 +15,8 @@
 -- newsletter : toutes les lectures et écritures passent par /api/moments/** et
 -- /api/admin/moments/**, côté serveur avec la clé `service_role`.
 --
--- À exécuter dans Supabase → SQL Editor.
+-- À exécuter dans Supabase → SQL Editor, puis moments-musicaux-lien.sql : les
+-- professeurs entrent désormais par un lien partagé, sans compte ni demande.
 
 create extension if not exists "pgcrypto";
 

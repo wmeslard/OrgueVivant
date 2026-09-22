@@ -59,5 +59,11 @@ export function useMomentsEspace() {
       .sort((a, b) => b.date.localeCompare(a.date))
   )
 
-  return { espace, pending, charger, aVenir, passees }
+  /** Sortie de l'espace : le cookie d'accès est effacé, l'état aussi. */
+  async function quitter() {
+    await $fetch('/api/moments/acces', { method: 'DELETE' })
+    espace.value = null
+  }
+
+  return { espace, pending, charger, quitter, aVenir, passees }
 }

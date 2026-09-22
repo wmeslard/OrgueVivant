@@ -100,7 +100,7 @@
     "seeCalendar": "See the calendar",
     "free": "Free admission",
     "teacherCta": "Do you teach the organ?",
-    "teacherCtaText": "Sign your students up for free slots from the teachers’ area.",
+    "teacherCtaText": "Sign your students up for free slots, with the link the association sends to teachers.",
     "teacherCtaButton": "Teachers’ area"
   },
   "calendar": {
@@ -235,7 +235,7 @@
     "retentionTitle": "Retention periods",
     "retention": "– Contact form messages: one year from the last exchange\n– Newsletter: until unsubscription; an unconfirmed subscription is deleted after thirty days\n– Audience measurement: aggregated data, no individual identifier\n– Technical logs: a few days",
     "cookiesTitle": "Cookies",
-    "cookies": "The Site only places one cookie strictly necessary for its operation, exempt from consent under Article 82 of the French Data Protection Act:\n\n– i18n_redirected: stores the chosen language (duration: one year)\n\nNo advertising, audience-measurement or tracking cookie is used, so no consent banner is displayed.",
+    "cookies": "The Site only places cookies strictly necessary for its operation, exempt from consent under Article 82 of the French Data Protection Act:\n\n– i18n_redirected: stores the chosen language (duration: one year)\n– ov_moments: access to the teachers’ area, placed only for those who enter it through the link sent by the association (duration: one year)\n\nNo advertising, audience-measurement or tracking cookie is used, so no consent banner is displayed.",
     "securityTitle": "Security",
     "security": "The association implements appropriate technical and organisational measures to ensure the security and confidentiality of data: encryption of communications (HTTPS), restricted access to the database, protection of forms against automated submissions, and reliance on providers offering sufficient guarantees.",
     "rightsTitle": "Rights of data subjects",
@@ -317,23 +317,8 @@
     "moments": "Musical Moments"
   },
   "momentsEspace": {
-    "title": "Teachers’ area",
     "dashboardTitle": "My students",
-    "subtitle": "Sign your students up for free slots.",
-    "emailLink": "Email me a sign-in link",
-    "emailLinkSent": "If access exists for this address, a sign-in link has been sent.",
-    "withPassword": "Sign in with a password",
-    "withEmail": "Get a link by email",
-    "email": "Email",
-    "password": "Password",
-    "signIn": "Sign in",
-    "forgot": "Forgot password",
-    "resetSent": "If an account exists, an email has been sent.",
-    "setPassword": "Set a password",
-    "setPasswordHint": "Optional: you can also sign in with a link sent to your address.",
-    "passwordSaved": "Password saved.",
     "logout": "Sign out",
-    "noAccess": "Teachers only. Request access from this page.",
     "moisPrecedent": "Previous month",
     "moisSuivant": "Next month",
     "addStudent": "Sign up a student",
@@ -370,25 +355,23 @@
     "legendClosed": "Organ unavailable",
     "cancelDeadline": "A session can be cancelled up to 48 h in advance."
   },
-  "momentsDemande": {
+  "momentsAcces": {
     "title": "Teachers’ area",
-    "subtitle": "Do you teach the organ at a conservatoire or music school and would like your students to play at the Musical Moments? Request access, then sign them up yourself for free slots.",
-    "already": "Already have access?",
-    "signIn": "Sign in",
-    "request": "Request access",
+    "intro": "Sign your organ students up for the Musical Moments, on the free slots of the choir organ at Saint-Maurice. Introduce yourself once: this browser will remember you.",
     "firstName": "First name",
     "lastName": "Last name",
     "email": "Email",
-    "phone": "Phone",
+    "emailHint": "For the confirmation of each sign-up. On another device, the same address brings back your students.",
     "school": "Conservatoire or music school",
-    "message": "Your request",
-    "messageHint": "Your class, how many students, the period you have in mind.",
-    "send": "Send my request",
-    "sending": "Sending…",
-    "success": "Request sent. We will email you to open your access.",
+    "optional": "optional",
+    "submit": "Enter the teachers’ area",
+    "invalidTitle": "This link is no longer valid",
+    "noLinkText": "The teachers’ area opens with the link the association sends to organ teachers. Don’t have it, or it no longer works? Write to us.",
+    "disabledTitle": "Access disabled",
+    "disabledText": "Your access to the teachers’ area has been disabled. Write to us to find out more.",
+    "contact": "Write to us",
     "errorRequired": "Please fill in the required fields.",
     "errorEmail": "Invalid email.",
-    "errorGeneric": "Something went wrong. Please try again.",
-    "optional": "optional"
+    "errorGeneric": "Something went wrong. Please try again."
   }
 }

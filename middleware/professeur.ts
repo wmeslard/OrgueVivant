@@ -1,14 +1,19 @@
 /**
- * Espace des professeurs : compte connecté avec le rôle `professeur`. Les
- * administrateurs y accèdent aussi, pour dépanner un professeur au téléphone.
+ * Espace des professeurs : il faut être entré par le lien que l'association
+ * transmet (cookie posé par /api/moments/acces). Sans lui — ou si le lien a
+ * été régénéré depuis — on arrive sur la page qui explique comment l'obtenir.
  *
- * La destination demandée est passée à la page de connexion, qui y ramène
- * ensuite : un lien vers le calendrier mène bien au calendrier.
+ * Le chargement sert de vérification : l'espace est lu ici une fois, puis
+ * repris tel quel par les pages.
  */
-export default defineNuxtRouteMiddleware((to) => {
-  const user = useSupabaseUser()
-  const role = (user.value?.app_metadata as Record<string, unknown> | undefined)?.role
-  if (user.value && (role === 'professeur' || role === 'admin' || role === 'super_admin')) return
-  const localePath = useLocalePath()
-  return navigateTo({ path: localePath('/moments-musicaux/connexion'), query: { suite: to.fullPath } })
+export default defineNuxtRouteMiddleware(async () => {
+  const { charger } = useMomentsEspace()
+  try {
+    await charger()
+  } catch (e: any) {
+    const status = e?.statusCode ?? e?.response?.status
+    if (status !== 401 && status !== 403) throw e
+    const localePath = useLocalePath()
+    return navigateTo({ path: localePath('/moments-musicaux/acces'), query: status === 403 ? { desactive: '1' } : undefined })
+  }
 })

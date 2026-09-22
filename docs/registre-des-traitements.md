@@ -100,14 +100,22 @@ activité musicale) ; consentement de l'élève, ou de ses parents s'il est
 mineur, pour la publication de son prénom, recueilli par le professeur qui
 l'atteste à l'inscription.
 
-**Données** — demande d'accès d'un professeur : prénom, nom, email, téléphone
-(facultatif), conservatoire, message. Professeur validé : compte (email),
-prénom, nom, conservatoire, date de dernière connexion. Séance : date, heure,
-prénom et nom de l'élève, email de l'élève (facultatif, pour la confirmation),
-programme annoncé, professeur qui a inscrit.
+**Données** — professeur : prénom, nom, email, conservatoire (facultatif),
+date de dernière visite, saisis par lui-même à l'entrée dans l'espace. Séance :
+date, heure, prénom et nom de l'élève, email de l'élève (facultatif, pour la
+confirmation), programme annoncé, professeur qui a inscrit. Demandes d'accès
+reçues avant le 22 septembre 2026 (ancien fonctionnement) : prénom, nom, email,
+téléphone, conservatoire, message — table `moments_demandes`, plus alimentée.
 
-**Minimisation** — les élèves n'ont pas de compte. Leur nom complet et leur
-adresse ne servent qu'à l'organisation et ne sortent pas de l'administration.
+**Accès** — l'espace des professeurs s'ouvre avec un lien secret que
+l'association transmet ; il n'y a ni compte ni mot de passe. Un cookie
+strictement nécessaire (`ov_moments`, un an) retient l'accès sur le navigateur.
+Régénérer le lien depuis l'administration coupe l'accès de tous les navigateurs
+entrés avec l'ancien.
+
+**Minimisation** — ni les professeurs ni les élèves n'ont de compte. Le nom
+complet et l'adresse de l'élève ne servent qu'à l'organisation : ils ne sont
+visibles que de l'administration et du professeur qui l'a inscrit.
 
 **Destinataires** — le bureau de l'association. Hébergement Supabase (Union
 européenne). Envois d'emails par Resend.
@@ -116,10 +124,10 @@ européenne). Envois d'emails par Resend.
 programme apparaissent publiquement (site et agenda ICS). Ni l'email, ni le nom
 complet, ni le professeur qui a inscrit l'élève.
 
-**Conservation** — demandes refusées : six mois après la décision (suppression
-automatique). Professeurs : le temps de la collaboration, puis suppression sur
-demande. Séances passées : conservées comme archive de la programmation.
+**Conservation** — professeurs : le temps de la collaboration, puis
+suppression sur demande. Séances passées : conservées comme archive de la
+programmation. Anciennes demandes d'accès : à supprimer une fois vérifié
+qu'elles ne servent plus.
 
 **Droits** — accès, rectification, effacement, opposition : contact@orguevivant.fr.
-La suppression d'une demande et la désactivation d'un professeur se font depuis
-l'administration.
+La désactivation d'un professeur se fait depuis l'administration.

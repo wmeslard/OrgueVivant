@@ -1,5 +1,5 @@
+import { createHmac, randomBytes, timingSafeEqual } from 'node:crypto'
 import { Resend } from 'resend'
-import { serverSupabaseUser } from '#supabase/server'
 import type { H3Event } from 'h3'
 import type { SupabaseClient } from '@supabase/supabase-js'
 import { getServiceClient } from '~/server/utils/superAdminClient'
@@ -40,17 +40,86 @@ export interface SeanceRow {
   professeur?: Pick<Professeur, 'prenom' | 'nom' | 'email'> | null
 }
 
+// ── Accès par lien partagé ───────────────────────────────────────────────────
+//
+// L'association transmet aux professeurs une adresse qui se termine par une
+// clé secrète (table moments_lien). Qui l'ouvre se présente, puis reçoit un
+// cookie signé qui associe sa fiche à la clé du moment. Régénérer la clé
+// invalide d'un coup le lien et tous les cookies émis avec lui.
+
+const COOKIE = 'ov_moments'
+const COOKIE_DUREE_S = 365 * 24 * 3600
+
+/** Clé en vigueur, ou null si elle n'existe pas encore (migration non appliquée). */
+export async function cleActuelle(client: SupabaseClient): Promise<string | null> {
+  const { data, error } = await client.from('moments_lien').select('cle').eq('id', 1).maybeSingle()
+  if (error && schemaAbsent(error)) return null
+  if (error) throw createError({ statusCode: 500, statusMessage: error.message })
+  return (data?.cle as string | undefined) ?? null
+}
+
+/** Nouvelle clé : l'ancien lien et les accès ouverts avec lui cessent de fonctionner. */
+export async function regenererCle(client: SupabaseClient): Promise<string> {
+  const cle = randomBytes(16).toString('hex')
+  const { error } = await client.from('moments_lien').upsert({ id: 1, cle, cree_at: new Date().toISOString() })
+  if (error) throw createError({ statusCode: 500, statusMessage: error.message })
+  return cle
+}
+
+/** Comparaison à durée constante : la clé ne se devine pas caractère par caractère. */
+export function memeCle(a: string, b: string): boolean {
+  // Longueurs comparées en octets : timingSafeEqual lève une exception sinon
+  // (un caractère accentué compte pour deux).
+  const x = Buffer.from(a)
+  const y = Buffer.from(b)
+  return x.length === y.length && timingSafeEqual(x, y)
+}
+
 /**
- * Compte connecté avec le rôle `professeur` et une fiche active.
+ * Signature du cookie, par HMAC avec une clé dérivée de la clé de service
+ * Supabase (même principe que server/utils/formToken.ts). La clé du lien
+ * entre dans la signature : c'est ce qui rend les cookies caducs quand elle
+ * change.
  */
+function signer(professeurId: string, cle: string): string {
+  const source = useRuntimeConfig().supabaseServiceRoleKey as string | undefined
+  if (!source) throw createError({ statusCode: 500, statusMessage: 'Clé de signature absente' })
+  const secret = createHmac('sha256', source).update('orgue-vivant:moments-professeur').digest()
+  return createHmac('sha256', secret).update(`${professeurId}:${cle}`).digest('base64url')
+}
+
+export function ouvrirAcces(event: H3Event, professeurId: string, cle: string) {
+  setCookie(event, COOKIE, `${professeurId}.${signer(professeurId, cle)}`, {
+    httpOnly: true, secure: !import.meta.dev, sameSite: 'lax', path: '/', maxAge: COOKIE_DUREE_S
+  })
+}
+
+export function fermerAcces(event: H3Event) {
+  deleteCookie(event, COOKIE, { path: '/' })
+}
+
+/**
+ * Fiche du professeur dont le cookie est valide pour la clé en vigueur, ou
+ * null. `desactive` distingue la fiche coupée par l'administration.
+ */
+export async function professeurDuCookie(event: H3Event): Promise<Professeur | 'desactive' | null> {
+  const [id, sig] = (getCookie(event, COOKIE) ?? '').split('.')
+  if (!id || !sig || !/^[0-9a-f-]{36}$/.test(id)) return null
+  const client = getServiceClient()
+  const [cle, { data }] = await Promise.all([
+    cleActuelle(client),
+    client.from('moments_professeurs').select('*').eq('id', id).maybeSingle()
+  ])
+  if (!cle || !memeCle(sig, signer(id, cle)) || !data) return null
+  return data.actif ? data as Professeur : 'desactive'
+}
+
+/** Professeur entré par le lien en vigueur, avec une fiche active. */
 export async function requireProfesseur(event: H3Event): Promise<Professeur> {
-  const user = await serverSupabaseUser(event).catch(() => null)
-  if (!user) throw createError({ statusCode: 401, statusMessage: 'Connexion requise' })
-  const role = (user.app_metadata as Record<string, unknown>)?.role
-  if (role !== 'professeur') throw createError({ statusCode: 403, statusMessage: 'Accès réservé aux professeurs' })
-  const { data } = await getServiceClient().from('moments_professeurs').select('*').eq('id', user.id).maybeSingle()
-  if (!data || !data.actif) throw createError({ statusCode: 403, statusMessage: 'Accès désactivé' })
-  return data as Professeur
+  const prof = await professeurDuCookie(event)
+  if (!prof) throw createError({ statusCode: 401, statusMessage: 'Ouvrez le lien transmis par l\'association.' })
+  if (prof === 'desactive') throw createError({ statusCode: 403, statusMessage: 'Accès désactivé' })
+  return prof
 }
 
 /** Trace de passage, relevée à l'ouverture de l'espace : l'administration voit qui se sert de l'outil. */

@@ -6,7 +6,7 @@ Disallow: /auth-setup
 Disallow: /en/auth-setup
 Disallow: /moments-musicaux/espace
 Disallow: /en/moments-musicaux/espace
-Disallow: /moments-musicaux/connexion
-Disallow: /en/moments-musicaux/connexion
+Disallow: /moments-musicaux/acces
+Disallow: /en/moments-musicaux/acces
 
 Sitemap: https://orguevivant.fr/sitemap_index.xml

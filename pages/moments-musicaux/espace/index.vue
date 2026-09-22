@@ -9,10 +9,9 @@ import { annulable, heureFr, nomPublic } from '~/utils/moments'
 definePageMeta({ middleware: 'professeur', layout: 'default' })
 
 const { t, locale } = useI18n()
-const supabase = useSupabaseClient()
 const localePath = useLocalePath()
 const { show: showToast } = useToast()
-const { espace, charger, aVenir, passees } = useMomentsEspace()
+const { espace, charger, quitter, aVenir, passees } = useMomentsEspace()
 
 await charger()
 
@@ -41,7 +40,7 @@ async function enregistrer() {
     await charger(true)
     showToast(t('momentsEspace.saved'), { type: 'success' })
   } catch (e: any) {
-    erreur.value = e?.data?.statusMessage || t('momentsDemande.errorGeneric')
+    erreur.value = e?.data?.statusMessage || t('momentsAcces.errorGeneric')
   } finally { busy.value = false }
 }
 
@@ -54,26 +53,13 @@ async function annuler(s: { id: string }) {
     await charger(true)
     showToast(t('momentsEspace.cancelled'), { type: 'success' })
   } catch (e: any) {
-    showToast(e?.data?.statusMessage || t('momentsDemande.errorGeneric'), { type: 'error' })
+    showToast(e?.data?.statusMessage || t('momentsAcces.errorGeneric'), { type: 'error' })
   } finally { busy.value = false }
 }
 
-// ── Mot de passe, pour ceux qui préfèrent ────────────────────────────────────
-const motDePasse = ref('')
-const ouvrirMotDePasse = ref(false)
-async function definirMotDePasse() {
-  if (motDePasse.value.length < 8) { erreur.value = 'Au moins 8 caractères.'; return }
-  busy.value = true; erreur.value = ''
-  const { error } = await supabase.auth.updateUser({ password: motDePasse.value })
-  busy.value = false
-  if (error) { erreur.value = error.message; return }
-  motDePasse.value = ''; ouvrirMotDePasse.value = false
-  showToast(t('momentsEspace.passwordSaved'), { type: 'success' })
-}
-
 async function logout() {
-  await supabase.auth.signOut()
-  await navigateTo(localePath('/moments-musicaux/professeurs'))
+  await quitter()
+  await navigateTo(localePath('/moments-musicaux'))
 }
 </script>
 
@@ -145,21 +131,6 @@ async function logout() {
           {{ jourLong(s.date) }} · {{ heureFr(s.heure_debut) }} — {{ s.eleve_prenom }} {{ s.eleve_nom }}
         </li>
       </ul>
-    </section>
-
-    <!-- Mot de passe, facultatif -->
-    <section class="mt-14 border-t border-white/5 pt-8">
-      <button
-        class="text-sm text-text-secondary underline-offset-4 hover:text-text-primary hover:underline"
-        @click="ouvrirMotDePasse = !ouvrirMotDePasse"
-      >
-        {{ t('momentsEspace.setPassword') }}
-      </button>
-      <div v-if="ouvrirMotDePasse" class="mt-4 max-w-sm">
-        <p class="mb-3 text-xs text-text-secondary">{{ t('momentsEspace.setPasswordHint') }}</p>
-        <input v-model="motDePasse" type="password" minlength="8" class="input" autocomplete="new-password">
-        <button class="btn-primary mt-3" :disabled="busy" @click="definirMotDePasse">{{ t('momentsEspace.save') }}</button>
-      </div>
     </section>
 
     <!-- Programme d'une séance -->

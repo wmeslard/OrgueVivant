@@ -1,6 +1,6 @@
 <script setup lang="ts">
 /**
- * Moments musicaux : demandes d'accès des professeurs, séances inscrites,
+ * Moments musicaux : lien d'accès des professeurs, séances inscrites,
  * professeurs, emploi du temps de l'orgue et périodes d'indisponibilité.
  *
  * Contrairement au site public, l'administration voit tout : le nom complet de
@@ -13,13 +13,6 @@ definePageMeta({ middleware: 'auth', layout: 'admin' })
 const { t } = useI18n()
 const { show: showToast } = useToast()
 
-interface Demande {
-  id: string
-  prenom: string; nom: string; email: string
-  telephone: string | null; conservatoire: string | null; message: string | null
-  statut: 'en_attente' | 'acceptee' | 'refusee'
-  message_reponse: string | null; decided_at: string | null; created_at: string
-}
 interface Professeur {
   id: string; prenom: string; nom: string; email: string
   conservatoire: string | null; actif: boolean; derniere_connexion_at: string | null; created_at: string
@@ -33,22 +26,19 @@ interface Seance {
 }
 interface Vue {
   aujourdhui: string
-  demandes: Demande[]
   professeurs: Professeur[]
   fermetures: (Fermeture & { id: string })[]
   seances: Seance[]
   horaires: (Horaire & { id: string })[]
-  lienProfesseurs: string
+  lienProfesseurs: string | null
 }
 
 const { data, refresh, pending } = await useFetch<Vue>('/api/admin/moments')
 
-const onglet = ref<'demandes' | 'calendrier' | 'professeurs' | 'horaires'>('demandes')
+const onglet = ref<'calendrier' | 'professeurs' | 'horaires'>('calendrier')
 const busy = ref(false)
 const erreur = ref('')
 
-const enAttente = computed(() => data.value?.demandes.filter(d => d.statut === 'en_attente') ?? [])
-const traitees = computed(() => data.value?.demandes.filter(d => d.statut !== 'en_attente') ?? [])
 const seancesAVenir = computed(() =>
   (data.value?.seances ?? [])
     .filter(s => s.statut === 'reservee' && s.date >= (data.value?.aujourdhui ?? ''))
@@ -82,26 +72,6 @@ async function action(fn: () => Promise<unknown>, message: string) {
   } finally { busy.value = false }
 }
 
-// ── Demandes ─────────────────────────────────────────────────────────────────
-const ouverte = ref<Demande | null>(null)
-const reponse = ref('')
-function ouvrir(d: Demande) { ouverte.value = d; reponse.value = ''; erreur.value = '' }
-
-async function decider(decision: 'acceptee' | 'refusee') {
-  const d = ouverte.value
-  if (!d) return
-  if (decision === 'refusee' && !confirm(`Refuser la demande de ${d.prenom} ${d.nom} ?`)) return
-  await action(
-    () => $fetch(`/api/admin/moments/demandes/${d.id}`, { method: 'PATCH', body: { decision, message: reponse.value } }),
-    decision === 'acceptee' ? 'Accès ouvert, email envoyé.' : 'Demande refusée.'
-  )
-  if (!erreur.value) ouverte.value = null
-}
-async function supprimerDemande(d: Demande) {
-  if (!confirm(`Supprimer définitivement la demande de ${d.prenom} ${d.nom} ?`)) return
-  await action(() => $fetch(`/api/admin/moments/demandes/${d.id}`, { method: 'DELETE' }), 'Demande supprimée.')
-}
-
 // ── Lien à partager ──────────────────────────────────────────────────────────
 const copie = ref(false)
 async function copierLien() {
@@ -110,6 +80,12 @@ async function copierLien() {
     await navigator.clipboard.writeText(data.value.lienProfesseurs)
     copie.value = true; setTimeout(() => (copie.value = false), 2000)
   } catch { /* le champ reste sélectionnable à la main */ }
+}
+async function regenererLien() {
+  if (data.value?.lienProfesseurs && !confirm(
+    'Régénérer le lien ?\n\nL\'ancien cessera aussitôt de fonctionner, y compris pour les professeurs déjà entrés : '
+    + 'il faudra leur transmettre le nouveau. Les séances inscrites ne changent pas.')) return
+  await action(() => $fetch('/api/admin/moments/lien', { method: 'POST' }), 'Nouveau lien créé.')
 }
 
 // ── Séances ──────────────────────────────────────────────────────────────────
@@ -181,23 +157,28 @@ async function supprimerFermeture(f: Fermeture & { id: string }) {
 
     <AdminNav />
 
-    <!-- Lien à diffuser aux conservatoires -->
+    <!-- Lien à transmettre aux professeurs -->
     <section class="mb-10 rounded-2xl border border-ink-200 p-6 dark:border-ink-800">
       <h2 class="mb-1 font-display text-xl">Lien pour les professeurs</h2>
       <p class="mb-4 text-sm text-ink-500">
-        À diffuser aux conservatoires et aux professeurs d'orgue. L'adresse est publique : c'est votre validation,
-        et non le secret du lien, qui protège l'inscription des élèves.
+        Toute personne qui ouvre ce lien peut inscrire des élèves : transmettez-le aux professeurs d'orgue, par email
+        ou par message, sans le publier. S'il circule trop largement, régénérez-le — l'ancien cesse aussitôt de
+        fonctionner, et les professeurs devront utiliser le nouveau.
       </p>
-      <div class="flex flex-wrap items-center gap-3">
-        <input :value="data?.lienProfesseurs ?? ''" readonly class="input min-w-[18rem] flex-1 font-mono text-xs">
-        <button class="btn-primary" :disabled="!data?.lienProfesseurs" @click="copierLien">{{ copie ? 'Copié' : 'Copier' }}</button>
+      <div v-if="data?.lienProfesseurs" class="flex flex-wrap items-center gap-3">
+        <input :value="data.lienProfesseurs" readonly class="input min-w-[18rem] flex-1 font-mono text-xs" @focus="($event.target as HTMLInputElement).select()">
+        <button class="btn-primary" @click="copierLien">{{ copie ? 'Copié' : 'Copier' }}</button>
+        <button class="btn-ghost" :disabled="busy" @click="regenererLien">Régénérer</button>
+      </div>
+      <div v-else-if="data" class="flex flex-wrap items-center gap-3 text-sm text-ink-500">
+        Aucun lien pour le moment.
+        <button class="btn-primary" :disabled="busy" @click="regenererLien">Créer le lien</button>
       </div>
     </section>
 
     <nav class="mb-8 flex flex-wrap gap-6 border-b border-ink-200 dark:border-ink-800">
       <button
         v-for="o in [
-          { id: 'demandes', label: `Demandes${enAttente.length ? ` (${enAttente.length})` : ''}` },
           { id: 'calendrier', label: `Séances (${seancesAVenir.length})` },
           { id: 'professeurs', label: `Professeurs (${profsActifs.length})` },
           { id: 'horaires', label: 'Emploi du temps' }
@@ -212,45 +193,6 @@ async function supprimerFermeture(f: Fermeture & { id: string }) {
     </nav>
 
     <p v-if="pending" class="text-sm text-ink-500">Chargement…</p>
-
-    <!-- DEMANDES -->
-    <section v-else-if="onglet === 'demandes'">
-      <h2 class="mb-4 text-sm font-medium text-ink-500">En attente</h2>
-      <p v-if="!enAttente.length" class="mb-10 text-sm text-ink-500">Aucune demande en attente.</p>
-      <ul v-else class="mb-10 space-y-3">
-        <li v-for="d in enAttente" :key="d.id" class="rounded-2xl border border-ink-200 p-5 dark:border-ink-800">
-          <div class="flex flex-wrap items-baseline justify-between gap-3">
-            <div>
-              <div class="font-medium">{{ d.prenom }} {{ d.nom }}</div>
-              <div class="text-sm text-ink-500">
-                {{ d.email }}<template v-if="d.telephone"> · {{ d.telephone }}</template>
-                <template v-if="d.conservatoire"> · {{ d.conservatoire }}</template>
-              </div>
-            </div>
-            <button class="btn-primary" @click="ouvrir(d)">Examiner</button>
-          </div>
-          <p v-if="d.message" class="mt-3 line-clamp-2 text-sm text-ink-500">{{ d.message }}</p>
-        </li>
-      </ul>
-
-      <template v-if="traitees.length">
-        <h2 class="mb-4 text-sm font-medium text-ink-500">Traitées</h2>
-        <ul class="space-y-2">
-          <li v-for="d in traitees" :key="d.id" class="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-ink-200 px-4 py-3 text-sm dark:border-ink-800">
-            <span>
-              <span class="font-medium">{{ d.prenom }} {{ d.nom }}</span>
-              <span class="ml-2 text-ink-500">{{ d.email }}</span>
-            </span>
-            <span class="flex items-center gap-3">
-              <span :class="d.statut === 'acceptee' ? 'text-emerald-600' : 'text-ink-500'">
-                {{ d.statut === 'acceptee' ? 'Acceptée' : 'Refusée' }}
-              </span>
-              <button class="text-ink-400 underline-offset-4 hover:underline" @click="supprimerDemande(d)">Supprimer</button>
-            </span>
-          </li>
-        </ul>
-      </template>
-    </section>
 
     <!-- SÉANCES -->
     <section v-else-if="onglet === 'calendrier'" class="space-y-10">
@@ -373,7 +315,7 @@ async function supprimerFermeture(f: Fermeture & { id: string }) {
 
     <!-- PROFESSEURS -->
     <section v-else-if="onglet === 'professeurs'">
-      <p v-if="!data?.professeurs.length" class="text-sm text-ink-500">Aucun professeur pour le moment.</p>
+      <p v-if="!data?.professeurs.length" class="text-sm text-ink-500">Aucun professeur pour le moment : ils apparaissent ici dès qu'ils ouvrent le lien.</p>
       <ul v-else class="space-y-2">
         <li v-for="p in data.professeurs" :key="p.id" class="flex flex-wrap items-start justify-between gap-3 rounded-xl border border-ink-200 px-4 py-3 text-sm dark:border-ink-800">
           <div>
@@ -384,7 +326,7 @@ async function supprimerFermeture(f: Fermeture & { id: string }) {
             </div>
             <div class="mt-1 text-ink-500">
               <template v-if="p.conservatoire">{{ p.conservatoire }} · </template>
-              {{ seancesDe(p.id) }} séance(s) · dernière connexion : {{ quandCourt(p.derniere_connexion_at) }}
+              {{ seancesDe(p.id) }} séance(s) · dernière visite : {{ quandCourt(p.derniere_connexion_at) }}
             </div>
           </div>
           <button class="text-ink-400 underline-offset-4 hover:underline" :disabled="busy" @click="basculerProf(p)">
@@ -454,35 +396,5 @@ async function supprimerFermeture(f: Fermeture & { id: string }) {
         </template>
       </div>
     </section>
-
-    <!-- Fiche de demande -->
-    <Teleport to="body">
-      <div v-if="ouverte" class="fixed inset-0 z-[200] flex items-start justify-center overflow-y-auto bg-black/60 p-4 py-10" @click.self="ouverte = null">
-        <div class="w-full max-w-2xl rounded-3xl border border-ink-200 bg-white p-8 dark:border-ink-800 dark:bg-ink-900">
-          <h2 class="font-display text-2xl">{{ ouverte.prenom }} {{ ouverte.nom }}</h2>
-          <p class="mt-1 text-sm text-ink-500">
-            {{ ouverte.email }}<template v-if="ouverte.telephone"> · {{ ouverte.telephone }}</template>
-            <template v-if="ouverte.conservatoire"> · {{ ouverte.conservatoire }}</template>
-          </p>
-          <div v-if="ouverte.message" class="mt-6">
-            <div class="text-[10px] font-bold uppercase tracking-widest text-ink-400">Sa demande</div>
-            <p class="mt-2 whitespace-pre-wrap text-sm leading-relaxed">{{ ouverte.message }}</p>
-          </div>
-
-          <label class="label mt-7">Message envoyé au professeur <span class="font-normal text-ink-400">({{ t('admin.optional') }})</span></label>
-          <textarea v-model="reponse" rows="4" maxlength="4000" class="input resize-y" placeholder="Sans message, un texte par défaut est envoyé." />
-
-          <p v-if="erreur" class="mt-3 text-sm text-red-600">{{ erreur }}</p>
-          <div class="mt-6 flex flex-wrap justify-end gap-3">
-            <button class="btn-ghost" @click="ouverte = null">{{ t('admin.cancel') }}</button>
-            <button class="btn-ghost" :disabled="busy" @click="decider('refusee')">Refuser</button>
-            <button class="btn-primary" :disabled="busy" @click="decider('acceptee')">
-              <Icon v-if="busy" name="heroicons:arrow-path" class="mr-2 h-4 w-4 animate-spin" />
-              Ouvrir l'accès
-            </button>
-          </div>
-        </div>
-      </div>
-    </Teleport>
   </div>
 </template>

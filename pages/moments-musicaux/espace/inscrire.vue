@@ -78,8 +78,8 @@ function ouvrir(debut: string) {
 
 async function inscrire() {
   erreur.value = ''
-  if (!form.eleve_prenom.trim() || !form.eleve_nom.trim()) { erreur.value = t('momentsDemande.errorRequired'); return }
-  if (form.eleve_email && !/^\S+@\S+\.\S+$/.test(form.eleve_email)) { erreur.value = t('momentsDemande.errorEmail'); return }
+  if (!form.eleve_prenom.trim() || !form.eleve_nom.trim()) { erreur.value = t('momentsAcces.errorRequired'); return }
+  if (form.eleve_email && !/^\S+@\S+\.\S+$/.test(form.eleve_email)) { erreur.value = t('momentsAcces.errorEmail'); return }
   if (!form.consentement) { erreur.value = t('momentsEspace.errorConsent'); return }
   envoi.value = true
   try {
@@ -92,7 +92,7 @@ async function inscrire() {
     showToast(t('momentsEspace.booked'), { type: 'success' })
     await navigateTo(localePath('/moments-musicaux/espace'))
   } catch (e: any) {
-    erreur.value = e?.data?.statusMessage || t('momentsDemande.errorGeneric')
+    erreur.value = e?.data?.statusMessage || t('momentsAcces.errorGeneric')
     // Le créneau vient peut-être d'être pris : on recharge pour que la liste
     // affichée corresponde de nouveau à la réalité.
     await charger(true)
@@ -190,14 +190,14 @@ const legende = computed(() => [
 
           <label class="label mt-5" for="ee">
             {{ t('momentsEspace.studentEmail') }}
-            <span class="ml-1 font-normal text-text-secondary">({{ t('momentsDemande.optional') }})</span>
+            <span class="ml-1 font-normal text-text-secondary">({{ t('momentsAcces.optional') }})</span>
           </label>
           <input id="ee" v-model="form.eleve_email" type="email" maxlength="254" class="input">
           <p class="mt-1.5 text-xs text-text-secondary">{{ t('momentsEspace.studentEmailHint') }}</p>
 
           <label class="label mt-5" for="prog">
             {{ t('momentsEspace.programme') }}
-            <span class="ml-1 font-normal text-text-secondary">({{ t('momentsDemande.optional') }})</span>
+            <span class="ml-1 font-normal text-text-secondary">({{ t('momentsAcces.optional') }})</span>
           </label>
           <textarea id="prog" v-model="form.programme" rows="3" maxlength="600" class="input resize-y" />
           <p class="mt-1.5 text-xs text-text-secondary">{{ t('momentsEspace.programmeHint') }}</p>
