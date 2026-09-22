@@ -146,6 +146,26 @@ export function debutSeance(date: string, h: string): Date {
 
 // ── Créneaux d'un jour ───────────────────────────────────────────────────────
 
+/**
+ * Louis-Paul Courtois joue-t-il ce jour-là ? Un jeudi sur deux, si l'emploi
+ * du temps ouvre l'orgue à 13 h 15 et que rien ne s'y oppose. Les périodes
+ * d'indisponibilité se vérifient à part.
+ */
+export function seanceReguliere(date: string, horaires: readonly Horaire[]): boolean {
+  if (!estJeudiRegulier(date)) return false
+  const m = minutes(CRENEAU_REGULIER)
+  const couvre = (h: Horaire) => minutes(h.heure_debut) <= m && m < minutes(h.heure_fin)
+  const jeudi = horaires.filter(h => h.jour_semaine === 4)
+  return jeudi.some(h => h.type === 'ouverture' && couvre(h)) && !jeudi.some(h => h.type === 'blocage' && couvre(h))
+}
+
+/** Vrai si la demi-heure qui commence à `debut` empiète sur celle de Louis-Paul Courtois. */
+function chevaucheRegulier(debut: string): boolean {
+  const m = minutes(debut)
+  const r = minutes(CRENEAU_REGULIER)
+  return m < r + DUREE_MIN && m + DUREE_MIN > r
+}
+
 export interface CreneauJour {
   debut: string
   fin: string
@@ -185,18 +205,23 @@ export function creneauxDuJour(date: string, ctx: ContexteJour): CreneauJour[] {
   const tropTot = date < plusJours(ctx.aujourdhui, 2)
   const out: CreneauJour[] = []
 
+  // Le jeudi de Louis-Paul Courtois, sa demi-heure (13 h 15 – 13 h 45) est
+  // tenue : les créneaux de la grille qui la chevauchent, 13 h 00 et 13 h 30,
+  // ne sont pas proposés.
+  const regulier = seanceReguliere(date, ctx.horaires)
+  if (regulier) {
+    out.push({ debut: CRENEAU_REGULIER, fin: finCreneau(CRENEAU_REGULIER), etat: 'regulier', interprete: ORGANISTE_REGULIER })
+  }
+
   for (const o of ouvertures) {
     const fin = minutes(o.heure_fin)
     for (let m = minutes(o.heure_debut); m + DUREE_MIN <= fin; m += DUREE_MIN) {
       const debut = heure(m)
       // Un créneau qui empiète sur une messe ou des confessions n'existe pas.
       if (blocages.some(b => m < minutes(b.heure_fin) && m + DUREE_MIN > minutes(b.heure_debut))) continue
+      if (regulier && chevaucheRegulier(debut)) continue
       if (out.some(c => c.debut === debut)) continue
 
-      if (debut === CRENEAU_REGULIER && estJeudiRegulier(date)) {
-        out.push({ debut, fin: finCreneau(debut), etat: 'regulier', interprete: ORGANISTE_REGULIER })
-        continue
-      }
       const pris = prisParHeure.get(debut)
       if (pris) {
         out.push({ debut, fin: finCreneau(debut), etat: 'pris', interprete: pris.interprete, mien: pris.mien })
@@ -219,6 +244,7 @@ export function raisonNonReservable(date: string, debut: string, ctx: ContexteJo
   if (date < plusJours(ctx.aujourdhui, 2)) return 'trop_tot'
   if (date > plusMois(ctx.aujourdhui, HORIZON_MOIS)) return 'trop_loin'
   if (estFermee(date, ctx.fermetures)) return 'ferme'
+  if (seanceReguliere(date, ctx.horaires) && chevaucheRegulier(debut)) return 'regulier'
   const creneau = creneauxDuJour(date, ctx).find(c => c.debut === debut)
   if (!creneau) return 'hors_creneau'
   if (creneau.etat === 'regulier') return 'regulier'

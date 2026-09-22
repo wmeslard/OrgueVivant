@@ -6,7 +6,7 @@ import { getServiceClient } from '~/server/utils/superAdminClient'
 import { senderAddress } from '~/server/utils/sender'
 import {
   CRENEAU_REGULIER, ORGANISTE_REGULIER, type Fermeture, type Horaire, type SeancePublique,
-  estFermee, estJeudiRegulier, finCreneau, heureFr, nomPublic, parseYmd, ymd
+  estFermee, finCreneau, heureFr, nomPublic, parseYmd, seanceReguliere, ymd
 } from '~/utils/moments'
 
 /** Date du jour à Paris (« YYYY-MM-DD ») : les fonctions Vercel tournent en UTC. */
@@ -187,16 +187,12 @@ export async function chargerSeances(
 export function jeudisReguliers(
   du: string, au: string, horaires: readonly Horaire[], fermetures: readonly Fermeture[]
 ): string[] {
-  const jeudi = horaires.filter(h => h.jour_semaine === 4)
-  const dans = (h: Horaire) => h.heure_debut.slice(0, 5) <= CRENEAU_REGULIER && CRENEAU_REGULIER < h.heure_fin.slice(0, 5)
-  if (!jeudi.some(h => h.type === 'ouverture' && dans(h))) return []
-  if (jeudi.some(h => h.type === 'blocage' && dans(h))) return []
   const out: string[] = []
   const cursor = parseYmd(du)
   const fin = parseYmd(au)
   while (cursor <= fin) {
     const s = ymd(cursor)
-    if (estJeudiRegulier(s) && !estFermee(s, fermetures)) out.push(s)
+    if (seanceReguliere(s, horaires) && !estFermee(s, fermetures)) out.push(s)
     cursor.setDate(cursor.getDate() + 1)
   }
   return out

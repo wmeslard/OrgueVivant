@@ -169,51 +169,54 @@ const legende = computed(() => [
 
     <!-- Fiche de l'élève -->
     <Teleport to="body">
-      <div v-if="creneauChoisi" class="fixed inset-0 z-[200] flex items-start justify-center overflow-y-auto bg-black/70 p-4 py-10" @click.self="creneauChoisi = ''">
-        <div class="card-premium w-full max-w-md p-7">
-          <h2 class="font-display text-2xl font-light text-text-primary">{{ jourLong(jourChoisi) }}</h2>
-          <p class="mt-1 text-sm text-text-secondary">
-            {{ heureFr(creneauChoisi) }} · {{ t('moments.place') }}
-          </p>
+      <div v-if="creneauChoisi" class="fixed inset-0 z-[200] overflow-y-auto bg-black/70">
+        <!-- Centrée à l'écran ; sur un écran trop bas, elle défile au lieu d'être coupée -->
+        <div class="flex min-h-full items-center justify-center p-4" @click.self="creneauChoisi = ''">
+          <div class="card-premium w-full max-w-md p-7">
+            <h2 class="font-display text-2xl font-light text-text-primary">{{ jourLong(jourChoisi) }}</h2>
+            <p class="mt-1 text-sm text-text-secondary">
+              {{ heureFr(creneauChoisi) }} · {{ t('moments.place') }}
+            </p>
 
-          <div class="mt-6 grid gap-4 sm:grid-cols-2">
-            <div>
-              <label class="label" for="ep">{{ t('momentsEspace.studentFirstName') }}</label>
-              <input id="ep" v-model="form.eleve_prenom" required maxlength="80" class="input">
+            <div class="mt-6 grid gap-4 sm:grid-cols-2">
+              <div>
+                <label class="label" for="ep">{{ t('momentsEspace.studentFirstName') }}</label>
+                <input id="ep" v-model="form.eleve_prenom" required maxlength="80" class="input">
+              </div>
+              <div>
+                <label class="label" for="en">{{ t('momentsEspace.studentLastName') }}</label>
+                <input id="en" v-model="form.eleve_nom" required maxlength="80" class="input">
+              </div>
             </div>
-            <div>
-              <label class="label" for="en">{{ t('momentsEspace.studentLastName') }}</label>
-              <input id="en" v-model="form.eleve_nom" required maxlength="80" class="input">
+            <p class="mt-1.5 text-xs text-text-secondary">{{ t('momentsEspace.studentNameHint', { nom: apercuNom }) }}</p>
+
+            <label class="label mt-5" for="ee">
+              {{ t('momentsEspace.studentEmail') }}
+              <span class="ml-1 font-normal text-text-secondary">({{ t('momentsAcces.optional') }})</span>
+            </label>
+            <input id="ee" v-model="form.eleve_email" type="email" maxlength="254" class="input">
+            <p class="mt-1.5 text-xs text-text-secondary">{{ t('momentsEspace.studentEmailHint') }}</p>
+
+            <label class="label mt-5" for="prog">
+              {{ t('momentsEspace.programme') }}
+              <span class="ml-1 font-normal text-text-secondary">({{ t('momentsAcces.optional') }})</span>
+            </label>
+            <textarea id="prog" v-model="form.programme" rows="3" maxlength="600" class="input resize-y" />
+            <p class="mt-1.5 text-xs text-text-secondary">{{ t('momentsEspace.programmeHint') }}</p>
+
+            <label class="mt-5 flex items-start gap-3 text-sm text-text-secondary">
+              <input v-model="form.consentement" type="checkbox" class="mt-1 h-4 w-4 shrink-0 accent-gold">
+              <span>{{ t('momentsEspace.consent') }}</span>
+            </label>
+
+            <p v-if="erreur" class="mt-3 text-sm text-red-400">{{ erreur }}</p>
+            <div class="mt-6 flex justify-end gap-3">
+              <button class="btn-ghost" @click="creneauChoisi = ''">{{ t('momentsEspace.cancel') }}</button>
+              <button class="btn-primary" :disabled="envoi" @click="inscrire">
+                <Icon v-if="envoi" name="heroicons:arrow-path" class="mr-2 h-4 w-4 animate-spin" />
+                {{ t('momentsEspace.confirm') }}
+              </button>
             </div>
-          </div>
-          <p class="mt-1.5 text-xs text-text-secondary">{{ t('momentsEspace.studentNameHint', { nom: apercuNom }) }}</p>
-
-          <label class="label mt-5" for="ee">
-            {{ t('momentsEspace.studentEmail') }}
-            <span class="ml-1 font-normal text-text-secondary">({{ t('momentsAcces.optional') }})</span>
-          </label>
-          <input id="ee" v-model="form.eleve_email" type="email" maxlength="254" class="input">
-          <p class="mt-1.5 text-xs text-text-secondary">{{ t('momentsEspace.studentEmailHint') }}</p>
-
-          <label class="label mt-5" for="prog">
-            {{ t('momentsEspace.programme') }}
-            <span class="ml-1 font-normal text-text-secondary">({{ t('momentsAcces.optional') }})</span>
-          </label>
-          <textarea id="prog" v-model="form.programme" rows="3" maxlength="600" class="input resize-y" />
-          <p class="mt-1.5 text-xs text-text-secondary">{{ t('momentsEspace.programmeHint') }}</p>
-
-          <label class="mt-5 flex items-start gap-3 text-sm text-text-secondary">
-            <input v-model="form.consentement" type="checkbox" class="mt-1 h-4 w-4 shrink-0 accent-gold">
-            <span>{{ t('momentsEspace.consent') }}</span>
-          </label>
-
-          <p v-if="erreur" class="mt-3 text-sm text-red-400">{{ erreur }}</p>
-          <div class="mt-6 flex justify-end gap-3">
-            <button class="btn-ghost" @click="creneauChoisi = ''">{{ t('momentsEspace.cancel') }}</button>
-            <button class="btn-primary" :disabled="envoi" @click="inscrire">
-              <Icon v-if="envoi" name="heroicons:arrow-path" class="mr-2 h-4 w-4 animate-spin" />
-              {{ t('momentsEspace.confirm') }}
-            </button>
           </div>
         </div>
       </div>
