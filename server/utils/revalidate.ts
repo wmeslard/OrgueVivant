@@ -11,7 +11,10 @@
 
 // Les deux langues : sans les chemins /en, la version anglaise des listes
 // restait servie depuis le cache jusqu'à une heure après un enregistrement.
-export const PUBLIC_ISR_PATHS = ['/', '/concerts', '/news', '/en', '/en/concerts', '/en/news'] as const
+export const PUBLIC_ISR_PATHS = [
+  '/', '/concerts', '/news', '/moments-musicaux',
+  '/en', '/en/concerts', '/en/news', '/en/moments-musicaux'
+] as const
 
 export async function revalidatePublicPages(paths: readonly string[] = PUBLIC_ISR_PATHS) {
   const config = useRuntimeConfig()

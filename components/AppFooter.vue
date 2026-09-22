@@ -35,6 +35,7 @@ const { placeUrl: stEtienneUrl } = useMapsUrls(ref('saint_etienne'))
           </div>
           <ul class="space-y-4 text-sm">
             <li><NuxtLink :to="localePath('/concerts')" class="text-text-secondary hover:text-text-primary transition-colors">{{ t('nav.concerts') }}</NuxtLink></li>
+            <li><NuxtLink :to="localePath('/moments-musicaux')" class="text-text-secondary hover:text-text-primary transition-colors">{{ t('nav.moments') }}</NuxtLink></li>
             <li><NuxtLink :to="localePath('/about')" class="text-text-secondary hover:text-text-primary transition-colors">{{ t('nav.about') }}</NuxtLink></li>
             <li><NuxtLink :to="localePath('/contact')" class="text-text-secondary hover:text-text-primary transition-colors">{{ t('nav.contact') }}</NuxtLink></li>
           </ul>
@@ -71,6 +72,7 @@ const { placeUrl: stEtienneUrl } = useMapsUrls(ref('saint_etienne'))
           <ul class="space-y-4 text-sm">
             <li><NuxtLink :to="localePath('/legal')" class="text-text-secondary hover:text-text-primary transition-colors">{{ t('footer.legalMentions') }}</NuxtLink></li>
             <li><NuxtLink :to="localePath('/privacy')" class="text-text-secondary hover:text-text-primary transition-colors">{{ t('footer.privacy') }}</NuxtLink></li>
+            <li><NuxtLink :to="localePath('/moments-musicaux/espace')" class="text-text-secondary/75 hover:text-text-primary transition-colors text-xs">{{ t('footer.studentArea') }}</NuxtLink></li>
             <li><NuxtLink to="/admin" class="text-text-secondary/75 hover:text-text-primary transition-colors text-xs">{{ t('footer.admin') }}</NuxtLink></li>
           </ul>
         </div>

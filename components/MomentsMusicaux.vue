@@ -1,44 +1,37 @@
 <script setup lang="ts">
 /**
- * Rendez-vous régulier, distinct de la programmation de concerts : une
- * demi-heure de musique à l'orgue de chœur de Saint-Maurice, 13 h 15 – 13 h 45.
- * Les jeudis des semaines paires reviennent à l'organiste titulaire ; les
- * autres jours sont réservés par les élèves organistes depuis leur espace.
+ * Appel vers la page des Moments musicaux, depuis l'accueil et la page des
+ * concerts : la prochaine séance et son interprète, et un lien vers le
+ * calendrier complet. Le détail vit sur /moments-musicaux.
  *
- * `full` : bloc détaillé pour la page Concerts, avec les prochaines séances.
- * `compact` : mention resserrée pour la page d'accueil.
+ * `full` : carte détaillée pour la page Concerts.
+ * `compact` : bandeau resserré pour la page d'accueil.
  */
 import type { SeancePublique } from '~/utils/moments'
+import { MOMENT_DEBUT, MOMENT_FIN } from '~/utils/moments'
 
-const props = withDefaults(defineProps<{ variant?: 'full' | 'compact' }>(), { variant: 'full' })
+withDefaults(defineProps<{ variant?: 'full' | 'compact' }>(), { variant: 'full' })
 
 const { t, locale } = useI18n()
-
-const details = computed(() => [
-  { icon: 'heroicons:clock', label: t('moments.scheduleLabel'), value: t('moments.schedule') },
-  { icon: 'heroicons:map-pin', label: t('moments.placeLabel'), value: t('moments.place') },
-  { icon: 'heroicons:user', label: t('moments.performerLabel'), value: t('moments.performer') }
-])
+const localePath = useLocalePath()
 
 /**
- * Séances chargées après montage : les pages publiques sont servies depuis le
- * cache (ISR), une liste figée dans le HTML serait périmée dès la première
+ * Séances chargées après montage : ces deux pages sont servies depuis le cache
+ * (ISR), une date figée dans le HTML serait périmée dès la première
  * réservation et provoquerait une divergence d'hydratation.
  */
 const seances = ref<SeancePublique[]>([])
+const aujourdhui = ref('')
 onMounted(async () => {
+  aujourdhui.value = new Intl.DateTimeFormat('fr-CA', { timeZone: 'Europe/Paris' }).format(new Date())
   try {
-    const { seances: data } = await $fetch<{ seances: SeancePublique[] }>('/api/moments', { query: { mois: 4 } })
+    const { seances: data } = await $fetch<{ seances: SeancePublique[] }>('/api/moments', { query: { mois: 2 } })
     seances.value = data
   } catch { seances.value = [] }
 })
 
-const AFFICHEES = computed(() => (props.variant === 'full' ? 6 : 3))
-const prochaines = computed(() => seances.value.slice(0, AFFICHEES.value))
+const prochaines = computed(() => seances.value.slice(0, 3))
 const prochaine = computed(() => seances.value[0])
-
-const aujourdhui = ref('')
-onMounted(() => { aujourdhui.value = new Intl.DateTimeFormat('fr-CA', { timeZone: 'Europe/Paris' }).format(new Date()) })
 
 function jourLong(date: string) {
   const [y, m, d] = date.split('-').map(Number)
@@ -79,7 +72,7 @@ const pastilleDate = 'min-h-[1.5rem] text-base font-medium text-text-primary tra
         {{ t('moments.title') }}
       </h3>
       <p class="mt-5 max-w-2xl text-text-secondary font-light leading-relaxed">
-        {{ t('moments.subtitle') }}
+        {{ t('moments.intro') }}
       </p>
 
       <div class="mt-7" :class="pastille">
@@ -89,42 +82,24 @@ const pastilleDate = 'min-h-[1.5rem] text-base font-medium text-text-primary tra
         </span>
         <span :class="[pastilleDate, prochaineLabel ? 'opacity-100' : 'opacity-0']">
           {{ prochaineLabel || '—' }}
+          <template v-if="prochaine"> · {{ prochaine.interprete }}</template>
         </span>
       </div>
 
-      <!-- Calendrier des prochaines séances -->
-      <div class="mt-9 border-t border-white/5 pt-8">
-        <div class="mb-4 text-[10px] font-bold uppercase tracking-widest text-text-secondary">
-          {{ t('moments.upcomingLabel') }}
-        </div>
-        <ul v-if="prochaines.length" class="divide-y divide-white/5">
-          <li v-for="s in prochaines" :key="s.id ?? s.date" class="flex flex-wrap items-baseline gap-x-4 gap-y-1 py-3">
-            <span class="w-full text-sm font-medium text-text-primary sm:w-auto sm:min-w-[13rem]">{{ jourLong(s.date) }}</span>
-            <span class="text-sm text-text-secondary">{{ s.debut.replace(':', ' h ') }}</span>
-            <span class="text-sm text-text-primary">{{ s.interprete }}</span>
-            <span
-              class="rounded-full border px-2 py-0.5 text-[10px] uppercase tracking-widest"
-              :class="s.type === 'titulaire' ? 'border-white/10 text-text-secondary' : 'border-gold/30 text-gold'"
-            >
-              {{ s.type === 'titulaire' ? t('moments.titulaireTag') : t('moments.eleveTag') }}
-            </span>
-            <span v-if="s.programme" class="w-full text-sm font-light text-text-secondary">{{ s.programme }}</span>
-          </li>
-        </ul>
-        <p v-else class="text-sm text-text-secondary">{{ t('moments.none') }}</p>
+      <div class="mt-8 flex flex-wrap items-center gap-x-8 gap-y-3 border-t border-white/5 pt-7 text-sm text-text-secondary">
+        <span class="flex items-center gap-2">
+          <Icon name="heroicons:clock" class="h-4 w-4 shrink-0 text-gold" />
+          {{ MOMENT_DEBUT.replace(':', ' h ') }} – {{ MOMENT_FIN.replace(':', ' h ') }}
+        </span>
+        <span class="flex items-center gap-2">
+          <Icon name="heroicons:map-pin" class="h-4 w-4 shrink-0 text-gold" />
+          {{ t('moments.place') }}
+        </span>
+        <NuxtLink :to="localePath('/moments-musicaux')" class="ml-auto inline-flex items-center gap-2 text-gold transition-colors hover:text-text-primary">
+          {{ t('moments.seeCalendar') }}
+          <Icon name="heroicons:arrow-right" class="h-4 w-4" />
+        </NuxtLink>
       </div>
-
-      <dl class="mt-9 grid gap-7 border-t border-white/5 pt-8 sm:grid-cols-3">
-        <div v-for="d in details" :key="d.label">
-          <dt class="mb-2 text-[10px] font-bold uppercase tracking-widest text-text-secondary">
-            {{ d.label }}
-          </dt>
-          <dd class="flex items-start gap-2 text-sm text-text-primary">
-            <Icon :name="d.icon" class="mt-0.5 h-4 w-4 shrink-0 text-gold" />
-            <span>{{ d.value }}</span>
-          </dd>
-        </div>
-      </dl>
     </div>
   </section>
 
@@ -140,7 +115,7 @@ const pastilleDate = 'min-h-[1.5rem] text-base font-medium text-text-primary tra
             {{ t('moments.title') }}
           </h2>
           <p class="mt-3 max-w-xl text-sm font-light leading-relaxed text-text-secondary">
-            {{ t('moments.subtitle') }}
+            {{ t('moments.intro') }}
           </p>
           <div class="mt-5" :class="pastille">
             <span :class="pastilleIntitule">
@@ -160,12 +135,13 @@ const pastilleDate = 'min-h-[1.5rem] text-base font-medium text-text-primary tra
               <span class="text-text-secondary">{{ s.interprete }}</span>
             </li>
           </ul>
-          <div v-else class="space-y-2.5">
-            <div v-for="d in details" :key="d.label" class="flex items-start gap-2.5 text-sm text-text-primary">
-              <Icon :name="d.icon" class="mt-0.5 h-4 w-4 shrink-0 text-gold" />
-              <span>{{ d.value }}</span>
-            </div>
-          </div>
+          <NuxtLink
+            :to="localePath('/moments-musicaux')"
+            class="mt-5 inline-flex items-center gap-2 text-sm text-gold transition-colors hover:text-text-primary"
+          >
+            {{ t('moments.seeCalendar') }}
+            <Icon name="heroicons:arrow-right" class="h-4 w-4" />
+          </NuxtLink>
         </div>
       </div>
     </div>

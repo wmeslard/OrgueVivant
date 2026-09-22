@@ -2,6 +2,7 @@
   "nav": {
     "home": "Accueil",
     "concerts": "Concerts",
+    "moments": "Moments musicaux",
     "news": "Actualités",
     "about": "À propos",
     "contact": "Contact",
@@ -92,7 +93,16 @@
     "titulaireTag": "Organiste titulaire",
     "eleveTag": "Élève organiste",
     "none": "Aucune séance annoncée pour le moment.",
-    "seeAll": "Voir toutes les séances"
+    "seeAll": "Voir toutes les séances",
+    "pageTitle": "Les Moments musicaux",
+    "intro": "Une demi-heure de musique à l'orgue de chœur de l'église Saint-Maurice, de 13 h 15 à 13 h 45. Entrée libre, on entre et on sort comme on veut.",
+    "who": "Un jeudi sur deux, l'organiste titulaire tient la tribune. Les autres jours, des élèves organistes des conservatoires de la région sont invités à s'y produire : chacun choisit sa date et annonce son programme.",
+    "seoDesc": "Les Moments musicaux d'Orgue Vivant : une demi-heure d'orgue à l'église Saint-Maurice de Lille, de 13 h 15 à 13 h 45, entrée libre. Calendrier des prochaines séances.",
+    "studentCta": "Vous êtes élève organiste ?",
+    "studentCtaText": "Si votre candidature a été retenue, réservez vos dates depuis votre espace.",
+    "studentCtaButton": "Réserver une date",
+    "seeCalendar": "Voir le calendrier",
+    "free": "Entrée libre"
   },
   "calendar": {
     "eyebrow": "Ajouter à votre agenda",
@@ -190,7 +200,8 @@
     "legalMentions": "Mentions légales",
     "privacy": "Confidentialité",
     "admin": "Espace admin",
-    "rights": "Tous droits réservés."
+    "rights": "Tous droits réservés.",
+    "studentArea": "Espace élèves"
   },
   "legal": {
     "eyebrow": "Informations légales",
@@ -338,7 +349,14 @@
     "legendTitulaire": "Organiste titulaire",
     "legendClosed": "Orgue indisponible",
     "maxReached": "Vous avez atteint le nombre de séances réservables à l’avance.",
-    "cancelDeadline": "Une séance s'annule jusqu'à 48 h avant."
+    "cancelDeadline": "Une séance s'annule jusqu'à 48 h avant.",
+    "dashboardTitle": "Mes Moments musicaux",
+    "bookDate": "Réserver une date",
+    "backToArea": "Mes séances",
+    "chooseDate": "Choisir une date",
+    "chooseDateHint": "Un jour de votre choix, hors dimanche et hors jeudis de l'organiste titulaire, de 13 h 15 à 13 h 45.",
+    "emptyCta": "Vous n'avez pas encore de séance : choisissez votre première date.",
+    "history": "Séances passées"
   },
   "momentsCandidature": {
     "title": "Jouer aux Moments musicaux",

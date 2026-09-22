@@ -103,9 +103,13 @@ export default defineNuxtConfig({
     // L'admin est déjà bloqué par robots.txt : ne pas le soumettre non plus au sitemap
     exclude: [
       '/_nuxt/**', '/_**', '/admin', '/admin/**', '/auth-setup', '/newsletter/**', '/en/newsletter/**',
-      // Espaces privés des Moments musicaux : lien de candidature distribué
-      // par l'association, espace des élèves derrière authentification.
-      '/moments-musicaux/**', '/en/moments-musicaux/**'
+      // Espaces privés des Moments musicaux : lien de candidature distribué par
+      // l'association, espace des élèves derrière authentification. La page
+      // publique /moments-musicaux, elle, reste dans le sitemap.
+      '/moments-musicaux/espace', '/moments-musicaux/espace/**',
+      '/moments-musicaux/connexion', '/moments-musicaux/candidature/**',
+      '/en/moments-musicaux/espace', '/en/moments-musicaux/espace/**',
+      '/en/moments-musicaux/connexion', '/en/moments-musicaux/candidature/**'
     ]
   },
 
@@ -189,10 +193,17 @@ export default defineNuxtConfig({
     '/en/privacy':  { prerender: true },
     // Admin : toujours SSR, jamais mis en cache
     '/admin/**': { ssr: true, robots: false, headers: { 'Cache-Control': 'no-store' } },
-    // Moments musicaux : candidature sur lien privé, espace des élèves. Jamais
-    // en cache (contenu personnel) ni indexés.
-    '/moments-musicaux/**':    { ssr: true, robots: false, headers: { 'Cache-Control': 'no-store' } },
-    '/en/moments-musicaux/**': { ssr: true, robots: false, headers: { 'Cache-Control': 'no-store' } },
+    // Moments musicaux : la page publique est mise en cache comme les autres
+    // listes ; la candidature et l'espace des élèves, jamais (contenu
+    // personnel), et hors index.
+    '/moments-musicaux':    { isr: 3600 },
+    '/en/moments-musicaux': { isr: 3600 },
+    '/moments-musicaux/espace/**':     { ssr: true, robots: false, headers: { 'Cache-Control': 'no-store' } },
+    '/moments-musicaux/connexion':     { ssr: true, robots: false, headers: { 'Cache-Control': 'no-store' } },
+    '/moments-musicaux/candidature/**': { ssr: true, robots: false, headers: { 'Cache-Control': 'no-store' } },
+    '/en/moments-musicaux/espace/**':     { ssr: true, robots: false, headers: { 'Cache-Control': 'no-store' } },
+    '/en/moments-musicaux/connexion':     { ssr: true, robots: false, headers: { 'Cache-Control': 'no-store' } },
+    '/en/moments-musicaux/candidature/**': { ssr: true, robots: false, headers: { 'Cache-Control': 'no-store' } },
     // Ressources statiques hors /_nuxt (noms non hachés) : Vercel les servait
     // sans cache. Les polices ne changent jamais ; les images rarement, d'où
     // une semaine, rafraîchie en arrière-plan.

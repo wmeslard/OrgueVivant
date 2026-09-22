@@ -2,6 +2,7 @@
   "nav": {
     "home": "Home",
     "concerts": "Concerts",
+    "moments": "Musical Moments",
     "news": "News",
     "about": "About",
     "contact": "Contact",
@@ -92,7 +93,16 @@
     "titulaireTag": "Resident organist",
     "eleveTag": "Organ student",
     "none": "No session announced yet.",
-    "seeAll": "See all sessions"
+    "seeAll": "See all sessions",
+    "pageTitle": "Musical Moments",
+    "intro": "Half an hour of music on the choir organ of Saint-Maurice church, from 1:15 to 1:45 pm. Free admission, come and go as you please.",
+    "who": "Every other Thursday, the resident organist plays. On other days, organ students from the region’s conservatoires are invited to perform: each picks a date and announces a programme.",
+    "seoDesc": "Orgue Vivant’s Musical Moments: half an hour of organ music at Saint-Maurice church in Lille, 1:15 to 1:45 pm, free admission. Calendar of upcoming sessions.",
+    "studentCta": "Are you an organ student?",
+    "studentCtaText": "If your application has been accepted, book your dates from your area.",
+    "studentCtaButton": "Book a date",
+    "seeCalendar": "See the calendar",
+    "free": "Free admission"
   },
   "calendar": {
     "eyebrow": "Add to your calendar",
@@ -190,7 +200,8 @@
     "legalMentions": "Legal notice",
     "privacy": "Privacy",
     "admin": "Admin",
-    "rights": "All rights reserved."
+    "rights": "All rights reserved.",
+    "studentArea": "Student area"
   },
   "legal": {
     "eyebrow": "Legal information",
@@ -338,7 +349,14 @@
     "legendTitulaire": "Resident organist",
     "legendClosed": "Organ unavailable",
     "maxReached": "You have reached the number of sessions you can book ahead.",
-    "cancelDeadline": "A session can be cancelled up to 48 h in advance."
+    "cancelDeadline": "A session can be cancelled up to 48 h in advance.",
+    "dashboardTitle": "My Musical Moments",
+    "bookDate": "Book a date",
+    "backToArea": "My sessions",
+    "chooseDate": "Choose a date",
+    "chooseDateHint": "Any day you like, except Sundays and the resident organist’s Thursdays, from 1:15 to 1:45 pm.",
+    "emptyCta": "You have no session yet: pick your first date.",
+    "history": "Past sessions"
   },
   "momentsCandidature": {
     "title": "Play at the Musical Moments",

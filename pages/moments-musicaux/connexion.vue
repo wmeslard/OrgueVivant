@@ -8,6 +8,17 @@ definePageMeta({ layout: 'default' })
 const { t } = useI18n()
 const supabase = useSupabaseClient()
 const localePath = useLocalePath()
+const route = useRoute()
+
+/**
+ * Page demandée avant la connexion, s'il y en a une. Seuls les chemins internes
+ * sont acceptés : une URL absolue permettrait de renvoyer l'élève vers un site
+ * tiers depuis un lien fabriqué.
+ */
+const suite = computed(() => {
+  const q = route.query.suite
+  return typeof q === 'string' && /^\/[^/\\]/.test(q) ? q : localePath('/moments-musicaux/espace')
+})
 
 const email = ref('')
 const password = ref('')
@@ -39,7 +50,7 @@ async function login() {
     return
   }
   loading.value = false
-  await navigateTo(localePath('/moments-musicaux/espace'))
+  await navigateTo(suite.value)
 }
 
 async function reset() {
