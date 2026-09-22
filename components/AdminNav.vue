@@ -6,7 +6,8 @@ const { t } = useI18n()
 const tabs = [
   { to: '/admin/concerts', label: 'admin.concerts' },
   { to: '/admin/news', label: 'admin.news' },
-  { to: '/admin/newsletter', label: 'admin.newsletter' }
+  { to: '/admin/newsletter', label: 'admin.newsletter' },
+  { to: '/admin/moments', label: 'admin.moments' }
 ]
 </script>
 

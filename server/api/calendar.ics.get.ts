@@ -1,4 +1,6 @@
 import { getServiceClient } from '~/server/utils/superAdminClient'
+import { calendrierPublic } from '~/server/utils/moments'
+import { plusMois } from '~/utils/moments'
 
 function pad(n: number) { return String(n).padStart(2, '0') }
 
@@ -59,43 +61,15 @@ const LIEUX = {
   saint_etienne: "Église Saint-Étienne de Lille, 47 Rue de l'Hôpital Militaire, 59000 Lille, France"
 } as const
 
-// ── Moments musicaux : les jeudis des semaines paires, 13h15–13h45 ────────────
-const THURSDAY = 4
-const MOMENT_START = '1315'
-const MOMENT_END = '1345'
+// ── Moments musicaux ─────────────────────────────────────────────────────────
+// Séances du titulaire (un jeudi sur deux) et séances réservées par les élèves,
+// telles que le site les publie : voir server/utils/moments.ts.
 const MONTHS_AHEAD = 12
-
-/** Numéro de semaine ISO 8601. */
-function isoWeek(d: Date): number {
-  const t = new Date(Date.UTC(d.getFullYear(), d.getMonth(), d.getDate()))
-  const day = t.getUTCDay() || 7
-  t.setUTCDate(t.getUTCDate() + 4 - day)
-  const yearStart = new Date(Date.UTC(t.getUTCFullYear(), 0, 1))
-  return Math.ceil(((t.getTime() - yearStart.getTime()) / 86400000 + 1) / 7)
-}
-
-/**
- * Occurrences explicites plutôt qu'une RRULE bihebdomadaire : une année ISO de
- * 53 semaines (2026 par exemple) enchaîne deux semaines impaires, ce qui
- * décalerait durablement une règle « toutes les deux semaines » par rapport à
- * la parité réelle affichée sur le site.
- */
-function momentDates(from: Date, monthsAhead: number): Date[] {
-  const out: Date[] = []
-  const cursor = new Date(from.getFullYear(), from.getMonth(), from.getDate())
-  const limit = new Date(cursor)
-  limit.setMonth(limit.getMonth() + monthsAhead)
-  while (cursor <= limit) {
-    if (cursor.getDay() === THURSDAY && isoWeek(cursor) % 2 === 0) out.push(new Date(cursor))
-    cursor.setDate(cursor.getDate() + 1)
-  }
-  return out
-}
 
 export default defineEventHandler(async (event) => {
   const client = getServiceClient()
   const now = new Date()
-  const today = now.toISOString().slice(0, 10)
+  const today = new Intl.DateTimeFormat('fr-CA', { timeZone: 'Europe/Paris' }).format(now)
   const stamp = `${now.toISOString().replace(/[-:]/g, '').slice(0, 15)}Z`
 
   const { data, error } = await client
@@ -122,19 +96,25 @@ export default defineEventHandler(async (event) => {
     ].join('\r\n'))
   }
 
-  for (const d of momentDates(now, MONTHS_AHEAD)) {
-    const day = `${d.getFullYear()}${pad(d.getMonth() + 1)}${pad(d.getDate())}`
+  for (const s of await calendrierPublic(today, plusMois(today, MONTHS_AHEAD))) {
+    const day = s.date.replaceAll('-', '')
+    const titre = s.type === 'titulaire'
+      ? `Moment musical — ${s.interprete}`
+      : `Moment musical — ${s.interprete}${s.programme ? ` · ${s.programme}` : ''}`
+    const description = s.type === 'titulaire'
+      ? `Une demi-heure de musique à l'orgue de chœur de l'église Saint-Maurice, par ${s.interprete}. Un jeudi sur deux, les semaines paires.`
+      : `Une demi-heure de musique à l'orgue de chœur de l'église Saint-Maurice, par ${s.interprete}, élève organiste.${s.programme ? `\nProgramme : ${s.programme}` : ''}`
     vevents.push([
       'BEGIN:VEVENT',
-      `UID:moment-${day}@orgue-vivant`,
+      // Les séances d'élèves gardent leur identifiant de réservation : une
+      // annulation retire l'événement, une nouvelle réservation en crée un autre.
+      `UID:${s.type === 'titulaire' ? `moment-${day}` : `moment-${s.id}`}@orgue-vivant`,
       `DTSTAMP:${stamp}`,
-      `DTSTART:${day}T${MOMENT_START}00`,
-      `DTEND:${day}T${MOMENT_END}00`,
-      fold('SUMMARY:Moment musical — orgue de chœur'),
+      `DTSTART:${day}T${s.debut.replace(':', '')}00`,
+      `DTEND:${day}T${s.fin.replace(':', '')}00`,
+      fold(`SUMMARY:${escapeIcs(titre)}`),
       fold(`LOCATION:${escapeIcs(LIEUX.saint_maurice)}`),
-      fold('DESCRIPTION:' + escapeIcs(
-        'Une demi-heure de musique à l\'orgue de chœur de l\'église Saint-Maurice, par Louis-Paul Courtois. Un jeudi sur deux, les semaines paires.'
-      )),
+      fold(`DESCRIPTION:${escapeIcs(description)}`),
       'END:VEVENT'
     ].join('\r\n'))
   }

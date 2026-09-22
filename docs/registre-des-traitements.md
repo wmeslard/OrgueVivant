@@ -88,3 +88,32 @@ Pas de délégué à la protection des données (non requis).
 - **Violation de données** (accès non autorisé, perte, fuite) : documenter l'incident ; notifier la CNIL sous 72 heures si un risque existe pour les personnes ; informer les personnes concernées si le risque est élevé.
 - **Départ d'un bénévole** : suppression de son compte administrateur.
 - **Nouveau traitement** (formulaire, outil, prestataire) : mise à jour de ce registre et de la politique de confidentialité avant mise en service.
+
+## Candidatures et séances des Moments musicaux
+
+**Finalité** — permettre aux élèves organistes de candidater pour jouer lors des
+Moments musicaux, puis de réserver leurs dates ; publier le calendrier des
+séances sur le site et dans l'agenda.
+
+**Base légale** — intérêt légitime de l'association (organisation de son
+activité musicale) ; consentement explicite pour la publication du nom.
+
+**Données** — candidature : prénom, nom, email, téléphone, conservatoire,
+professeur, niveau, présentation, répertoire, accord de publication. Élève
+accepté : compte (email), prénom, nom. Séance : date, programme annoncé.
+
+**Destinataires** — le bureau de l'association. Hébergement Supabase (Union
+européenne). Envois d'emails par Resend.
+
+**Publication** — seuls la date, le prénom, l'initiale du nom et le programme
+apparaissent publiquement (site et agenda ICS). Ni l'email, ni le téléphone, ni
+le nom complet ne sortent de l'administration.
+
+**Conservation** — candidatures refusées : six mois après la décision
+(suppression automatique). Candidatures acceptées et fiches élèves : le temps de
+la participation, puis suppression sur demande. Séances passées : conservées
+comme archive de la programmation.
+
+**Droits** — accès, rectification, effacement, opposition : contact@orguevivant.fr.
+La suppression d'une candidature et la désactivation d'un élève se font depuis
+l'administration.

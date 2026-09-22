@@ -101,7 +101,12 @@ export default defineNuxtConfig({
     // Les fiches concert viennent de la base (voir server/api/__sitemap__/urls.ts)
     sources: ['/api/__sitemap__/urls'],
     // L'admin est déjà bloqué par robots.txt : ne pas le soumettre non plus au sitemap
-    exclude: ['/_nuxt/**', '/_**', '/admin', '/admin/**', '/auth-setup', '/newsletter/**', '/en/newsletter/**']
+    exclude: [
+      '/_nuxt/**', '/_**', '/admin', '/admin/**', '/auth-setup', '/newsletter/**', '/en/newsletter/**',
+      // Espaces privés des Moments musicaux : lien de candidature distribué
+      // par l'association, espace des élèves derrière authentification.
+      '/moments-musicaux/**', '/en/moments-musicaux/**'
+    ]
   },
 
   runtimeConfig: {
@@ -184,6 +189,10 @@ export default defineNuxtConfig({
     '/en/privacy':  { prerender: true },
     // Admin : toujours SSR, jamais mis en cache
     '/admin/**': { ssr: true, robots: false, headers: { 'Cache-Control': 'no-store' } },
+    // Moments musicaux : candidature sur lien privé, espace des élèves. Jamais
+    // en cache (contenu personnel) ni indexés.
+    '/moments-musicaux/**':    { ssr: true, robots: false, headers: { 'Cache-Control': 'no-store' } },
+    '/en/moments-musicaux/**': { ssr: true, robots: false, headers: { 'Cache-Control': 'no-store' } },
     // Ressources statiques hors /_nuxt (noms non hachés) : Vercel les servait
     // sans cache. Les polices ne changent jamais ; les images rarement, d'où
     // une semaine, rafraîchie en arrière-plan.

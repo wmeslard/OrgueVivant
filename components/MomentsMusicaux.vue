@@ -1,10 +1,16 @@
 <script setup lang="ts">
 /**
- * Rendez-vous récurrent (un jeudi sur deux), distinct de la programmation de concerts.
- * `full` : bloc détaillé pour la page Concerts.
+ * Rendez-vous régulier, distinct de la programmation de concerts : une
+ * demi-heure de musique à l'orgue de chœur de Saint-Maurice, 13 h 15 – 13 h 45.
+ * Les jeudis des semaines paires reviennent à l'organiste titulaire ; les
+ * autres jours sont réservés par les élèves organistes depuis leur espace.
+ *
+ * `full` : bloc détaillé pour la page Concerts, avec les prochaines séances.
  * `compact` : mention resserrée pour la page d'accueil.
  */
-withDefaults(defineProps<{ variant?: 'full' | 'compact' }>(), { variant: 'full' })
+import type { SeancePublique } from '~/utils/moments'
+
+const props = withDefaults(defineProps<{ variant?: 'full' | 'compact' }>(), { variant: 'full' })
 
 const { t, locale } = useI18n()
 
@@ -14,41 +20,38 @@ const details = computed(() => [
   { icon: 'heroicons:user', label: t('moments.performerLabel'), value: t('moments.performer') }
 ])
 
-const THURSDAY = 4
-const SESSION_END_H = 13
-const SESSION_END_M = 45
+/**
+ * Séances chargées après montage : les pages publiques sont servies depuis le
+ * cache (ISR), une liste figée dans le HTML serait périmée dès la première
+ * réservation et provoquerait une divergence d'hydratation.
+ */
+const seances = ref<SeancePublique[]>([])
+onMounted(async () => {
+  try {
+    const { seances: data } = await $fetch<{ seances: SeancePublique[] }>('/api/moments', { query: { mois: 4 } })
+    seances.value = data
+  } catch { seances.value = [] }
+})
 
-/** Numéro de semaine ISO 8601 (celui qui figure sur les calendriers français). */
-function isoWeek(d: Date): number {
-  const t = new Date(Date.UTC(d.getFullYear(), d.getMonth(), d.getDate()))
-  const day = t.getUTCDay() || 7
-  t.setUTCDate(t.getUTCDate() + 4 - day)
-  const yearStart = new Date(Date.UTC(t.getUTCFullYear(), 0, 1))
-  return Math.ceil(((t.getTime() - yearStart.getTime()) / 86400000 + 1) / 7)
+const AFFICHEES = computed(() => (props.variant === 'full' ? 6 : 3))
+const prochaines = computed(() => seances.value.slice(0, AFFICHEES.value))
+const prochaine = computed(() => seances.value[0])
+
+const aujourdhui = ref('')
+onMounted(() => { aujourdhui.value = new Intl.DateTimeFormat('fr-CA', { timeZone: 'Europe/Paris' }).format(new Date()) })
+
+function jourLong(date: string) {
+  const [y, m, d] = date.split('-').map(Number)
+  const s = new Date(y, m - 1, d).toLocaleDateString(locale.value === 'fr' ? 'fr-FR' : 'en-US',
+    { weekday: 'long', day: 'numeric', month: 'long' })
+  return s.charAt(0).toUpperCase() + s.slice(1)
 }
 
-/** Prochain jeudi de semaine paire ; la séance du jour ne compte plus une fois terminée. */
-function findNextSession(now: Date): Date | null {
-  const start = new Date(now.getFullYear(), now.getMonth(), now.getDate())
-  for (let i = 0; i <= 21; i++) {
-    const d = new Date(start)
-    d.setDate(start.getDate() + i)
-    if (d.getDay() !== THURSDAY || isoWeek(d) % 2 !== 0) continue
-    if (i === 0) {
-      const end = new Date(d)
-      end.setHours(SESSION_END_H, SESSION_END_M, 0, 0)
-      if (now > end) continue
-    }
-    return d
-  }
-  return null
-}
-
-// Calculé après montage uniquement : les pages publiques sont mises en cache
-// (ISR), une date figée dans le HTML serait périmée et provoquerait en plus
-// une divergence d'hydratation.
-const nextSession = ref<Date | null>(null)
-onMounted(() => { nextSession.value = findNextSession(new Date()) })
+const prochaineLabel = computed(() => {
+  if (!prochaine.value) return ''
+  if (prochaine.value.date === aujourdhui.value) return t('moments.today')
+  return jourLong(prochaine.value.date)
+})
 
 // La pastille est la même sur les deux variantes : ses classes sont définies
 // ici pour qu'elles ne divergent pas d'un endroit à l'autre.
@@ -57,22 +60,8 @@ onMounted(() => { nextSession.value = findNextSession(new Date()) })
 const pastille = 'flex w-full flex-col items-start gap-1.5 rounded-2xl border border-gold/25 bg-gold/[0.12] px-5 py-4 text-sm sm:inline-flex sm:w-auto sm:flex-row sm:items-center sm:gap-2.5 sm:rounded-full sm:py-2.5'
 const pastilleIntitule = 'flex items-center gap-2 text-[11px] font-bold uppercase tracking-[0.15em] text-gold sm:text-sm sm:font-medium sm:normal-case sm:tracking-normal'
 // La hauteur ne dépend pas du texte : la ligne est réservée dès le rendu
-// serveur, seule l'opacité change quand la date, calculée après montage, arrive.
+// serveur, seule l'opacité change quand la date, chargée après montage, arrive.
 const pastilleDate = 'min-h-[1.5rem] text-base font-medium text-text-primary transition-opacity duration-500 sm:min-h-0 sm:text-sm sm:font-normal'
-
-const isToday = computed(() =>
-  !!nextSession.value && nextSession.value.toDateString() === new Date().toDateString()
-)
-
-const nextSessionLabel = computed(() => {
-  if (!nextSession.value) return ''
-  if (isToday.value) return t('moments.today')
-  const formatted = nextSession.value.toLocaleDateString(
-    locale.value === 'fr' ? 'fr-FR' : 'en-US',
-    { weekday: 'long', day: 'numeric', month: 'long' }
-  )
-  return formatted.charAt(0).toUpperCase() + formatted.slice(1)
-})
 </script>
 
 <template>
@@ -98,9 +87,31 @@ const nextSessionLabel = computed(() => {
           <Icon name="heroicons:calendar-days" class="h-4 w-4 shrink-0" />
           {{ t('moments.nextLabel') }}
         </span>
-        <span :class="[pastilleDate, nextSessionLabel ? 'opacity-100' : 'opacity-0']">
-          {{ nextSessionLabel || '—' }}
+        <span :class="[pastilleDate, prochaineLabel ? 'opacity-100' : 'opacity-0']">
+          {{ prochaineLabel || '—' }}
         </span>
+      </div>
+
+      <!-- Calendrier des prochaines séances -->
+      <div class="mt-9 border-t border-white/5 pt-8">
+        <div class="mb-4 text-[10px] font-bold uppercase tracking-widest text-text-secondary">
+          {{ t('moments.upcomingLabel') }}
+        </div>
+        <ul v-if="prochaines.length" class="divide-y divide-white/5">
+          <li v-for="s in prochaines" :key="s.id ?? s.date" class="flex flex-wrap items-baseline gap-x-4 gap-y-1 py-3">
+            <span class="w-full text-sm font-medium text-text-primary sm:w-auto sm:min-w-[13rem]">{{ jourLong(s.date) }}</span>
+            <span class="text-sm text-text-secondary">{{ s.debut.replace(':', ' h ') }}</span>
+            <span class="text-sm text-text-primary">{{ s.interprete }}</span>
+            <span
+              class="rounded-full border px-2 py-0.5 text-[10px] uppercase tracking-widest"
+              :class="s.type === 'titulaire' ? 'border-white/10 text-text-secondary' : 'border-gold/30 text-gold'"
+            >
+              {{ s.type === 'titulaire' ? t('moments.titulaireTag') : t('moments.eleveTag') }}
+            </span>
+            <span v-if="s.programme" class="w-full text-sm font-light text-text-secondary">{{ s.programme }}</span>
+          </li>
+        </ul>
+        <p v-else class="text-sm text-text-secondary">{{ t('moments.none') }}</p>
       </div>
 
       <dl class="mt-9 grid gap-7 border-t border-white/5 pt-8 sm:grid-cols-3">
@@ -136,16 +147,24 @@ const nextSessionLabel = computed(() => {
               <Icon name="heroicons:calendar-days" class="h-4 w-4 shrink-0" />
               {{ t('moments.nextLabel') }}
             </span>
-            <span :class="[pastilleDate, nextSessionLabel ? 'opacity-100' : 'opacity-0']">
-              {{ nextSessionLabel || '—' }}
+            <span :class="[pastilleDate, prochaineLabel ? 'opacity-100' : 'opacity-0']">
+              {{ prochaineLabel || '—' }}
             </span>
           </div>
         </div>
 
-        <div class="shrink-0 space-y-2.5 md:border-l md:border-white/5 md:pl-12">
-          <div v-for="d in details" :key="d.label" class="flex items-start gap-2.5 text-sm text-text-primary">
-            <Icon :name="d.icon" class="mt-0.5 h-4 w-4 shrink-0 text-gold" />
-            <span>{{ d.value }}</span>
+        <div class="shrink-0 md:border-l md:border-white/5 md:pl-12">
+          <ul v-if="prochaines.length" class="space-y-2.5">
+            <li v-for="s in prochaines" :key="s.id ?? s.date" class="flex items-baseline gap-3 text-sm">
+              <span class="min-w-[9.5rem] text-text-primary">{{ jourLong(s.date) }}</span>
+              <span class="text-text-secondary">{{ s.interprete }}</span>
+            </li>
+          </ul>
+          <div v-else class="space-y-2.5">
+            <div v-for="d in details" :key="d.label" class="flex items-start gap-2.5 text-sm text-text-primary">
+              <Icon :name="d.icon" class="mt-0.5 h-4 w-4 shrink-0 text-gold" />
+              <span>{{ d.value }}</span>
+            </div>
           </div>
         </div>
       </div>
