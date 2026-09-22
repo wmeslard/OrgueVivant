@@ -346,7 +346,7 @@
     "studentLastName": "Student’s surname",
     "studentNameHint": "The site will show “{nom}”.",
     "studentEmail": "Student’s email",
-    "studentEmailHint": "Optional: they will get the confirmation and a reminder the day before.",
+    "studentEmailHint": "Optional: they will get the confirmation by email.",
     "programme": "Programme",
     "programmeHint": "Optional, editable later. Shown on the site.",
     "consent": "I have the student’s consent — or their parents’ if a minor — to show their first name on the site.",

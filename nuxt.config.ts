@@ -116,8 +116,6 @@ export default defineNuxtConfig({
     myMemoryEmail: process.env.MYMEMORY_EMAIL,
     supabaseServiceRoleKey: process.env.SUPABASE_SERVICE_ROLE_KEY,
     vercelBypassToken: process.env.VERCEL_BYPASS_TOKEN,
-    // Jeton des tâches planifiées Vercel (rappels des Moments musicaux).
-    cronSecret: process.env.CRON_SECRET,
     contactTo: process.env.CONTACT_TO || 'contact@orguevivant.fr',
     contactFrom: process.env.CONTACT_FROM || 'contact@orguevivant.fr',
     public: {

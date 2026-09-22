@@ -92,14 +92,12 @@ create table if not exists moments_seances (
   professeur_id  uuid not null references moments_professeurs (id) on delete cascade,
   eleve_prenom   text not null,
   eleve_nom      text not null,
-  -- Facultatif : si l'élève a une adresse, il reçoit la confirmation et le rappel.
+  -- Facultatif : si l'élève a une adresse, il reçoit la confirmation.
   eleve_email    text,
   programme      text,
   statut         moments_statut_seance not null default 'reservee',
   annulee_par    text check (annulee_par in ('professeur', 'admin')),
   annulee_at     timestamptz,
-  -- Horodatage du rappel de la veille, pour ne pas l'envoyer deux fois.
-  rappel_envoye_at timestamptz,
   created_at     timestamptz not null default now()
 );
 
@@ -199,3 +197,9 @@ revoke all on moments_horaires    from anon, authenticated;
 --   select cron.schedule('moments-demandes-refusees', '0 4 * * 1',
 --     $$delete from public.moments_demandes
 --       where statut = 'refusee' and decided_at < now() - interval '6 months'$$);
+
+-- ─────────────────────────────────────────────────────────────────────────────
+-- 22 septembre 2026 : rappel de la veille retiré
+-- ─────────────────────────────────────────────────────────────────────────────
+-- À exécuter si les tables ont été créées avant cette date ; sans effet sinon.
+alter table moments_seances drop column if exists rappel_envoye_at;

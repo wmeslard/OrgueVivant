@@ -103,8 +103,8 @@ l'atteste à l'inscription.
 **Données** — demande d'accès d'un professeur : prénom, nom, email, téléphone
 (facultatif), conservatoire, message. Professeur validé : compte (email),
 prénom, nom, conservatoire, date de dernière connexion. Séance : date, heure,
-prénom et nom de l'élève, email de l'élève (facultatif), programme annoncé,
-professeur qui a inscrit.
+prénom et nom de l'élève, email de l'élève (facultatif, pour la confirmation),
+programme annoncé, professeur qui a inscrit.
 
 **Minimisation** — les élèves n'ont pas de compte. Leur nom complet et leur
 adresse ne servent qu'à l'organisation et ne sortent pas de l'administration.

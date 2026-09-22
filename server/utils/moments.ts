@@ -6,17 +6,12 @@ import { getServiceClient } from '~/server/utils/superAdminClient'
 import { senderAddress } from '~/server/utils/sender'
 import {
   CRENEAU_REGULIER, ORGANISTE_REGULIER, type Fermeture, type Horaire, type SeancePublique,
-  estFermee, estJeudiRegulier, finCreneau, heureFr, nomPublic, parseYmd, plusJours, ymd
+  estFermee, estJeudiRegulier, finCreneau, heureFr, nomPublic, parseYmd, ymd
 } from '~/utils/moments'
 
 /** Date du jour à Paris (« YYYY-MM-DD ») : les fonctions Vercel tournent en UTC. */
 export function aujourdhuiParis(): string {
   return new Intl.DateTimeFormat('fr-CA', { timeZone: 'Europe/Paris' }).format(new Date())
-}
-
-/** Demain à Paris : les rappels portent sur cette date. */
-export function demainParis(): string {
-  return plusJours(aujourdhuiParis(), 1)
 }
 
 export interface Professeur {
@@ -41,7 +36,6 @@ export interface SeanceRow {
   statut: 'reservee' | 'annulee'
   annulee_par: 'professeur' | 'admin' | null
   annulee_at: string | null
-  rappel_envoye_at: string | null
   created_at: string
   professeur?: Pick<Professeur, 'prenom' | 'nom' | 'email'> | null
 }

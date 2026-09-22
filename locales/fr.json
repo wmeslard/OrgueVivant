@@ -346,7 +346,7 @@
     "studentLastName": "Nom de l’élève",
     "studentNameHint": "Le site affichera « {nom} ».",
     "studentEmail": "Email de l’élève",
-    "studentEmailHint": "Facultatif : il recevra la confirmation et un rappel la veille.",
+    "studentEmailHint": "Facultatif : il recevra la confirmation par email.",
     "programme": "Programme",
     "programmeHint": "Facultatif, modifiable ensuite. Affiché sur le site.",
     "consent": "J'ai l'accord de l'élève, ou de ses parents s'il est mineur, pour l'affichage de son prénom sur le site.",
