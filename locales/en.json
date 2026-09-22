@@ -344,8 +344,7 @@
     "legendFree": "Free slots",
     "legendMine": "My students",
     "legendTaken": "Taken",
-    "legendClosed": "Organ unavailable",
-    "cancelDeadline": "A session can be cancelled up to 48 h in advance."
+    "legendClosed": "Organ unavailable"
   },
   "momentsAcces": {
     "title": "Teachers’ area",

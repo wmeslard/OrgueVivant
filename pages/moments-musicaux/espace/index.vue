@@ -121,7 +121,6 @@ async function logout() {
           </div>
         </li>
       </ul>
-      <p class="mt-5 text-xs text-text-secondary">{{ t('momentsEspace.cancelDeadline') }}</p>
     </template>
 
     <section v-if="passees.length" class="mt-14 border-t border-white/5 pt-8">

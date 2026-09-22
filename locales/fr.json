@@ -344,8 +344,7 @@
     "legendFree": "Créneaux libres",
     "legendMine": "Mes élèves",
     "legendTaken": "Pris",
-    "legendClosed": "Orgue indisponible",
-    "cancelDeadline": "Une séance s’annule jusqu’à 48 h avant."
+    "legendClosed": "Orgue indisponible"
   },
   "momentsAcces": {
     "title": "Espace professeurs",

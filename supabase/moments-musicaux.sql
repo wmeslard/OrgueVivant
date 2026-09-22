@@ -8,8 +8,8 @@
 --   moments_lien           la clé du lien partagé (une seule ligne)
 --   moments_professeurs    les professeurs entrés par le lien — DONNÉES PERSONNELLES
 --   moments_seances        les créneaux réservés, avec l'élève et son professeur
---   moments_fermetures     les périodes exceptionnelles d'indisponibilité
---   moments_horaires       l'emploi du temps hebdomadaire de l'orgue
+--   moments_horaires       les horaires d'ouverture de l'orgue : règles par
+--                          défaut (chaque semaine) et règles temporaires
 --
 -- Aucun droit pour les rôles `anon` et `authenticated`, comme pour la
 -- newsletter : toutes les lectures et écritures passent par /api/moments/** et
@@ -17,7 +17,7 @@
 --
 -- Schéma complet, pour une base neuve : à exécuter dans Supabase → SQL Editor.
 -- La base de production, créée avec une version antérieure, se met à jour avec
--- moments-musicaux-lien.sql.
+-- moments-musicaux-lien.sql puis moments-musicaux-regles.sql.
 
 -- ─────────────────────────────────────────────────────────────────────────────
 -- Le lien partagé
@@ -69,9 +69,9 @@ create table if not exists moments_seances (
   heure_debut    time not null,
   heure_fin      time not null,
   check (heure_fin > heure_debut),
-  -- Professeur qui a inscrit l'élève. Connu de l'administration seule : le
-  -- site public n'affiche que l'élève.
-  professeur_id  uuid not null references moments_professeurs (id) on delete cascade,
+  -- Professeur qui a inscrit l'élève, ou null si c'est l'association. Connu
+  -- de l'administration seule : le site public n'affiche que l'élève.
+  professeur_id  uuid references moments_professeurs (id) on delete cascade,
   eleve_prenom   text not null,
   eleve_nom      text not null,
   -- Facultatif : si l'élève a une adresse, il reçoit la confirmation.
@@ -91,39 +91,36 @@ create index if not exists moments_seances_professeur_idx on moments_seances (pr
 create index if not exists moments_seances_date_idx on moments_seances (date) where statut = 'reservee';
 
 -- ─────────────────────────────────────────────────────────────────────────────
--- Périodes exceptionnelles d'indisponibilité (travaux, accord, fermeture)
--- ─────────────────────────────────────────────────────────────────────────────
-
-create table if not exists moments_fermetures (
-  id          uuid primary key default gen_random_uuid(),
-  date_debut  date not null,
-  date_fin    date not null check (date_fin >= date_debut),
-  motif       text,
-  created_at  timestamptz not null default now()
-);
-
-create index if not exists moments_fermetures_dates_idx on moments_fermetures (date_debut, date_fin);
-
--- ─────────────────────────────────────────────────────────────────────────────
--- Emploi du temps hebdomadaire de l'orgue
+-- Horaires d'ouverture de l'orgue
 -- ─────────────────────────────────────────────────────────────────────────────
 -- Deux sortes de lignes, modifiables depuis l'administration :
---   `ouverture` : les heures où l'orgue peut être joué ce jour-là ;
---   `blocage`   : ce qui s'y oppose — messes, confessions, autre.
--- Les horaires de la paroisse changent ; ils sont donc en base et non dans le
--- code, pour être corrigés sans redéploiement.
+--   `ouverture` : les heures où l'orgue peut être joué ;
+--   `blocage`   : ce qui s'y oppose — messes, confessions, travaux, autre.
+-- Une règle est soit « par défaut » (chaque semaine, un jour donné, sans
+-- dates), soit temporaire (du … au …, un jour de la semaine ou tous les jours
+-- si jour_semaine est null). Une fermeture complète est un blocage temporaire
+-- de 0 h à 24 h. Les horaires de la paroisse changent ; ils sont donc en base
+-- et non dans le code, pour être corrigés sans redéploiement.
 
 create type moments_type_horaire as enum ('ouverture', 'blocage');
 
 create table if not exists moments_horaires (
   id            uuid primary key default gen_random_uuid(),
-  -- 0 = dimanche, 1 = lundi, … 6 = samedi (convention JavaScript).
-  jour_semaine  smallint not null check (jour_semaine between 0 and 6),
+  -- 0 = dimanche, 1 = lundi, … 6 = samedi (convention JavaScript) ; null :
+  -- tous les jours de la période, pour une règle temporaire.
+  jour_semaine  smallint check (jour_semaine between 0 and 6),
   type          moments_type_horaire not null,
   heure_debut   time not null,
   heure_fin     time not null,
   check (heure_fin > heure_debut),
   motif         text,
+  -- Règle temporaire : du … au … (inclus). Sans dates, la règle vaut chaque semaine.
+  date_debut    date,
+  date_fin      date,
+  constraint moments_horaires_portee_check check (
+    (date_debut is null and date_fin is null and jour_semaine is not null)
+    or (date_debut is not null and date_fin is not null and date_fin >= date_debut)
+  ),
   created_at    timestamptz not null default now()
 );
 
@@ -165,11 +162,9 @@ where not exists (select 1 from moments_horaires);
 alter table moments_lien        enable row level security;
 alter table moments_professeurs enable row level security;
 alter table moments_seances     enable row level security;
-alter table moments_fermetures  enable row level security;
 alter table moments_horaires    enable row level security;
 
 revoke all on moments_lien        from anon, authenticated;
 revoke all on moments_professeurs from anon, authenticated;
 revoke all on moments_seances     from anon, authenticated;
-revoke all on moments_fermetures  from anon, authenticated;
 revoke all on moments_horaires    from anon, authenticated;

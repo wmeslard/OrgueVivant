@@ -1,5 +1,5 @@
 import { requireAdmin, getServiceClient } from '~/server/utils/superAdminClient'
-import { aujourdhuiParis, chargerFermetures, chargerHoraires, chargerSeances, cleActuelle } from '~/server/utils/moments'
+import { aujourdhuiParis, chargerHoraires, chargerSeances, cleActuelle } from '~/server/utils/moments'
 import { plusMois } from '~/utils/moments'
 
 /**
@@ -11,9 +11,8 @@ export default defineEventHandler(async (event) => {
   await requireAdmin(event)
   const client = getServiceClient()
   const aujourdhui = aujourdhuiParis()
-  const [professeurs, fermetures, seances, horaires, cle] = await Promise.all([
+  const [professeurs, seances, horaires, cle] = await Promise.all([
     client.from('moments_professeurs').select('*').order('nom'),
-    chargerFermetures(client, plusMois(aujourdhui, -1), plusMois(aujourdhui, 12)),
     chargerSeances(client, plusMois(aujourdhui, -3), plusMois(aujourdhui, 12), 'toutes'),
     chargerHoraires(client),
     cleActuelle(client)
@@ -24,7 +23,6 @@ export default defineEventHandler(async (event) => {
   return {
     aujourdhui,
     professeurs: professeurs.data ?? [],
-    fermetures,
     seances,
     horaires,
     // Null tant que moments-musicaux-lien.sql n'est pas appliqué.

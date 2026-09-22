@@ -1,4 +1,4 @@
-import type { Fermeture, Horaire } from '~/utils/moments'
+import type { Horaire } from '~/utils/moments'
 
 export interface SeanceProf {
   id: string
@@ -16,8 +16,8 @@ export interface EspaceProfesseur {
   aujourdhui: string
   horizon: string
   professeur: { prenom: string; nom: string; email: string }
+  /** Règles d'ouverture de l'orgue, par défaut et temporaires. */
   horaires: Horaire[]
-  fermetures: Fermeture[]
   /** Créneaux déjà pris, tous professeurs confondus. */
   pris: { date: string; heure_debut: string; interprete: string; mien: boolean }[]
   mesSeances: SeanceProf[]

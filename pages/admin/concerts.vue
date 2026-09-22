@@ -5,11 +5,6 @@ import { artistDraft, artistNames, type Artist } from '~/utils/artists'
 definePageMeta({ middleware: 'auth', layout: 'admin' })
 
 const { t } = useI18n()
-const supabase = useSupabaseClient()
-const user = useSupabaseUser()
-const isSuperAdmin = computed(() =>
-  (user.value?.app_metadata as Record<string, unknown>)?.role === 'super_admin'
-)
 const { all, fetchConcerts, createConcert, updateConcert, deleteConcert } = useConcerts()
 const { show: showToast } = useToast()
 
@@ -163,27 +158,11 @@ async function remove(c: Concert) {
   }, 5000)
 }
 
-async function logout() {
-  await supabase.auth.signOut()
-  await navigateTo('/admin/login')
-}
 </script>
 
 <template>
   <div class="container-apple py-20">
-    <header class="mb-10 flex items-center justify-between">
-      <div>
-        <div class="text-xs uppercase tracking-widest text-accent">{{ t('admin.eyebrow') }}</div>
-        <h1 class="heading-section mt-2">{{ t('admin.dashboard') }}</h1>
-        <p v-if="user" class="mt-2 text-sm text-ink-500">{{ user.email }}</p>
-      </div>
-      <div class="flex gap-2">
-        <NuxtLink v-if="isSuperAdmin" to="/admin/users" class="btn-ghost">
-          Gestion des comptes
-        </NuxtLink>
-        <button class="btn-ghost" @click="logout">{{ t('admin.logout') }}</button>
-      </div>
-    </header>
+    <AdminHeader />
 
     <AdminNav />
 

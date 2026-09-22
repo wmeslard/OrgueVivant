@@ -1,20 +1,10 @@
 import { getServiceClient } from '~/server/utils/superAdminClient'
 import { revalidatePublicPages } from '~/server/utils/revalidate'
 import {
-  adresseAssociation, aujourdhuiParis, chargerFermetures, chargerHoraires, chargerSeances,
-  envoyerEmail, escapeHtml, paragraphe, quand, requireProfesseur
+  adresseAssociation, aujourdhuiParis, chargerHoraires, chargerSeances,
+  envoyerEmail, escapeHtml, MESSAGES_REFUS, paragraphe, quand, requireProfesseur
 } from '~/server/utils/moments'
 import { finCreneau, HORIZON_MOIS, nomPublic, plusMois, raisonNonReservable } from '~/utils/moments'
-
-const MESSAGES: Record<string, string> = {
-  passe: 'Cette date est passée.',
-  trop_tot: 'Inscrivez votre élève au moins deux jours à l\'avance.',
-  trop_loin: `Les inscriptions sont ouvertes sur ${HORIZON_MOIS} mois.`,
-  ferme: 'L\'orgue est indisponible à cette date.',
-  hors_creneau: 'Ce créneau n\'est pas proposé ce jour-là.',
-  regulier: 'Ce créneau est celui de Louis-Paul Courtois.',
-  pris: 'Ce créneau vient d\'être pris.'
-}
 
 /** Inscription d'un élève sur un créneau, par son professeur. */
 export default defineEventHandler(async (event) => {
@@ -40,12 +30,10 @@ export default defineEventHandler(async (event) => {
   const client = getServiceClient()
   const aujourdhui = aujourdhuiParis()
   const au = plusMois(aujourdhui, HORIZON_MOIS)
-  const [horaires, fermetures, actives] = await Promise.all([
-    chargerHoraires(client), chargerFermetures(client, aujourdhui, au), chargerSeances(client, aujourdhui, au)
-  ])
+  const [horaires, actives] = await Promise.all([chargerHoraires(client), chargerSeances(client, aujourdhui, au)])
   const pris = actives.map(s => ({ date: s.date, heure_debut: s.heure_debut.slice(0, 5), interprete: '' }))
-  const raison = raisonNonReservable(date, debut, { aujourdhui, horaires, fermetures, pris })
-  if (raison) throw createError({ statusCode: 409, statusMessage: MESSAGES[raison] })
+  const raison = raisonNonReservable(date, debut, { aujourdhui, horaires, pris })
+  if (raison) throw createError({ statusCode: 409, statusMessage: MESSAGES_REFUS[raison] })
 
   const fin = finCreneau(debut)
   const { data, error } = await client.from('moments_seances').insert({
@@ -54,7 +42,7 @@ export default defineEventHandler(async (event) => {
     programme: programme || null
   }).select().single()
   // L'index unique tranche deux inscriptions simultanées sur le même créneau.
-  if (error?.code === '23505') throw createError({ statusCode: 409, statusMessage: MESSAGES.pris })
+  if (error?.code === '23505') throw createError({ statusCode: 409, statusMessage: MESSAGES_REFUS.pris })
   if (error) throw createError({ statusCode: 500, statusMessage: error.message })
 
   const moment = quand(date, debut, fin)

@@ -103,7 +103,8 @@ l'atteste à l'inscription.
 **Données** — professeur : prénom, nom, email, conservatoire (facultatif),
 date de dernière visite, saisis par lui-même à l'entrée dans l'espace. Séance :
 date, heure, prénom et nom de l'élève, email de l'élève (facultatif, pour la
-confirmation), programme annoncé, professeur qui a inscrit.
+confirmation), programme annoncé, professeur qui a inscrit l'élève (ou
+l'association, pour une inscription faite par elle).
 
 **Accès** — l'espace des professeurs s'ouvre avec un lien secret que
 l'association transmet ; il n'y a ni compte ni mot de passe. Un cookie

@@ -8,9 +8,10 @@
  *    non stockée ;
  *  - celles des élèves, inscrites par leur professeur sur un créneau libre.
  *
- * Les créneaux libres d'un jour se déduisent de l'emploi du temps hebdomadaire
- * de l'orgue (ouvertures, moins les messes et les confessions), des périodes
- * exceptionnelles d'indisponibilité et des créneaux déjà pris.
+ * Les créneaux libres d'un jour se déduisent des horaires d'ouverture de
+ * l'orgue — règles par défaut de chaque semaine et règles temporaires :
+ * ouvertures, moins les messes, les confessions et les fermetures — et des
+ * créneaux déjà pris.
  */
 
 export const DUREE_MIN = 30
@@ -23,15 +24,21 @@ export const HORIZON_MOIS = 6
 /** Délai minimal, en heures, pour inscrire ou annuler avant le début de la séance. */
 export const DELAI_ANNULATION_H = 48
 
-export interface Fermeture { date_debut: string; date_fin: string; motif?: string | null }
-
-/** Une ligne de l'emploi du temps hebdomadaire. */
+/**
+ * Une règle d'horaires. Par défaut, elle vaut chaque semaine le jour
+ * `jour_semaine` ; temporaire, elle ne vaut que du `date_debut` au `date_fin`,
+ * un jour de la semaine ou tous les jours (`jour_semaine` null). Une fermeture
+ * complète est un blocage temporaire de 00:00 à 24:00.
+ */
 export interface Horaire {
-  jour_semaine: number
+  id?: string
+  jour_semaine: number | null
   type: 'ouverture' | 'blocage'
   heure_debut: string
   heure_fin: string
   motif?: string | null
+  date_debut?: string | null
+  date_fin?: string | null
 }
 
 /** Un créneau déjà pris, tel que le calendrier a besoin de le connaître. */
@@ -88,11 +95,6 @@ export function estJeudiRegulier(date: string): boolean {
   return d.getDay() === 4 && isoWeek(d) % 2 === 0
 }
 
-/** Vrai si la date tombe dans une période exceptionnelle d'indisponibilité. */
-export function estFermee(date: string, fermetures: readonly Fermeture[]): Fermeture | undefined {
-  return fermetures.find(f => f.date_debut <= date && date <= f.date_fin)
-}
-
 /** « Camille D. » : ce que le site publie d'un élève. */
 export function nomPublic(prenom: string, nom: string): string {
   const p = prenom.trim()
@@ -146,17 +148,30 @@ export function debutSeance(date: string, h: string): Date {
 
 // ── Créneaux d'un jour ───────────────────────────────────────────────────────
 
+/** Vrai si la règle est temporaire (bornée par des dates). */
+export function estTemporaire(h: Horaire): boolean {
+  return !!h.date_debut
+}
+
+/** Les règles qui s'appliquent à une date : celles de son jour de semaine, et les temporaires en cours. */
+export function reglesDuJour(date: string, horaires: readonly Horaire[]): Horaire[] {
+  const jour = jourSemaine(date)
+  return horaires.filter(h =>
+    (h.jour_semaine === null || h.jour_semaine === jour)
+    && (!h.date_debut || (h.date_debut <= date && date <= (h.date_fin ?? h.date_debut))))
+}
+
 /**
- * Louis-Paul Courtois joue-t-il ce jour-là ? Un jeudi sur deux, si l'emploi
- * du temps ouvre l'orgue à 13 h 15 et que rien ne s'y oppose. Les périodes
- * d'indisponibilité se vérifient à part.
+ * Louis-Paul Courtois joue-t-il ce jour-là ? Un jeudi sur deux, si les
+ * horaires ouvrent l'orgue à 13 h 15 et que rien ne s'y oppose — une
+ * fermeture temporaire comprise.
  */
 export function seanceReguliere(date: string, horaires: readonly Horaire[]): boolean {
   if (!estJeudiRegulier(date)) return false
   const m = minutes(CRENEAU_REGULIER)
   const couvre = (h: Horaire) => minutes(h.heure_debut) <= m && m < minutes(h.heure_fin)
-  const jeudi = horaires.filter(h => h.jour_semaine === 4)
-  return jeudi.some(h => h.type === 'ouverture' && couvre(h)) && !jeudi.some(h => h.type === 'blocage' && couvre(h))
+  const regles = reglesDuJour(date, horaires)
+  return regles.some(h => h.type === 'ouverture' && couvre(h)) && !regles.some(h => h.type === 'blocage' && couvre(h))
 }
 
 /** Vrai si la demi-heure qui commence à `debut` empiète sur celle de Louis-Paul Courtois. */
@@ -180,29 +195,31 @@ export interface CreneauJour {
 export interface ContexteJour {
   /** Date du jour, à Paris. */
   aujourdhui: string
+  /**
+   * Jours de prévenance avant une inscription : 2 pour les professeurs,
+   * 0 pour l'association, qui s'arrange directement avec la paroisse.
+   */
+  delaiJours?: number
   horaires: readonly Horaire[]
-  fermetures: readonly Fermeture[]
   pris: readonly CreneauPris[]
 }
 
 /**
  * Les créneaux d'une journée, dans l'ordre. Liste vide si l'orgue n'est pas
  * disponible ce jour-là : jour sans ouverture (le dimanche, par défaut),
- * période d'indisponibilité, date hors de l'horizon d'inscription.
+ * fermeture temporaire, date hors de l'horizon d'inscription.
  */
 export function creneauxDuJour(date: string, ctx: ContexteJour): CreneauJour[] {
   if (date < ctx.aujourdhui || date > plusMois(ctx.aujourdhui, HORIZON_MOIS)) return []
-  if (estFermee(date, ctx.fermetures)) return []
 
-  const jour = jourSemaine(date)
-  const duJour = ctx.horaires.filter(h => h.jour_semaine === jour)
+  const duJour = reglesDuJour(date, ctx.horaires)
   const ouvertures = duJour.filter(h => h.type === 'ouverture')
   const blocages = duJour.filter(h => h.type === 'blocage')
   if (!ouvertures.length) return []
 
   const prisParHeure = new Map(ctx.pris.filter(p => p.date === date).map(p => [p.heure_debut.slice(0, 5), p]))
   // Trop tard, le jour même comme la veille, pour prévenir la paroisse et l'élève.
-  const tropTot = date < plusJours(ctx.aujourdhui, 2)
+  const tropTot = date < plusJours(ctx.aujourdhui, ctx.delaiJours ?? 2)
   const out: CreneauJour[] = []
 
   // Le jeudi de Louis-Paul Courtois, sa demi-heure (13 h 15 – 13 h 45) est
@@ -233,7 +250,17 @@ export function creneauxDuJour(date: string, ctx: ContexteJour): CreneauJour[] {
   return out.sort((a, b) => a.debut.localeCompare(b.debut))
 }
 
-export type RaisonRefus = 'passe' | 'trop_tot' | 'trop_loin' | 'ferme' | 'hors_creneau' | 'regulier' | 'pris'
+/**
+ * Vrai si les horaires proposent encore ce créneau, abstraction faite des
+ * délais et des autres inscriptions. Sert à repérer les séances qu'une
+ * modification des horaires rend impossibles.
+ */
+export function creneauPossible(date: string, debut: string, horaires: readonly Horaire[]): boolean {
+  return creneauxDuJour(date, { aujourdhui: date, delaiJours: 0, horaires, pris: [] })
+    .some(c => c.debut === debut.slice(0, 5) && c.etat === 'libre')
+}
+
+export type RaisonRefus = 'passe' | 'trop_tot' | 'trop_loin' | 'hors_creneau' | 'regulier' | 'pris'
 
 /**
  * Pourquoi un créneau n'est pas inscriptible — ou `null` s'il l'est.
@@ -241,9 +268,8 @@ export type RaisonRefus = 'passe' | 'trop_tot' | 'trop_loin' | 'ferme' | 'hors_c
  */
 export function raisonNonReservable(date: string, debut: string, ctx: ContexteJour): RaisonRefus | null {
   if (date < ctx.aujourdhui) return 'passe'
-  if (date < plusJours(ctx.aujourdhui, 2)) return 'trop_tot'
+  if (date < plusJours(ctx.aujourdhui, ctx.delaiJours ?? 2)) return 'trop_tot'
   if (date > plusMois(ctx.aujourdhui, HORIZON_MOIS)) return 'trop_loin'
-  if (estFermee(date, ctx.fermetures)) return 'ferme'
   if (seanceReguliere(date, ctx.horaires) && chevaucheRegulier(debut)) return 'regulier'
   const creneau = creneauxDuJour(date, ctx).find(c => c.debut === debut)
   if (!creneau) return 'hors_creneau'
