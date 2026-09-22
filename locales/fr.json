@@ -80,7 +80,6 @@
   "moments": {
     "eyebrow": "Rendez-vous régulier",
     "title": "Les Moments musicaux",
-    "subtitle": "Une demi-heure de musique à l'orgue de chœur de l'église Saint-Maurice, à l'heure du déjeuner.",
     "scheduleLabel": "Horaire",
     "schedule": "Séances d’une demi-heure",
     "placeLabel": "Lieu",
@@ -92,16 +91,12 @@
     "upcomingLabel": "Prochaines séances",
     "eleveTag": "Élève organiste",
     "none": "Aucune séance annoncée pour le moment.",
-    "seeAll": "Voir toutes les séances",
     "pageTitle": "Les Moments musicaux",
     "intro": "Une demi-heure de musique à l'orgue de chœur de l'église Saint-Maurice, à l'heure du déjeuner.",
     "who": "Un jeudi sur deux, Louis-Paul Courtois tient la tribune. Le reste du temps, les professeurs des conservatoires de la région inscrivent leurs élèves sur les créneaux libres : chacun annonce son programme.",
     "seoDesc": "Les Moments musicaux d'Orgue Vivant : une demi-heure d'orgue à l'église Saint-Maurice de Lille, de 13 h 15 à 13 h 45, entrée libre. Calendrier des prochaines séances.",
     "seeCalendar": "Voir le calendrier",
-    "free": "Entrée libre",
-    "teacherCta": "Vous enseignez l’orgue ?",
-    "teacherCtaText": "Inscrivez vos élèves sur les créneaux libres, avec le lien que l'association transmet aux professeurs.",
-    "teacherCtaButton": "Espace professeurs"
+    "free": "Entrée libre"
   },
   "calendar": {
     "eyebrow": "Ajouter à votre agenda",
@@ -199,8 +194,7 @@
     "legalMentions": "Mentions légales",
     "privacy": "Confidentialité",
     "admin": "Espace admin",
-    "rights": "Tous droits réservés.",
-    "teacherArea": "Espace professeurs"
+    "rights": "Tous droits réservés."
   },
   "legal": {
     "eyebrow": "Informations légales",
@@ -235,7 +229,7 @@
     "retentionTitle": "Durées de conservation",
     "retention": "– Messages du formulaire de contact : un an à compter du dernier échange\n– Lettre d'information : jusqu'à la désinscription ; une inscription non confirmée est supprimée à l'issue d'un délai de trente jours\n– Mesure d'audience : données agrégées, sans identifiant individuel\n– Journaux techniques : quelques jours",
     "cookiesTitle": "Cookies",
-    "cookies": "Le Site ne dépose que des cookies strictement nécessaires à son fonctionnement, exemptés de consentement en application de l'article 82 de la loi Informatique et Libertés :\n\n– i18n_redirected : mémorisation de la langue choisie (durée : un an)\n– ov_moments : accès à l'espace des professeurs, déposé seulement chez ceux qui y entrent par le lien transmis par l'association (durée : un an)\n\nAucun cookie publicitaire, de mesure d'audience ou de suivi n'est utilisé. Aucun bandeau de consentement n'est donc affiché.",
+    "cookies": "Le Site ne dépose qu'un cookie strictement nécessaire à son fonctionnement, exempté de consentement en application de l'article 82 de la loi Informatique et Libertés :\n\n– i18n_redirected : mémorisation de la langue choisie (durée : un an)\n\nAucun cookie publicitaire, de mesure d'audience ou de suivi n'est utilisé. Aucun bandeau de consentement n'est donc affiché.",
     "securityTitle": "Sécurité",
     "security": "L'association met en œuvre des mesures techniques et organisationnelles appropriées afin de garantir la sécurité et la confidentialité des données : chiffrement des échanges (HTTPS), restriction des accès à la base de données, protection des formulaires contre les envois automatisés, et recours à des prestataires présentant des garanties suffisantes.",
     "rightsTitle": "Droits des personnes concernées",
@@ -322,7 +316,6 @@
     "moisPrecedent": "Mois précédent",
     "moisSuivant": "Mois suivant",
     "addStudent": "Inscrire un élève",
-    "chooseDate": "Choisir un créneau",
     "chooseDateHint": "Cliquez un jour pour voir ses créneaux libres. Une séance dure une demi-heure ; les messes et les confessions n'apparaissent pas.",
     "slotsFor": "Créneaux du",
     "noSlots": "Aucun créneau libre ce jour-là.",
@@ -343,7 +336,6 @@
     "save": "Enregistrer",
     "edit": "Modifier",
     "mySessions": "Séances à venir",
-    "noSessions": "Vous n’avez inscrit aucun élève pour le moment.",
     "emptyCta": "Choisissez un créneau pour inscrire votre premier élève.",
     "history": "Séances passées",
     "booked": "Élève inscrit.",
@@ -365,6 +357,7 @@
     "school": "Conservatoire ou école de musique",
     "optional": "facultatif",
     "submit": "Entrer dans l'espace",
+    "privacy": "Vos coordonnées servent uniquement à organiser les Moments musicaux et ne sont jamais publiées. Un cookie garde votre accès sur ce navigateur pendant un an. Pour les consulter, les corriger ou les supprimer : contact{'@'}orguevivant.fr.",
     "invalidTitle": "Ce lien n'est plus valide",
     "noLinkText": "L'espace des professeurs s'ouvre avec le lien que l'association transmet aux professeurs d'orgue. Vous ne l'avez pas, ou il ne fonctionne plus ? Écrivez-nous.",
     "disabledTitle": "Accès désactivé",

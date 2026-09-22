@@ -181,19 +181,6 @@ useSeoMeta({
 
       <!-- Abonnement à l'agenda -->
       <CalendarSubscribe class="mt-16" />
-
-      <!-- Appel aux élèves : discret, en fin de page -->
-      <section class="mt-16 border-t border-white/5 pt-10">
-        <div class="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-          <div>
-            <div class="text-sm font-medium text-text-primary">{{ t('moments.teacherCta') }}</div>
-            <p class="mt-1 text-sm text-text-secondary">{{ t('moments.teacherCtaText') }}</p>
-          </div>
-          <NuxtLink :to="localePath('/moments-musicaux/espace')" class="btn-premium-secondary shrink-0">
-            {{ t('moments.teacherCtaButton') }}
-          </NuxtLink>
-        </div>
-      </section>
     </div>
   </div>
 </template>

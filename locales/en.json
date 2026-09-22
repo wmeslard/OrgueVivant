@@ -80,7 +80,6 @@
   "moments": {
     "eyebrow": "Regular gathering",
     "title": "Musical Moments",
-    "subtitle": "Half an hour of music on the choir organ of Saint-Maurice church, at lunchtime.",
     "scheduleLabel": "Time",
     "schedule": "Half-hour sessions",
     "placeLabel": "Venue",
@@ -92,16 +91,12 @@
     "upcomingLabel": "Upcoming sessions",
     "eleveTag": "Organ student",
     "none": "No session announced yet.",
-    "seeAll": "See all sessions",
     "pageTitle": "Musical Moments",
     "intro": "Half an hour of music on the choir organ of Saint-Maurice church, at lunchtime.",
     "who": "Every other Thursday, Louis-Paul Courtois plays. The rest of the time, teachers from the region’s conservatoires sign their students up for free slots, each announcing a programme.",
     "seoDesc": "Orgue Vivant’s Musical Moments: half an hour of organ music at Saint-Maurice church in Lille, 1:15 to 1:45 pm, free admission. Calendar of upcoming sessions.",
     "seeCalendar": "See the calendar",
-    "free": "Free admission",
-    "teacherCta": "Do you teach the organ?",
-    "teacherCtaText": "Sign your students up for free slots, with the link the association sends to teachers.",
-    "teacherCtaButton": "Teachers’ area"
+    "free": "Free admission"
   },
   "calendar": {
     "eyebrow": "Add to your calendar",
@@ -199,8 +194,7 @@
     "legalMentions": "Legal notice",
     "privacy": "Privacy",
     "admin": "Admin",
-    "rights": "All rights reserved.",
-    "teacherArea": "Teachers’ area"
+    "rights": "All rights reserved."
   },
   "legal": {
     "eyebrow": "Legal information",
@@ -235,7 +229,7 @@
     "retentionTitle": "Retention periods",
     "retention": "– Contact form messages: one year from the last exchange\n– Newsletter: until unsubscription; an unconfirmed subscription is deleted after thirty days\n– Audience measurement: aggregated data, no individual identifier\n– Technical logs: a few days",
     "cookiesTitle": "Cookies",
-    "cookies": "The Site only places cookies strictly necessary for its operation, exempt from consent under Article 82 of the French Data Protection Act:\n\n– i18n_redirected: stores the chosen language (duration: one year)\n– ov_moments: access to the teachers’ area, placed only for those who enter it through the link sent by the association (duration: one year)\n\nNo advertising, audience-measurement or tracking cookie is used, so no consent banner is displayed.",
+    "cookies": "The Site only places one cookie strictly necessary for its operation, exempt from consent under Article 82 of the French Data Protection Act:\n\n– i18n_redirected: stores the chosen language (duration: one year)\n\nNo advertising, audience-measurement or tracking cookie is used, so no consent banner is displayed.",
     "securityTitle": "Security",
     "security": "The association implements appropriate technical and organisational measures to ensure the security and confidentiality of data: encryption of communications (HTTPS), restricted access to the database, protection of forms against automated submissions, and reliance on providers offering sufficient guarantees.",
     "rightsTitle": "Rights of data subjects",
@@ -322,7 +316,6 @@
     "moisPrecedent": "Previous month",
     "moisSuivant": "Next month",
     "addStudent": "Sign up a student",
-    "chooseDate": "Choose a slot",
     "chooseDateHint": "Click a day to see its free slots. A session lasts half an hour; masses and confessions are not shown.",
     "slotsFor": "Slots for",
     "noSlots": "No free slot that day.",
@@ -343,7 +336,6 @@
     "save": "Save",
     "edit": "Edit",
     "mySessions": "Upcoming sessions",
-    "noSessions": "You have not signed up any student yet.",
     "emptyCta": "Pick a slot to sign up your first student.",
     "history": "Past sessions",
     "booked": "Student signed up.",
@@ -365,6 +357,7 @@
     "school": "Conservatoire or music school",
     "optional": "optional",
     "submit": "Enter the teachers’ area",
+    "privacy": "Your details are used only to organise the Musical Moments and are never published. A cookie keeps your access on this browser for one year. To view, correct or delete them: contact{'@'}orguevivant.fr.",
     "invalidTitle": "This link is no longer valid",
     "noLinkText": "The teachers’ area opens with the link the association sends to organ teachers. Don’t have it, or it no longer works? Write to us.",
     "disabledTitle": "Access disabled",

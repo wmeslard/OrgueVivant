@@ -93,6 +93,9 @@ async function entrer() {
             <Icon v-if="envoi" name="heroicons:arrow-path" class="h-4 w-4 animate-spin" />
             {{ t('momentsAcces.submit') }}
           </button>
+
+          <!-- Information RGPD : donnée ici plutôt que dans la politique publique, qui ne mentionne pas l'espace -->
+          <p class="text-xs leading-relaxed text-text-secondary">{{ t('momentsAcces.privacy') }}</p>
         </form>
       </template>
 

@@ -103,15 +103,18 @@ l'atteste à l'inscription.
 **Données** — professeur : prénom, nom, email, conservatoire (facultatif),
 date de dernière visite, saisis par lui-même à l'entrée dans l'espace. Séance :
 date, heure, prénom et nom de l'élève, email de l'élève (facultatif, pour la
-confirmation), programme annoncé, professeur qui a inscrit. Demandes d'accès
-reçues avant le 22 septembre 2026 (ancien fonctionnement) : prénom, nom, email,
-téléphone, conservatoire, message — table `moments_demandes`, plus alimentée.
+confirmation), programme annoncé, professeur qui a inscrit.
 
 **Accès** — l'espace des professeurs s'ouvre avec un lien secret que
 l'association transmet ; il n'y a ni compte ni mot de passe. Un cookie
 strictement nécessaire (`ov_moments`, un an) retient l'accès sur le navigateur.
 Régénérer le lien depuis l'administration coupe l'accès de tous les navigateurs
-entrés avec l'ancien.
+entrés avec l'ancien. Le site public ne mentionne pas cet espace.
+
+**Information des personnes** — donnée aux professeurs sur la page d'entrée de
+l'espace (usage des coordonnées, cookie, contact pour exercer ses droits), et
+non dans la politique de confidentialité publique. Les professeurs informent
+leurs élèves, dont ils attestent l'accord à l'inscription.
 
 **Minimisation** — ni les professeurs ni les élèves n'ont de compte. Le nom
 complet et l'adresse de l'élève ne servent qu'à l'organisation : ils ne sont
@@ -126,8 +129,7 @@ complet, ni le professeur qui a inscrit l'élève.
 
 **Conservation** — professeurs : le temps de la collaboration, puis
 suppression sur demande. Séances passées : conservées comme archive de la
-programmation. Anciennes demandes d'accès : à supprimer une fois vérifié
-qu'elles ne servent plus.
+programmation.
 
 **Droits** — accès, rectification, effacement, opposition : contact@orguevivant.fr.
 La désactivation d'un professeur se fait depuis l'administration.

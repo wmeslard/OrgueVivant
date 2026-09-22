@@ -62,6 +62,8 @@ export async function cleActuelle(client: SupabaseClient): Promise<string | null
 export async function regenererCle(client: SupabaseClient): Promise<string> {
   const cle = randomBytes(16).toString('hex')
   const { error } = await client.from('moments_lien').upsert({ id: 1, cle, cree_at: new Date().toISOString() })
+  if (error && schemaAbsent(error))
+    throw createError({ statusCode: 503, statusMessage: 'Table moments_lien absente : exécutez supabase/moments-musicaux-lien.sql dans Supabase.' })
   if (error) throw createError({ statusCode: 500, statusMessage: error.message })
   return cle
 }
@@ -247,11 +249,10 @@ export function adresseAssociation(): string {
  * Envoi via Resend. Sans clé (développement), le message est journalisé et
  * l'appel réussit : les parcours restent testables hors ligne. Un refus de
  * l'API est journalisé mais n'interrompt pas l'action métier qui l'a déclenché
- * (une inscription faite reste faite), sauf demande explicite.
+ * (une inscription faite reste faite).
  */
 export async function envoyerEmail(
-  msg: { to: string | string[]; subject: string; html: string; replyTo?: string },
-  { strict = false } = {}
+  msg: { to: string | string[]; subject: string; html: string }
 ): Promise<boolean> {
   const config = useRuntimeConfig()
   if (!config.resendApiKey) {
@@ -263,12 +264,10 @@ export async function envoyerEmail(
     from: senderAddress(),
     to: msg.to,
     subject: msg.subject,
-    html: gabarit(msg.html),
-    ...(msg.replyTo && { replyTo: msg.replyTo })
+    html: gabarit(msg.html)
   }).catch(e => ({ error: e }))
   if (error) {
     console.error('[moments] envoi refusé :', error)
-    if (strict) throw createError({ statusCode: 500, statusMessage: 'Envoi de l\'email impossible, réessayez plus tard.' })
     return false
   }
   return true

@@ -208,11 +208,6 @@ export function creneauxDuJour(date: string, ctx: ContexteJour): CreneauJour[] {
   return out.sort((a, b) => a.debut.localeCompare(b.debut))
 }
 
-/** Nombre de créneaux encore libres ce jour-là. */
-export function nbLibres(date: string, ctx: ContexteJour): number {
-  return creneauxDuJour(date, ctx).filter(c => c.etat === 'libre').length
-}
-
 export type RaisonRefus = 'passe' | 'trop_tot' | 'trop_loin' | 'ferme' | 'hors_creneau' | 'regulier' | 'pris'
 
 /**

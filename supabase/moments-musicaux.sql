@@ -1,12 +1,12 @@
 -- Moments musicaux : les professeurs inscrivent leurs élèves.
 --
--- Le titulaire du compte est le professeur, pas l'élève : il inscrit plusieurs
--- élèves, revient plusieurs fois dans l'année, et reste l'interlocuteur de
--- l'association. Les élèves — souvent mineurs — n'ont ni compte ni mot de
--- passe, et le site ne publie d'eux que « Prénom N. ».
+-- Les professeurs entrent par un lien secret que l'association leur transmet :
+-- ni compte, ni mot de passe, ni validation. Ils se présentent une fois, puis
+-- inscrivent leurs élèves sur les créneaux libres. Les élèves — souvent
+-- mineurs — n'ont rien à créer, et le site ne publie d'eux que « Prénom N. ».
 --
---   moments_demandes       demandes d'accès des professeurs — DONNÉES PERSONNELLES
---   moments_professeurs    les professeurs validés, liés à leur compte Supabase
+--   moments_lien           la clé du lien partagé (une seule ligne)
+--   moments_professeurs    les professeurs entrés par le lien — DONNÉES PERSONNELLES
 --   moments_seances        les créneaux réservés, avec l'élève et son professeur
 --   moments_fermetures     les périodes exceptionnelles d'indisponibilité
 --   moments_horaires       l'emploi du temps hebdomadaire de l'orgue
@@ -15,66 +15,47 @@
 -- newsletter : toutes les lectures et écritures passent par /api/moments/** et
 -- /api/admin/moments/**, côté serveur avec la clé `service_role`.
 --
--- À exécuter dans Supabase → SQL Editor, puis moments-musicaux-lien.sql : les
--- professeurs entrent désormais par un lien partagé, sans compte ni demande.
-
-create extension if not exists "pgcrypto";
-
--- ─────────────────────────────────────────────────────────────────────────────
--- Reprise d'une première version, jamais mise en service
--- ─────────────────────────────────────────────────────────────────────────────
--- Une version antérieure faisait candidater les élèves eux-mêmes. Elle n'a
--- jamais servi : ces tables sont vides, aucune donnée n'est perdue.
-drop table if exists moments_seances      cascade;
-drop table if exists moments_eleves       cascade;
-drop table if exists moments_candidatures cascade;
-drop table if exists moments_parametres   cascade;
-drop type  if exists moments_statut_candidature;
-drop type  if exists moments_statut_seance;
+-- Schéma complet, pour une base neuve : à exécuter dans Supabase → SQL Editor.
+-- La base de production, créée avec une version antérieure, se met à jour avec
+-- moments-musicaux-lien.sql.
 
 -- ─────────────────────────────────────────────────────────────────────────────
--- Demandes d'accès des professeurs — DONNÉES PERSONNELLES
+-- Le lien partagé
 -- ─────────────────────────────────────────────────────────────────────────────
+-- Régénérer la clé (depuis l'administration) invalide l'ancien lien et les
+-- accès ouverts avec lui.
 
-create type moments_statut_demande as enum ('en_attente', 'acceptee', 'refusee');
-
-create table if not exists moments_demandes (
-  id               uuid primary key default gen_random_uuid(),
-  prenom           text not null,
-  nom              text not null,
-  email            text not null,
-  telephone        text,
-  conservatoire    text,
-  -- Quelques mots libres : classe, nombre d'élèves concernés, période visée.
-  message          text,
-  statut           moments_statut_demande not null default 'en_attente',
-  -- Message envoyé au professeur avec la décision.
-  message_reponse  text,
-  decided_at       timestamptz,
-  created_at       timestamptz not null default now()
+create table if not exists moments_lien (
+  id       smallint primary key default 1 check (id = 1),
+  cle      text not null,
+  cree_at  timestamptz not null default now()
 );
 
-create index if not exists moments_demandes_statut_idx on moments_demandes (statut, created_at desc);
+-- 122 bits d'aléa : la clé ne se devine pas.
+insert into moments_lien (cle)
+select replace(gen_random_uuid()::text, '-', '')
+where not exists (select 1 from moments_lien);
 
 -- ─────────────────────────────────────────────────────────────────────────────
--- Professeurs validés
+-- Professeurs — DONNÉES PERSONNELLES
 -- ─────────────────────────────────────────────────────────────────────────────
 
 create table if not exists moments_professeurs (
-  -- Identifiant du compte Supabase créé à la validation (rôle `professeur`).
-  id                    uuid primary key references auth.users (id) on delete cascade,
-  demande_id            uuid references moments_demandes (id) on delete set null,
+  id                    uuid primary key default gen_random_uuid(),
   prenom                text not null,
   nom                   text not null,
+  -- En minuscules : reconnaît le professeur d'un appareil à l'autre.
   email                 text not null,
   conservatoire         text,
-  -- Un professeur désactivé ne peut plus se connecter ; les séances déjà
-  -- inscrites pour ses élèves sont annulées.
+  -- Un professeur désactivé n'entre plus dans l'espace ; les séances à venir
+  -- de ses élèves sont annulées.
   actif                 boolean not null default true,
-  -- Suivi d'usage pour l'administration : qui se connecte, qui n'est jamais venu.
+  -- Suivi d'usage pour l'administration : qui vient, qui n'est jamais revenu.
   derniere_connexion_at timestamptz,
   created_at            timestamptz not null default now()
 );
+
+create unique index if not exists moments_professeurs_email_idx on moments_professeurs (email);
 
 -- ─────────────────────────────────────────────────────────────────────────────
 -- Créneaux réservés
@@ -181,26 +162,14 @@ where not exists (select 1 from moments_horaires);
 -- Droits : rien pour les rôles publics
 -- ─────────────────────────────────────────────────────────────────────────────
 
-alter table moments_demandes    enable row level security;
+alter table moments_lien        enable row level security;
 alter table moments_professeurs enable row level security;
 alter table moments_seances     enable row level security;
 alter table moments_fermetures  enable row level security;
 alter table moments_horaires    enable row level security;
 
-revoke all on moments_demandes    from anon, authenticated;
+revoke all on moments_lien        from anon, authenticated;
 revoke all on moments_professeurs from anon, authenticated;
 revoke all on moments_seances     from anon, authenticated;
 revoke all on moments_fermetures  from anon, authenticated;
 revoke all on moments_horaires    from anon, authenticated;
-
--- Conservation : les demandes refusées sont supprimées après six mois
--- (voir docs/registre-des-traitements.md). À planifier avec pg_cron :
---   select cron.schedule('moments-demandes-refusees', '0 4 * * 1',
---     $$delete from public.moments_demandes
---       where statut = 'refusee' and decided_at < now() - interval '6 months'$$);
-
--- ─────────────────────────────────────────────────────────────────────────────
--- 22 septembre 2026 : rappel de la veille retiré
--- ─────────────────────────────────────────────────────────────────────────────
--- À exécuter si les tables ont été créées avant cette date ; sans effet sinon.
-alter table moments_seances drop column if exists rappel_envoye_at;
