@@ -1,7 +1,8 @@
 <script setup lang="ts">
 /**
- * Page publique des Moments musicaux : présentation et calendrier des
- * prochaines séances, celles de l'organiste régulier comme celles des élèves.
+ * Page publique des Moments musicaux : la prochaine séance à la une, puis le
+ * calendrier des suivantes, celles de Louis-Paul Courtois (point doré) comme
+ * celles des élèves ; sur grand écran, deux mois côte à côte.
  *
  * Les séances sont chargées côté serveur pour être dans le HTML (référencement
  * et données structurées), et la page est régénérée toutes les heures.
@@ -16,11 +17,13 @@ const siteUrl = useRuntimeConfig().public.siteUrl
 
 const { data } = await useFetch<{ du: string; seances: SeancePublique[] }>('/api/moments', { query: { mois: 6 } })
 const seances = computed(() => data.value?.seances ?? [])
+/** La prochaine séance, mise à la une ; la liste reprend à la suivante. */
+const prochaine = computed(() => seances.value[0] ?? null)
 
 /** Séances groupées par mois, pour aérer une liste qui court sur six mois. */
 const parMois = computed(() => {
   const groupes = new Map<string, SeancePublique[]>()
-  for (const s of seances.value) {
+  for (const s of seances.value.slice(1)) {
     const cle = s.date.slice(0, 7)
     groupes.set(cle, [...(groupes.get(cle) ?? []), s])
   }
@@ -31,11 +34,21 @@ const parMois = computed(() => {
   })
 })
 
-function jourCourt(date: string) {
+function formater(date: string, options: Intl.DateTimeFormatOptions) {
   const [y, m, d] = date.split('-').map(Number)
-  const s = new Date(y, m - 1, d).toLocaleDateString(locale.value === 'fr' ? 'fr-FR' : 'en-US', { weekday: 'long', day: 'numeric' })
+  const s = new Date(y, m - 1, d).toLocaleDateString(locale.value === 'fr' ? 'fr-FR' : 'en-US', options)
   return s.charAt(0).toUpperCase() + s.slice(1)
 }
+const jourCourt = (date: string) => formater(date, { weekday: 'short', day: 'numeric' })
+
+/** « Jeudi 1er octobre, 13 h 15 », ou « Aujourd'hui à 13 h 15 ». */
+const quandProchaine = computed(() => {
+  const s = prochaine.value
+  if (!s) return ''
+  if (s.date === data.value?.du) return t('moments.todayAt', { heure: heureFr(s.debut) })
+  const jour = formater(s.date, { weekday: 'long', day: 'numeric', month: 'long' })
+  return `${locale.value === 'fr' ? jour.replace(/^(\S+) 1 /, '$1 1er ') : jour}, ${heureFr(s.debut)}`
+})
 
 const pageUrl = `${siteUrl}${localePath('/moments-musicaux')}`
 
@@ -123,59 +136,78 @@ useSeoMeta({
         </p>
       </header>
 
-      <!-- Comment ça se passe, et les repères pratiques en regard -->
-      <div class="mt-12 grid gap-10 border-y border-white/5 py-9 lg:grid-cols-[1.35fr_1fr] lg:gap-16">
-        <p class="max-w-2xl font-light leading-relaxed text-text-secondary">{{ t('moments.who') }}</p>
-        <dl class="grid gap-6 sm:grid-cols-3 lg:grid-cols-1 lg:gap-5">
-          <div>
-            <dt class="mb-1.5 text-[10px] font-bold uppercase tracking-widest text-text-secondary">{{ t('moments.scheduleLabel') }}</dt>
-            <dd class="flex items-start gap-2 text-sm text-text-primary">
-              <Icon name="heroicons:clock" class="mt-0.5 h-4 w-4 shrink-0 text-gold" />
-              <span>{{ t('moments.schedule') }} · {{ t('moments.free') }}</span>
-            </dd>
-          </div>
-          <div>
-            <dt class="mb-1.5 text-[10px] font-bold uppercase tracking-widest text-text-secondary">{{ t('moments.placeLabel') }}</dt>
-            <dd class="flex items-start gap-2 text-sm text-text-primary">
-              <Icon name="heroicons:map-pin" class="mt-0.5 h-4 w-4 shrink-0 text-gold" />
-              <span>{{ t('moments.place') }}</span>
-            </dd>
-          </div>
-          <div>
-            <dt class="mb-1.5 text-[10px] font-bold uppercase tracking-widest text-text-secondary">{{ t('moments.performerLabel') }}</dt>
-            <dd class="flex items-start gap-2 text-sm text-text-primary">
-              <Icon name="heroicons:user" class="mt-0.5 h-4 w-4 shrink-0 text-gold" />
-              <span>{{ t('moments.performer') }}</span>
-            </dd>
-          </div>
-        </dl>
+      <!-- Prochaine séance, sur une ligne dès qu'il y a la place -->
+      <div
+        v-if="prochaine"
+        class="mt-8 flex flex-col gap-1 rounded-2xl border border-gold/35 bg-gold/10 px-5 py-4 sm:inline-flex sm:flex-row sm:flex-wrap sm:items-baseline sm:gap-x-4 sm:rounded-full sm:px-6 sm:py-3"
+      >
+        <span class="text-[10px] font-bold uppercase tracking-[0.3em] text-gold">{{ t('moments.nextLabel') }}</span>
+        <span class="font-display text-xl font-light text-text-primary">{{ quandProchaine }}</span>
+        <span v-if="prochaine.type === 'regulier'" class="text-gold">{{ prochaine.interprete }}</span>
+        <span v-else class="text-text-primary">
+          {{ prochaine.interprete }}
+          <span class="ml-1 rounded-full border border-gold/30 px-2 py-0.5 align-[2px] text-[9px] uppercase tracking-widest text-gold">{{ t('moments.eleveTag') }}</span>
+        </span>
       </div>
 
-      <!-- Calendrier -->
-      <section class="mt-14">
-        <h2 class="mb-8 text-xs font-bold uppercase tracking-[0.3em] text-gold">{{ t('moments.upcomingLabel') }}</h2>
+      <!-- Repères pratiques -->
+      <dl class="mt-10 grid gap-5 border-y border-white/5 py-7 sm:grid-cols-3 sm:gap-8">
+        <div>
+          <dt class="mb-1.5 text-[10px] font-bold uppercase tracking-widest text-text-secondary">{{ t('moments.scheduleLabel') }}</dt>
+          <dd class="flex items-start gap-2 text-sm text-text-primary">
+            <Icon name="heroicons:clock" class="mt-0.5 h-4 w-4 shrink-0 text-gold" />
+            <span>{{ t('moments.schedule') }} · {{ t('moments.free') }}</span>
+          </dd>
+        </div>
+        <div>
+          <dt class="mb-1.5 text-[10px] font-bold uppercase tracking-widest text-text-secondary">{{ t('moments.placeLabel') }}</dt>
+          <dd class="flex items-start gap-2 text-sm text-text-primary">
+            <Icon name="heroicons:map-pin" class="mt-0.5 h-4 w-4 shrink-0 text-gold" />
+            <span>{{ t('moments.place') }}</span>
+          </dd>
+        </div>
+        <div>
+          <dt class="mb-1.5 text-[10px] font-bold uppercase tracking-widest text-text-secondary">{{ t('moments.performerLabel') }}</dt>
+          <dd class="flex items-start gap-2 text-sm text-text-primary">
+            <Icon name="heroicons:user" class="mt-0.5 h-4 w-4 shrink-0 text-gold" />
+            <span>{{ t('moments.performer') }}</span>
+          </dd>
+        </div>
+      </dl>
 
-        <p v-if="!parMois.length" class="text-text-secondary">{{ t('moments.none') }}</p>
+      <!-- Calendrier : deux mois côte à côte sur grand écran -->
+      <section class="mt-12">
+        <h2 class="mb-6 text-xs font-bold uppercase tracking-[0.3em] text-gold">{{ t('moments.upcomingLabel') }}</h2>
 
-        <div v-for="groupe in parMois" :key="groupe.cle" class="mb-10">
-          <div class="mb-3 flex items-center gap-4">
-            <h3 class="font-display text-xl font-light text-text-primary">{{ groupe.titre }}</h3>
-            <div class="h-[1px] flex-1 bg-white/5" />
-          </div>
-          <ul class="divide-y divide-white/5">
-            <li v-for="s in groupe.liste" :key="s.id ?? s.date" class="flex flex-wrap items-baseline gap-x-5 gap-y-1 py-4">
-              <span class="w-full text-sm font-medium text-text-primary sm:w-auto sm:min-w-[11rem]">{{ jourCourt(s.date) }}</span>
-              <span class="text-sm text-text-secondary">{{ heureFr(s.debut) }}</span>
-              <span class="text-sm text-text-primary">{{ s.interprete }}</span>
-              <span
-                v-if="s.type === 'eleve'"
-                class="rounded-full border border-gold/30 px-2 py-0.5 text-[10px] uppercase tracking-widest text-gold"
+        <p v-if="!prochaine" class="text-text-secondary">{{ t('moments.none') }}</p>
+
+        <div class="grid gap-x-14 gap-y-10 lg:grid-cols-2">
+          <div v-for="groupe in parMois" :key="groupe.cle">
+            <div class="mb-1 flex items-center gap-4">
+              <h3 class="font-display text-xl font-light text-text-primary">{{ groupe.titre }}</h3>
+              <div class="h-[1px] flex-1 bg-white/5" />
+            </div>
+            <ul class="divide-y divide-white/5">
+              <li
+                v-for="s in groupe.liste"
+                :key="s.id ?? s.date"
+                class="py-3.5 text-sm sm:grid sm:grid-cols-[6rem_4.5rem_minmax(0,1fr)] sm:items-baseline sm:gap-x-4"
               >
-                {{ t('moments.eleveTag') }}
-              </span>
-              <span v-if="s.programme" class="w-full text-sm font-light text-text-secondary">{{ s.programme }}</span>
-            </li>
-          </ul>
+                <span class="font-medium text-text-primary">{{ jourCourt(s.date) }}</span>
+                <span class="text-text-secondary"><span class="sm:hidden"> · </span>{{ heureFr(s.debut) }}</span>
+                <div class="mt-1 sm:mt-0">
+                  <span v-if="s.type === 'regulier'" class="text-gold">
+                    <span class="mr-2 inline-block h-2 w-2 rounded-full bg-gold align-[1px]" />{{ s.interprete }}
+                  </span>
+                  <span v-else class="text-text-primary">
+                    {{ s.interprete }}
+                    <span class="ml-1 rounded-full border border-gold/30 px-2 py-0.5 align-[2px] text-[9px] uppercase tracking-widest text-gold">{{ t('moments.eleveTag') }}</span>
+                  </span>
+                  <p v-if="s.programme" class="mt-0.5 font-light text-text-secondary">{{ s.programme }}</p>
+                </div>
+              </li>
+            </ul>
+          </div>
         </div>
       </section>
 

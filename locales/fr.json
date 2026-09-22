@@ -88,12 +88,12 @@
     "performer": "Louis-Paul Courtois et des élèves organistes",
     "nextLabel": "Prochaine séance",
     "today": "Aujourd'hui à 13 h 15",
+    "todayAt": "Aujourd'hui à {heure}",
     "upcomingLabel": "Prochaines séances",
     "eleveTag": "Élève organiste",
     "none": "Aucune séance annoncée pour le moment.",
     "pageTitle": "Les Moments musicaux",
     "intro": "Une demi-heure de musique à l'orgue de chœur de l'église Saint-Maurice, à l'heure du déjeuner.",
-    "who": "Un jeudi sur deux, Louis-Paul Courtois tient la tribune. Le reste du temps, les professeurs des conservatoires de la région inscrivent leurs élèves sur les créneaux libres : chacun annonce son programme.",
     "seoDesc": "Les Moments musicaux d'Orgue Vivant : une demi-heure d'orgue à l'église Saint-Maurice de Lille, de 13 h 15 à 13 h 45, entrée libre. Calendrier des prochaines séances.",
     "seeCalendar": "Voir le calendrier",
     "free": "Entrée libre"
