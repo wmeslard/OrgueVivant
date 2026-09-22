@@ -5,8 +5,8 @@ import type { SupabaseClient } from '@supabase/supabase-js'
 import { getServiceClient } from '~/server/utils/superAdminClient'
 import { senderAddress } from '~/server/utils/sender'
 import {
-  MOMENT_DEBUT, MOMENT_FIN, ORGANISTE_REGULIER, type Fermeture, type SeancePublique,
-  estFermee, jeudisRegulier, nomPublic
+  CRENEAU_REGULIER, ORGANISTE_REGULIER, type Fermeture, type Horaire, type SeancePublique,
+  estFermee, estJeudiRegulier, finCreneau, heureFr, nomPublic, parseYmd, plusJours, ymd
 } from '~/utils/moments'
 
 /** Date du jour à Paris (« YYYY-MM-DD ») : les fonctions Vercel tournent en UTC. */
@@ -14,11 +14,17 @@ export function aujourdhuiParis(): string {
   return new Intl.DateTimeFormat('fr-CA', { timeZone: 'Europe/Paris' }).format(new Date())
 }
 
-export interface Eleve {
+/** Demain à Paris : les rappels portent sur cette date. */
+export function demainParis(): string {
+  return plusJours(aujourdhuiParis(), 1)
+}
+
+export interface Professeur {
   id: string
   prenom: string
   nom: string
   email: string
+  conservatoire: string | null
   actif: boolean
 }
 
@@ -27,24 +33,35 @@ export interface SeanceRow {
   date: string
   heure_debut: string
   heure_fin: string
-  eleve_id: string
+  professeur_id: string
+  eleve_prenom: string
+  eleve_nom: string
+  eleve_email: string | null
   programme: string | null
   statut: 'reservee' | 'annulee'
-  annulee_par: 'eleve' | 'admin' | null
+  annulee_par: 'professeur' | 'admin' | null
   annulee_at: string | null
+  rappel_envoye_at: string | null
   created_at: string
-  eleve?: Pick<Eleve, 'prenom' | 'nom' | 'email'> | null
+  professeur?: Pick<Professeur, 'prenom' | 'nom' | 'email'> | null
 }
 
-/** Compte connecté avec le rôle `eleve` et une fiche active. */
-export async function requireEleve(event: H3Event): Promise<Eleve> {
+/**
+ * Compte connecté avec le rôle `professeur` et une fiche active.
+ */
+export async function requireProfesseur(event: H3Event): Promise<Professeur> {
   const user = await serverSupabaseUser(event).catch(() => null)
   if (!user) throw createError({ statusCode: 401, statusMessage: 'Connexion requise' })
   const role = (user.app_metadata as Record<string, unknown>)?.role
-  if (role !== 'eleve') throw createError({ statusCode: 403, statusMessage: 'Accès réservé aux élèves' })
-  const { data } = await getServiceClient().from('moments_eleves').select('*').eq('id', user.id).maybeSingle()
+  if (role !== 'professeur') throw createError({ statusCode: 403, statusMessage: 'Accès réservé aux professeurs' })
+  const { data } = await getServiceClient().from('moments_professeurs').select('*').eq('id', user.id).maybeSingle()
   if (!data || !data.actif) throw createError({ statusCode: 403, statusMessage: 'Accès désactivé' })
-  return data as Eleve
+  return data as Professeur
+}
+
+/** Trace de passage, relevée à l'ouverture de l'espace : l'administration voit qui se sert de l'outil. */
+export async function marquerConnexion(client: SupabaseClient, id: string) {
+  await client.from('moments_professeurs').update({ derniere_connexion_at: new Date().toISOString() }).eq('id', id)
 }
 
 /**
@@ -54,48 +71,89 @@ export async function requireEleve(event: H3Event): Promise<Eleve> {
  * Moments musicaux restent vides plutôt que de faire échouer ce qui les
  * entoure — en particulier le flux ICS, auquel des visiteurs sont abonnés.
  */
-function tableAbsente(error: { code?: string } | null): boolean {
-  return error?.code === 'PGRST205' || error?.code === '42P01'
+function schemaAbsent(error: { code?: string } | null): boolean {
+  // Table inconnue de PostgREST, table inconnue de Postgres, ou relation entre
+  // deux tables pas encore établie — les trois cas d'un schéma non appliqué.
+  return error?.code === 'PGRST205' || error?.code === '42P01' || error?.code === 'PGRST200'
+}
+
+export async function chargerHoraires(client: SupabaseClient): Promise<Horaire[]> {
+  const { data, error } = await client
+    .from('moments_horaires')
+    .select('id, jour_semaine, type, heure_debut, heure_fin, motif')
+    .order('jour_semaine').order('heure_debut')
+  if (error && schemaAbsent(error)) { console.warn('[moments] schéma non appliqué :', error.message); return [] }
+  if (error) throw createError({ statusCode: 500, statusMessage: error.message })
+  return (data ?? []) as Horaire[]
 }
 
 export async function chargerFermetures(client: SupabaseClient, du: string, au: string): Promise<Fermeture[]> {
   const { data, error } = await client
     .from('moments_fermetures')
     .select('id, date_debut, date_fin, motif')
-    .lte('date_debut', au)
-    .gte('date_fin', du)
+    .lte('date_debut', au).gte('date_fin', du)
     .order('date_debut')
-  if (error && tableAbsente(error)) { console.warn('[moments] table absente, migration non appliquée :', error.message); return [] }
+  if (error && schemaAbsent(error)) { console.warn('[moments] schéma non appliqué :', error.message); return [] }
   if (error) throw createError({ statusCode: 500, statusMessage: error.message })
   return (data ?? []) as Fermeture[]
 }
 
-/** Séances actives entre deux dates, avec l'élève. */
-export async function chargerSeances(client: SupabaseClient, du: string, au: string, statut: 'reservee' | 'toutes' = 'reservee'): Promise<SeanceRow[]> {
+/** Séances entre deux dates, avec le professeur qui les a inscrites. */
+export async function chargerSeances(
+  client: SupabaseClient, du: string, au: string, statut: 'reservee' | 'toutes' = 'reservee'
+): Promise<SeanceRow[]> {
   let q = client
     .from('moments_seances')
-    .select('*, eleve:moments_eleves(prenom, nom, email)')
-    .gte('date', du)
-    .lte('date', au)
-    .order('date')
+    .select('*, professeur:moments_professeurs(prenom, nom, email)')
+    .gte('date', du).lte('date', au)
+    .order('date').order('heure_debut')
   if (statut === 'reservee') q = q.eq('statut', 'reservee')
   const { data, error } = await q
-  if (error && tableAbsente(error)) { console.warn('[moments] table absente, migration non appliquée :', error.message); return [] }
+  if (error && schemaAbsent(error)) { console.warn('[moments] schéma non appliqué :', error.message); return [] }
   if (error) throw createError({ statusCode: 500, statusMessage: error.message })
   return (data ?? []) as SeanceRow[]
 }
 
 /**
- * Le calendrier tel que le site le publie : les jeudis du régulier (hors
- * fermetures) et les séances d'élèves, par date croissante. Rien d'autre que le
- * prénom et l'initiale de l'élève n'en sort.
+ * Les jeudis de Louis-Paul Courtois entre deux dates, hors indisponibilités.
+ * Si l'emploi du temps ferme le jeudi ou recouvre son créneau, la séance
+ * n'apparaît plus : la règle reste celle de l'orgue, pas une exception.
+ */
+export function jeudisReguliers(
+  du: string, au: string, horaires: readonly Horaire[], fermetures: readonly Fermeture[]
+): string[] {
+  const jeudi = horaires.filter(h => h.jour_semaine === 4)
+  const dans = (h: Horaire) => h.heure_debut.slice(0, 5) <= CRENEAU_REGULIER && CRENEAU_REGULIER < h.heure_fin.slice(0, 5)
+  if (!jeudi.some(h => h.type === 'ouverture' && dans(h))) return []
+  if (jeudi.some(h => h.type === 'blocage' && dans(h))) return []
+  const out: string[] = []
+  const cursor = parseYmd(du)
+  const fin = parseYmd(au)
+  while (cursor <= fin) {
+    const s = ymd(cursor)
+    if (estJeudiRegulier(s) && !estFermee(s, fermetures)) out.push(s)
+    cursor.setDate(cursor.getDate() + 1)
+  }
+  return out
+}
+
+/**
+ * Le calendrier tel que le site le publie : les séances de Louis-Paul Courtois
+ * et celles des élèves, par date puis par heure. Rien n'en sort de plus que le
+ * prénom et l'initiale de l'élève — ni son nom complet, ni son professeur.
  */
 export async function calendrierPublic(du: string, au: string): Promise<SeancePublique[]> {
   const client = getServiceClient()
-  const [fermetures, seances] = await Promise.all([chargerFermetures(client, du, au), chargerSeances(client, du, au)])
-  const out: SeancePublique[] = jeudisRegulier(du, au)
-    .filter(d => !estFermee(d, fermetures))
-    .map(date => ({ date, debut: MOMENT_DEBUT, fin: MOMENT_FIN, type: 'regulier' as const, interprete: ORGANISTE_REGULIER }))
+  const [horaires, fermetures, seances] = await Promise.all([
+    chargerHoraires(client), chargerFermetures(client, du, au), chargerSeances(client, du, au)
+  ])
+  const out: SeancePublique[] = jeudisReguliers(du, au, horaires, fermetures).map(date => ({
+    date,
+    debut: CRENEAU_REGULIER,
+    fin: finCreneau(CRENEAU_REGULIER),
+    type: 'regulier' as const,
+    interprete: ORGANISTE_REGULIER
+  }))
   for (const s of seances) {
     out.push({
       id: s.id,
@@ -103,11 +161,11 @@ export async function calendrierPublic(du: string, au: string): Promise<SeancePu
       debut: s.heure_debut.slice(0, 5),
       fin: s.heure_fin.slice(0, 5),
       type: 'eleve',
-      interprete: s.eleve ? nomPublic(s.eleve.prenom, s.eleve.nom) : 'Élève organiste',
+      interprete: nomPublic(s.eleve_prenom, s.eleve_nom),
       programme: s.programme
     })
   }
-  return out.sort((a, b) => a.date.localeCompare(b.date))
+  return out.sort((a, b) => a.date.localeCompare(b.date) || a.debut.localeCompare(b.debut))
 }
 
 // ── E-mails ──────────────────────────────────────────────────────────────────
@@ -126,7 +184,7 @@ export function adresseAssociation(): string {
  * Envoi via Resend. Sans clé (développement), le message est journalisé et
  * l'appel réussit : les parcours restent testables hors ligne. Un refus de
  * l'API est journalisé mais n'interrompt pas l'action métier qui l'a déclenché
- * (une réservation faite reste faite), sauf demande explicite.
+ * (une inscription faite reste faite), sauf demande explicite.
  */
 export async function envoyerEmail(
   msg: { to: string | string[]; subject: string; html: string; replyTo?: string },
@@ -167,4 +225,9 @@ function gabarit(contenu: string): string {
 export function dateLongue(date: string): string {
   const [y, m, d] = date.split('-').map(Number)
   return new Date(y, m - 1, d).toLocaleDateString('fr-FR', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' })
+}
+
+/** « jeudi 24 septembre 2026, de 13 h 15 à 13 h 45 ». */
+export function quand(date: string, debut: string, fin: string): string {
+  return `${dateLongue(date)}, de ${heureFr(debut)} à ${heureFr(fin)}`
 }

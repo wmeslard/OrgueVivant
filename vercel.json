@@ -6,5 +6,11 @@
   "installCommand": "npm install",
   "regions": [
     "cdg1"
+  ],
+  "crons": [
+    {
+      "path": "/api/moments/rappels",
+      "schedule": "0 17 * * *"
+    }
   ]
 }

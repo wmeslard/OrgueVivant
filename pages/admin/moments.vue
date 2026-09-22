@@ -1,150 +1,174 @@
 <script setup lang="ts">
 /**
- * Moments musicaux : candidatures des élèves organistes, calendrier des
- * séances, périodes d'indisponibilité de l'orgue et lien privé de candidature.
+ * Moments musicaux : demandes d'accès des professeurs, séances inscrites,
+ * professeurs, emploi du temps de l'orgue et périodes d'indisponibilité.
+ *
+ * Contrairement au site public, l'administration voit tout : le nom complet de
+ * l'élève, et le professeur qui l'a inscrit.
  */
-import { estDimanche, estJeudiRegulier, MOMENT_DEBUT, MOMENT_FIN, ORGANISTE_REGULIER, type Fermeture } from '~/utils/moments'
+import { creneauxDuJour, heureFr, type Fermeture, type Horaire } from '~/utils/moments'
 
 definePageMeta({ middleware: 'auth', layout: 'admin' })
 
 const { t } = useI18n()
 const { show: showToast } = useToast()
 
-interface Candidature {
+interface Demande {
   id: string
   prenom: string; nom: string; email: string
-  telephone: string | null
-  presentation: string | null
+  telephone: string | null; conservatoire: string | null; message: string | null
   statut: 'en_attente' | 'acceptee' | 'refusee'
-  message_reponse: string | null
-  decided_at: string | null
-  created_at: string
+  message_reponse: string | null; decided_at: string | null; created_at: string
 }
-interface Eleve { id: string; prenom: string; nom: string; email: string; actif: boolean }
+interface Professeur {
+  id: string; prenom: string; nom: string; email: string
+  conservatoire: string | null; actif: boolean; derniere_connexion_at: string | null; created_at: string
+}
 interface Seance {
-  id: string; date: string; programme: string | null
-  statut: 'reservee' | 'annulee'; annulee_par: 'eleve' | 'admin' | null
-  eleve?: { prenom: string; nom: string; email: string } | null
+  id: string; date: string; heure_debut: string; heure_fin: string
+  eleve_prenom: string; eleve_nom: string; eleve_email: string | null; programme: string | null
+  statut: 'reservee' | 'annulee'; annulee_par: 'professeur' | 'admin' | null
+  professeur_id: string
+  professeur?: { prenom: string; nom: string; email: string } | null
 }
 interface Vue {
   aujourdhui: string
-  candidatures: Candidature[]
-  eleves: Eleve[]
+  demandes: Demande[]
+  professeurs: Professeur[]
   fermetures: (Fermeture & { id: string })[]
   seances: Seance[]
-  lienCandidature: string | null
+  horaires: (Horaire & { id: string })[]
+  lienProfesseurs: string
 }
 
 const { data, refresh, pending } = await useFetch<Vue>('/api/admin/moments')
 
-const onglet = ref<'candidatures' | 'calendrier' | 'eleves'>('candidatures')
+const onglet = ref<'demandes' | 'calendrier' | 'professeurs' | 'horaires'>('demandes')
 const busy = ref(false)
 const erreur = ref('')
 
-const enAttente = computed(() => data.value?.candidatures.filter(c => c.statut === 'en_attente') ?? [])
-const traitees = computed(() => data.value?.candidatures.filter(c => c.statut !== 'en_attente') ?? [])
+const enAttente = computed(() => data.value?.demandes.filter(d => d.statut === 'en_attente') ?? [])
+const traitees = computed(() => data.value?.demandes.filter(d => d.statut !== 'en_attente') ?? [])
 const seancesAVenir = computed(() =>
   (data.value?.seances ?? [])
     .filter(s => s.statut === 'reservee' && s.date >= (data.value?.aujourdhui ?? ''))
-    .sort((a, b) => a.date.localeCompare(b.date))
+    .sort((a, b) => a.date.localeCompare(b.date) || a.heure_debut.localeCompare(b.heure_debut))
 )
-const elevesActifs = computed(() => data.value?.eleves.filter(e => e.actif) ?? [])
+const seancesPassees = computed(() =>
+  (data.value?.seances ?? [])
+    .filter(s => s.statut === 'reservee' && s.date < (data.value?.aujourdhui ?? ''))
+    .sort((a, b) => b.date.localeCompare(a.date))
+)
+const profsActifs = computed(() => data.value?.professeurs.filter(p => p.actif) ?? [])
+
+const JOURS = ['Dimanche', 'Lundi', 'Mardi', 'Mercredi', 'Jeudi', 'Vendredi', 'Samedi']
 
 function jourLong(date: string) {
   const [y, m, d] = date.split('-').map(Number)
   const s = new Date(y, m - 1, d).toLocaleDateString('fr-FR', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' })
   return s.charAt(0).toUpperCase() + s.slice(1)
 }
+function quandCourt(d: string | null) {
+  return d ? new Date(d).toLocaleDateString('fr-FR', { day: 'numeric', month: 'short', year: 'numeric' }) : 'jamais'
+}
 
 async function action(fn: () => Promise<unknown>, message: string) {
   busy.value = true; erreur.value = ''
   try {
-    await fn()
-    await refresh()
-    showToast(message, { type: 'success' })
+    await fn(); await refresh(); showToast(message, { type: 'success' })
   } catch (e: any) {
     erreur.value = e?.data?.statusMessage || 'Erreur'
     showToast(erreur.value, { type: 'error' })
   } finally { busy.value = false }
 }
 
-// ── Candidatures ──────────────────────────────────────────────────────────────
-const ouverte = ref<Candidature | null>(null)
+// ── Demandes ─────────────────────────────────────────────────────────────────
+const ouverte = ref<Demande | null>(null)
 const reponse = ref('')
-function ouvrir(c: Candidature) { ouverte.value = c; reponse.value = ''; erreur.value = '' }
+function ouvrir(d: Demande) { ouverte.value = d; reponse.value = ''; erreur.value = '' }
 
 async function decider(decision: 'acceptee' | 'refusee') {
-  const c = ouverte.value
-  if (!c) return
-  if (decision === 'refusee' && !confirm(`Refuser la candidature de ${c.prenom} ${c.nom} ?`)) return
+  const d = ouverte.value
+  if (!d) return
+  if (decision === 'refusee' && !confirm(`Refuser la demande de ${d.prenom} ${d.nom} ?`)) return
   await action(
-    () => $fetch(`/api/admin/moments/candidatures/${c.id}`, { method: 'PATCH', body: { decision, message: reponse.value } }),
-    decision === 'acceptee' ? 'Candidature acceptée, invitation envoyée.' : 'Candidature refusée.'
+    () => $fetch(`/api/admin/moments/demandes/${d.id}`, { method: 'PATCH', body: { decision, message: reponse.value } }),
+    decision === 'acceptee' ? 'Accès ouvert, email envoyé.' : 'Demande refusée.'
   )
   if (!erreur.value) ouverte.value = null
 }
-
-async function supprimerCandidature(c: Candidature) {
-  if (!confirm(`Supprimer définitivement la candidature de ${c.prenom} ${c.nom} ?`)) return
-  await action(() => $fetch(`/api/admin/moments/candidatures/${c.id}`, { method: 'DELETE' }), 'Candidature supprimée.')
+async function supprimerDemande(d: Demande) {
+  if (!confirm(`Supprimer définitivement la demande de ${d.prenom} ${d.nom} ?`)) return
+  await action(() => $fetch(`/api/admin/moments/demandes/${d.id}`, { method: 'DELETE' }), 'Demande supprimée.')
 }
 
-// ── Lien privé ────────────────────────────────────────────────────────────────
+// ── Lien à partager ──────────────────────────────────────────────────────────
 const copie = ref(false)
 async function copierLien() {
-  if (!data.value?.lienCandidature) return
+  if (!data.value?.lienProfesseurs) return
   try {
-    await navigator.clipboard.writeText(data.value.lienCandidature)
-    copie.value = true
-    setTimeout(() => (copie.value = false), 2000)
+    await navigator.clipboard.writeText(data.value.lienProfesseurs)
+    copie.value = true; setTimeout(() => (copie.value = false), 2000)
   } catch { /* le champ reste sélectionnable à la main */ }
 }
-async function regenererLien() {
-  if (!confirm('Régénérer le lien ? L\'ancien cessera aussitôt de fonctionner.')) return
-  await action(() => $fetch('/api/admin/moments/lien', { method: 'POST' }), 'Nouveau lien généré.')
-}
 
-// ── Séances ───────────────────────────────────────────────────────────────────
-const nouvelleSeance = reactive({ date: '', eleve_id: '', programme: '' })
-const seanceInvalide = computed(() => {
-  const d = nouvelleSeance.date
-  if (!d) return ''
-  if (d < (data.value?.aujourdhui ?? '')) return 'Date passée.'
-  if (estDimanche(d)) return 'Pas de séance le dimanche.'
-  if (estJeudiRegulier(d)) return `Ce jeudi revient à ${ORGANISTE_REGULIER}.`
-  return ''
+// ── Séances ──────────────────────────────────────────────────────────────────
+const nouvelle = reactive({ date: '', heure_debut: '', professeur_id: '', eleve_prenom: '', eleve_nom: '', eleve_email: '', programme: '' })
+const creneauxDispo = computed(() => {
+  if (!data.value || !nouvelle.date) return []
+  return creneauxDuJour(nouvelle.date, {
+    aujourdhui: nouvelle.date,
+    horaires: data.value.horaires,
+    fermetures: data.value.fermetures,
+    pris: data.value.seances.filter(s => s.statut === 'reservee')
+      .map(s => ({ date: s.date, heure_debut: s.heure_debut.slice(0, 5), interprete: `${s.eleve_prenom} ${s.eleve_nom}` }))
+  })
 })
 
 async function ajouterSeance() {
-  if (!nouvelleSeance.date || !nouvelleSeance.eleve_id || seanceInvalide.value) return
-  await action(() => $fetch('/api/admin/moments/seances', { method: 'POST', body: { ...nouvelleSeance } }), 'Séance ajoutée.')
-  if (!erreur.value) { nouvelleSeance.date = ''; nouvelleSeance.eleve_id = ''; nouvelleSeance.programme = '' }
+  if (!nouvelle.date || !nouvelle.heure_debut || !nouvelle.professeur_id || !nouvelle.eleve_prenom || !nouvelle.eleve_nom) return
+  await action(() => $fetch('/api/admin/moments/seances', { method: 'POST', body: { ...nouvelle } }), 'Séance ajoutée.')
+  if (!erreur.value) Object.assign(nouvelle, { date: '', heure_debut: '', professeur_id: '', eleve_prenom: '', eleve_nom: '', eleve_email: '', programme: '' })
 }
-
 async function annulerSeance(s: Seance) {
-  const motif = prompt(`Annuler la séance du ${jourLong(s.date)} ?\n\nMotif communiqué à l'élève (facultatif) :`)
+  const motif = prompt(`Annuler la séance de ${s.eleve_prenom} ${s.eleve_nom} du ${jourLong(s.date)} ?\n\nMotif communiqué (facultatif) :`)
   if (motif === null) return
   await action(() => $fetch(`/api/admin/moments/seances/${s.id}`, { method: 'DELETE', body: { motif } }), 'Séance annulée.')
 }
 
-// ── Fermetures ────────────────────────────────────────────────────────────────
+// ── Professeurs ──────────────────────────────────────────────────────────────
+async function basculerProf(p: Professeur) {
+  if (p.actif && !confirm(`Désactiver ${p.prenom} ${p.nom} ? Les séances à venir de ses élèves seront annulées.`)) return
+  await action(() => $fetch(`/api/admin/moments/professeurs/${p.id}`, { method: 'PATCH', body: { actif: !p.actif } }),
+    p.actif ? 'Professeur désactivé.' : 'Professeur réactivé.')
+}
+function seancesDe(id: string) {
+  return (data.value?.seances ?? []).filter(s => s.professeur_id === id && s.statut === 'reservee').length
+}
+
+// ── Emploi du temps ──────────────────────────────────────────────────────────
+const nouvelHoraire = reactive({ jour_semaine: 2, type: 'blocage' as 'ouverture' | 'blocage', heure_debut: '', heure_fin: '', motif: '' })
+async function ajouterHoraire() {
+  if (!nouvelHoraire.heure_debut || !nouvelHoraire.heure_fin) return
+  await action(() => $fetch('/api/admin/moments/horaires', { method: 'POST', body: { ...nouvelHoraire } }), 'Horaire enregistré.')
+  if (!erreur.value) Object.assign(nouvelHoraire, { heure_debut: '', heure_fin: '', motif: '' })
+}
+async function supprimerHoraire(h: Horaire & { id: string }) {
+  await action(() => $fetch(`/api/admin/moments/horaires/${h.id}`, { method: 'DELETE' }), 'Horaire supprimé.')
+}
+
+// ── Fermetures ───────────────────────────────────────────────────────────────
 const nouvelleFermeture = reactive({ date_debut: '', date_fin: '', motif: '' })
 async function ajouterFermeture() {
   if (!nouvelleFermeture.date_debut) return
   if (!nouvelleFermeture.date_fin) nouvelleFermeture.date_fin = nouvelleFermeture.date_debut
   const touchees = seancesAVenir.value.filter(s => s.date >= nouvelleFermeture.date_debut && s.date <= nouvelleFermeture.date_fin)
-  if (touchees.length && !confirm(`${touchees.length} séance(s) réservée(s) dans cette période seront annulées et les élèves prévenus. Continuer ?`)) return
+  if (touchees.length && !confirm(`${touchees.length} séance(s) dans cette période seront annulées, professeurs et élèves prévenus. Continuer ?`)) return
   await action(() => $fetch('/api/admin/moments/fermetures', { method: 'POST', body: { ...nouvelleFermeture } }), 'Période enregistrée.')
-  if (!erreur.value) { nouvelleFermeture.date_debut = ''; nouvelleFermeture.date_fin = ''; nouvelleFermeture.motif = '' }
+  if (!erreur.value) Object.assign(nouvelleFermeture, { date_debut: '', date_fin: '', motif: '' })
 }
 async function supprimerFermeture(f: Fermeture & { id: string }) {
   await action(() => $fetch(`/api/admin/moments/fermetures/${f.id}`, { method: 'DELETE' }), 'Période supprimée.')
-}
-
-// ── Élèves ────────────────────────────────────────────────────────────────────
-async function basculerEleve(e: Eleve) {
-  if (e.actif && !confirm(`Désactiver ${e.prenom} ${e.nom} ? Ses séances à venir seront annulées.`)) return
-  await action(() => $fetch(`/api/admin/moments/eleves/${e.id}`, { method: 'PATCH', body: { actif: !e.actif } }), e.actif ? 'Élève désactivé.' : 'Élève réactivé.')
 }
 </script>
 
@@ -157,27 +181,26 @@ async function basculerEleve(e: Eleve) {
 
     <AdminNav />
 
-    <!-- Lien privé de candidature -->
+    <!-- Lien à diffuser aux conservatoires -->
     <section class="mb-10 rounded-2xl border border-ink-200 p-6 dark:border-ink-800">
-      <h2 class="mb-1 font-display text-xl">Lien de candidature</h2>
+      <h2 class="mb-1 font-display text-xl">Lien pour les professeurs</h2>
       <p class="mb-4 text-sm text-ink-500">
-        À transmettre aux conservatoires et aux professeurs. La page n'est pas référencée et n'apparaît nulle part sur le site.
+        À diffuser aux conservatoires et aux professeurs d'orgue. L'adresse est publique : c'est votre validation,
+        et non le secret du lien, qui protège l'inscription des élèves.
       </p>
       <div class="flex flex-wrap items-center gap-3">
-        <input :value="data?.lienCandidature ?? ''" readonly class="input flex-1 min-w-[18rem] font-mono text-xs">
-        <button class="btn-primary" :disabled="!data?.lienCandidature" @click="copierLien">
-          {{ copie ? 'Copié' : 'Copier' }}
-        </button>
-        <button class="btn-ghost" :disabled="busy" @click="regenererLien">Régénérer</button>
+        <input :value="data?.lienProfesseurs ?? ''" readonly class="input min-w-[18rem] flex-1 font-mono text-xs">
+        <button class="btn-primary" :disabled="!data?.lienProfesseurs" @click="copierLien">{{ copie ? 'Copié' : 'Copier' }}</button>
       </div>
     </section>
 
-    <nav class="mb-8 flex gap-6 border-b border-ink-200 dark:border-ink-800">
+    <nav class="mb-8 flex flex-wrap gap-6 border-b border-ink-200 dark:border-ink-800">
       <button
         v-for="o in [
-          { id: 'candidatures', label: `Candidatures${enAttente.length ? ` (${enAttente.length})` : ''}` },
-          { id: 'calendrier', label: 'Calendrier' },
-          { id: 'eleves', label: `Élèves (${elevesActifs.length})` }
+          { id: 'demandes', label: `Demandes${enAttente.length ? ` (${enAttente.length})` : ''}` },
+          { id: 'calendrier', label: `Séances (${seancesAVenir.length})` },
+          { id: 'professeurs', label: `Professeurs (${profsActifs.length})` },
+          { id: 'horaires', label: 'Emploi du temps' }
         ]"
         :key="o.id"
         class="pb-3 text-sm font-medium transition-colors"
@@ -190,85 +213,126 @@ async function basculerEleve(e: Eleve) {
 
     <p v-if="pending" class="text-sm text-ink-500">Chargement…</p>
 
-    <!-- CANDIDATURES -->
-    <section v-else-if="onglet === 'candidatures'">
+    <!-- DEMANDES -->
+    <section v-else-if="onglet === 'demandes'">
       <h2 class="mb-4 text-sm font-medium text-ink-500">En attente</h2>
-      <p v-if="!enAttente.length" class="mb-10 text-sm text-ink-500">Aucune candidature en attente.</p>
+      <p v-if="!enAttente.length" class="mb-10 text-sm text-ink-500">Aucune demande en attente.</p>
       <ul v-else class="mb-10 space-y-3">
-        <li v-for="c in enAttente" :key="c.id" class="rounded-2xl border border-ink-200 p-5 dark:border-ink-800">
+        <li v-for="d in enAttente" :key="d.id" class="rounded-2xl border border-ink-200 p-5 dark:border-ink-800">
           <div class="flex flex-wrap items-baseline justify-between gap-3">
             <div>
-              <div class="font-medium">{{ c.prenom }} {{ c.nom }}</div>
+              <div class="font-medium">{{ d.prenom }} {{ d.nom }}</div>
               <div class="text-sm text-ink-500">
-                {{ c.email }}<template v-if="c.telephone"> · {{ c.telephone }}</template>
+                {{ d.email }}<template v-if="d.telephone"> · {{ d.telephone }}</template>
+                <template v-if="d.conservatoire"> · {{ d.conservatoire }}</template>
               </div>
             </div>
-            <button class="btn-primary" @click="ouvrir(c)">Examiner</button>
+            <button class="btn-primary" @click="ouvrir(d)">Examiner</button>
           </div>
-          <p v-if="c.presentation" class="mt-3 line-clamp-2 text-sm text-ink-500">{{ c.presentation }}</p>
+          <p v-if="d.message" class="mt-3 line-clamp-2 text-sm text-ink-500">{{ d.message }}</p>
         </li>
       </ul>
 
       <template v-if="traitees.length">
         <h2 class="mb-4 text-sm font-medium text-ink-500">Traitées</h2>
         <ul class="space-y-2">
-          <li v-for="c in traitees" :key="c.id" class="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-ink-200 px-4 py-3 text-sm dark:border-ink-800">
+          <li v-for="d in traitees" :key="d.id" class="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-ink-200 px-4 py-3 text-sm dark:border-ink-800">
             <span>
-              <span class="font-medium">{{ c.prenom }} {{ c.nom }}</span>
-              <span class="ml-2 text-ink-500">{{ c.email }}</span>
+              <span class="font-medium">{{ d.prenom }} {{ d.nom }}</span>
+              <span class="ml-2 text-ink-500">{{ d.email }}</span>
             </span>
             <span class="flex items-center gap-3">
-              <span :class="c.statut === 'acceptee' ? 'text-emerald-600' : 'text-ink-500'">
-                {{ c.statut === 'acceptee' ? 'Acceptée' : 'Refusée' }}
+              <span :class="d.statut === 'acceptee' ? 'text-emerald-600' : 'text-ink-500'">
+                {{ d.statut === 'acceptee' ? 'Acceptée' : 'Refusée' }}
               </span>
-              <button class="text-ink-400 underline-offset-4 hover:underline" @click="supprimerCandidature(c)">Supprimer</button>
+              <button class="text-ink-400 underline-offset-4 hover:underline" @click="supprimerDemande(d)">Supprimer</button>
             </span>
           </li>
         </ul>
       </template>
     </section>
 
-    <!-- CALENDRIER -->
+    <!-- SÉANCES -->
     <section v-else-if="onglet === 'calendrier'" class="space-y-10">
       <div class="rounded-2xl border border-ink-200 p-6 dark:border-ink-800">
-        <h2 class="mb-1 font-display text-xl">Ajouter une séance</h2>
-        <p class="mb-4 text-sm text-ink-500">
-          Pour inscrire un élève à sa place. {{ MOMENT_DEBUT.replace(':', ' h ') }} – {{ MOMENT_FIN.replace(':', ' h ') }}, hors dimanches et jeudis de {{ ORGANISTE_REGULIER }}.
-        </p>
-        <div class="grid gap-4 md:grid-cols-4">
+        <h2 class="mb-1 font-display text-xl">Inscrire un élève</h2>
+        <p class="mb-4 text-sm text-ink-500">Au nom d'un professeur — pour une demande reçue par téléphone, par exemple.</p>
+        <div class="grid gap-4 md:grid-cols-3">
           <div>
             <label class="label">Date</label>
-            <input v-model="nouvelleSeance.date" type="date" class="input">
+            <input v-model="nouvelle.date" type="date" class="input">
           </div>
           <div>
-            <label class="label">Élève</label>
-            <select v-model="nouvelleSeance.eleve_id" class="input">
+            <label class="label">Créneau</label>
+            <select v-model="nouvelle.heure_debut" class="input" :disabled="!creneauxDispo.length">
               <option value="">—</option>
-              <option v-for="e in elevesActifs" :key="e.id" :value="e.id">{{ e.prenom }} {{ e.nom }}</option>
+              <option
+                v-for="c in creneauxDispo.filter(c => c.etat === 'libre' || c.etat === 'passe')"
+                :key="c.debut"
+                :value="c.debut"
+              >
+                {{ heureFr(c.debut) }} – {{ heureFr(c.fin) }}
+              </option>
             </select>
           </div>
-          <div class="md:col-span-2">
+          <div>
+            <label class="label">Professeur</label>
+            <select v-model="nouvelle.professeur_id" class="input">
+              <option value="">—</option>
+              <option v-for="p in profsActifs" :key="p.id" :value="p.id">{{ p.prenom }} {{ p.nom }}</option>
+            </select>
+          </div>
+          <div>
+            <label class="label">Prénom de l'élève</label>
+            <input v-model="nouvelle.eleve_prenom" maxlength="80" class="input">
+          </div>
+          <div>
+            <label class="label">Nom de l'élève</label>
+            <input v-model="nouvelle.eleve_nom" maxlength="80" class="input">
+          </div>
+          <div>
+            <label class="label">Email de l'élève <span class="font-normal text-ink-400">({{ t('admin.optional') }})</span></label>
+            <input v-model="nouvelle.eleve_email" type="email" maxlength="254" class="input">
+          </div>
+          <div class="md:col-span-3">
             <label class="label">Programme <span class="font-normal text-ink-400">({{ t('admin.optional') }})</span></label>
-            <input v-model="nouvelleSeance.programme" maxlength="600" class="input">
+            <input v-model="nouvelle.programme" maxlength="600" class="input">
           </div>
         </div>
-        <p v-if="seanceInvalide" class="mt-3 text-sm text-red-600">{{ seanceInvalide }}</p>
-        <button class="btn-primary mt-5" :disabled="busy || !nouvelleSeance.date || !nouvelleSeance.eleve_id || !!seanceInvalide" @click="ajouterSeance">
-          Ajouter
-        </button>
+        <p v-if="nouvelle.date && !creneauxDispo.length" class="mt-3 text-sm text-red-600">Aucun créneau ce jour-là.</p>
+        <button class="btn-primary mt-5" :disabled="busy" @click="ajouterSeance">Inscrire</button>
       </div>
 
       <div>
-        <h2 class="mb-4 font-display text-xl">Séances à venir</h2>
-        <p v-if="!seancesAVenir.length" class="text-sm text-ink-500">Aucune séance réservée.</p>
+        <h2 class="mb-4 font-display text-xl">À venir</h2>
+        <p v-if="!seancesAVenir.length" class="text-sm text-ink-500">Aucune séance inscrite.</p>
         <ul v-else class="space-y-2">
-          <li v-for="s in seancesAVenir" :key="s.id" class="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-ink-200 px-4 py-3 text-sm dark:border-ink-800">
-            <span>
-              <span class="font-medium">{{ jourLong(s.date) }}</span>
-              <span class="ml-3 text-ink-500">{{ s.eleve ? `${s.eleve.prenom} ${s.eleve.nom}` : 'Élève supprimé' }}</span>
-              <span v-if="s.programme" class="ml-3 text-ink-400">{{ s.programme }}</span>
-            </span>
+          <li v-for="s in seancesAVenir" :key="s.id" class="flex flex-wrap items-start justify-between gap-3 rounded-xl border border-ink-200 px-4 py-3 text-sm dark:border-ink-800">
+            <div>
+              <div>
+                <span class="font-medium">{{ jourLong(s.date) }}</span>
+                <span class="ml-2 text-ink-500">{{ heureFr(s.heure_debut) }} – {{ heureFr(s.heure_fin) }}</span>
+              </div>
+              <div class="mt-1">
+                {{ s.eleve_prenom }} {{ s.eleve_nom }}
+                <span v-if="s.eleve_email" class="ml-2 text-ink-400">{{ s.eleve_email }}</span>
+              </div>
+              <div class="mt-0.5 text-ink-500">
+                inscrit·e par {{ s.professeur ? `${s.professeur.prenom} ${s.professeur.nom}` : 'professeur supprimé' }}
+              </div>
+              <div v-if="s.programme" class="mt-0.5 text-ink-400">{{ s.programme }}</div>
+            </div>
             <button class="text-ink-400 underline-offset-4 hover:underline" :disabled="busy" @click="annulerSeance(s)">Annuler</button>
+          </li>
+        </ul>
+      </div>
+
+      <div v-if="seancesPassees.length">
+        <h2 class="mb-4 font-display text-xl">Passées</h2>
+        <ul class="space-y-1.5 text-sm text-ink-500">
+          <li v-for="s in seancesPassees.slice(0, 20)" :key="s.id">
+            {{ jourLong(s.date) }} · {{ heureFr(s.heure_debut) }} — {{ s.eleve_prenom }} {{ s.eleve_nom }}
+            <span v-if="s.professeur">({{ s.professeur.prenom }} {{ s.professeur.nom }})</span>
           </li>
         </ul>
       </div>
@@ -276,7 +340,8 @@ async function basculerEleve(e: Eleve) {
       <div class="rounded-2xl border border-ink-200 p-6 dark:border-ink-800">
         <h2 class="mb-1 font-display text-xl">Orgue indisponible</h2>
         <p class="mb-4 text-sm text-ink-500">
-          Travaux, accord, fermeture de l'église… Aucune séance ne peut être réservée sur la période, et les séances déjà prévues sont annulées (les élèves sont prévenus).
+          Travaux, accord, fermeture de l'église… Aucun créneau n'est proposé sur la période, et les séances déjà
+          inscrites sont annulées (professeurs et élèves prévenus).
         </p>
         <div class="grid gap-4 md:grid-cols-4">
           <div>
@@ -306,37 +371,105 @@ async function basculerEleve(e: Eleve) {
       </div>
     </section>
 
-    <!-- ÉLÈVES -->
-    <section v-else>
-      <p v-if="!data?.eleves.length" class="text-sm text-ink-500">Aucun élève pour le moment.</p>
+    <!-- PROFESSEURS -->
+    <section v-else-if="onglet === 'professeurs'">
+      <p v-if="!data?.professeurs.length" class="text-sm text-ink-500">Aucun professeur pour le moment.</p>
       <ul v-else class="space-y-2">
-        <li v-for="e in data.eleves" :key="e.id" class="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-ink-200 px-4 py-3 text-sm dark:border-ink-800">
-          <span>
-            <span class="font-medium">{{ e.prenom }} {{ e.nom }}</span>
-            <span class="ml-3 text-ink-500">{{ e.email }}</span>
-            <span v-if="!e.actif" class="ml-3 text-ink-400">désactivé</span>
-          </span>
-          <button class="text-ink-400 underline-offset-4 hover:underline" :disabled="busy" @click="basculerEleve(e)">
-            {{ e.actif ? 'Désactiver' : 'Réactiver' }}
+        <li v-for="p in data.professeurs" :key="p.id" class="flex flex-wrap items-start justify-between gap-3 rounded-xl border border-ink-200 px-4 py-3 text-sm dark:border-ink-800">
+          <div>
+            <div>
+              <span class="font-medium">{{ p.prenom }} {{ p.nom }}</span>
+              <span class="ml-3 text-ink-500">{{ p.email }}</span>
+              <span v-if="!p.actif" class="ml-3 text-ink-400">désactivé</span>
+            </div>
+            <div class="mt-1 text-ink-500">
+              <template v-if="p.conservatoire">{{ p.conservatoire }} · </template>
+              {{ seancesDe(p.id) }} séance(s) · dernière connexion : {{ quandCourt(p.derniere_connexion_at) }}
+            </div>
+          </div>
+          <button class="text-ink-400 underline-offset-4 hover:underline" :disabled="busy" @click="basculerProf(p)">
+            {{ p.actif ? 'Désactiver' : 'Réactiver' }}
           </button>
         </li>
       </ul>
     </section>
 
-    <!-- Fiche de candidature -->
+    <!-- EMPLOI DU TEMPS -->
+    <section v-else class="space-y-8">
+      <div class="rounded-2xl border border-ink-200 p-6 dark:border-ink-800">
+        <h2 class="mb-1 font-display text-xl">Emploi du temps de l'orgue</h2>
+        <p class="mb-4 text-sm text-ink-500">
+          Les <strong>ouvertures</strong> définissent les heures où l'orgue peut être joué ; les <strong>blocages</strong>
+          en retirent les messes, les confessions et tout ce qui s'y oppose. Les créneaux proposés aux professeurs se
+          déduisent des deux, par demi-heures. Vérifiez ces horaires auprès de la paroisse.
+        </p>
+        <div class="grid gap-4 md:grid-cols-5">
+          <div>
+            <label class="label">Jour</label>
+            <select v-model.number="nouvelHoraire.jour_semaine" class="input">
+              <option v-for="(j, i) in JOURS" :key="i" :value="i">{{ j }}</option>
+            </select>
+          </div>
+          <div>
+            <label class="label">Type</label>
+            <select v-model="nouvelHoraire.type" class="input">
+              <option value="ouverture">Ouverture</option>
+              <option value="blocage">Blocage</option>
+            </select>
+          </div>
+          <div>
+            <label class="label">De</label>
+            <input v-model="nouvelHoraire.heure_debut" type="time" step="900" class="input">
+          </div>
+          <div>
+            <label class="label">À</label>
+            <input v-model="nouvelHoraire.heure_fin" type="time" step="900" class="input">
+          </div>
+          <div>
+            <label class="label">Motif</label>
+            <input v-model="nouvelHoraire.motif" maxlength="200" class="input" placeholder="ex. Messe">
+          </div>
+        </div>
+        <button class="btn-primary mt-5" :disabled="busy" @click="ajouterHoraire">Ajouter</button>
+      </div>
+
+      <div v-for="(j, i) in JOURS" :key="i">
+        <template v-if="data?.horaires.some(h => h.jour_semaine === i)">
+          <h3 class="mb-2 text-sm font-medium">{{ j }}</h3>
+          <ul class="mb-5 space-y-2">
+            <li
+              v-for="h in data.horaires.filter(h => h.jour_semaine === i)"
+              :key="h.id"
+              class="flex items-center justify-between gap-3 rounded-xl border px-4 py-2.5 text-sm"
+              :class="h.type === 'ouverture' ? 'border-emerald-600/30' : 'border-ink-200 dark:border-ink-800'"
+            >
+              <span>
+                <span class="font-medium">{{ h.type === 'ouverture' ? 'Ouverture' : 'Blocage' }}</span>
+                <span class="ml-3">{{ heureFr(h.heure_debut) }} – {{ heureFr(h.heure_fin) }}</span>
+                <span v-if="h.motif" class="ml-3 text-ink-500">{{ h.motif }}</span>
+              </span>
+              <button class="text-ink-400 underline-offset-4 hover:underline" :disabled="busy" @click="supprimerHoraire(h)">Supprimer</button>
+            </li>
+          </ul>
+        </template>
+      </div>
+    </section>
+
+    <!-- Fiche de demande -->
     <Teleport to="body">
       <div v-if="ouverte" class="fixed inset-0 z-[200] flex items-start justify-center overflow-y-auto bg-black/60 p-4 py-10" @click.self="ouverte = null">
         <div class="w-full max-w-2xl rounded-3xl border border-ink-200 bg-white p-8 dark:border-ink-800 dark:bg-ink-900">
           <h2 class="font-display text-2xl">{{ ouverte.prenom }} {{ ouverte.nom }}</h2>
           <p class="mt-1 text-sm text-ink-500">
             {{ ouverte.email }}<template v-if="ouverte.telephone"> · {{ ouverte.telephone }}</template>
+            <template v-if="ouverte.conservatoire"> · {{ ouverte.conservatoire }}</template>
           </p>
-          <div v-if="ouverte.presentation" class="mt-6">
+          <div v-if="ouverte.message" class="mt-6">
             <div class="text-[10px] font-bold uppercase tracking-widest text-ink-400">Sa demande</div>
-            <p class="mt-2 whitespace-pre-wrap text-sm leading-relaxed">{{ ouverte.presentation }}</p>
+            <p class="mt-2 whitespace-pre-wrap text-sm leading-relaxed">{{ ouverte.message }}</p>
           </div>
 
-          <label class="label mt-7">Message envoyé au candidat <span class="font-normal text-ink-400">({{ t('admin.optional') }})</span></label>
+          <label class="label mt-7">Message envoyé au professeur <span class="font-normal text-ink-400">({{ t('admin.optional') }})</span></label>
           <textarea v-model="reponse" rows="4" maxlength="4000" class="input resize-y" placeholder="Sans message, un texte par défaut est envoyé." />
 
           <p v-if="erreur" class="mt-3 text-sm text-red-600">{{ erreur }}</p>
@@ -345,7 +478,7 @@ async function basculerEleve(e: Eleve) {
             <button class="btn-ghost" :disabled="busy" @click="decider('refusee')">Refuser</button>
             <button class="btn-primary" :disabled="busy" @click="decider('acceptee')">
               <Icon v-if="busy" name="heroicons:arrow-path" class="mr-2 h-4 w-4 animate-spin" />
-              Accepter et inviter
+              Ouvrir l'accès
             </button>
           </div>
         </div>

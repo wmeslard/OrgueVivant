@@ -7,7 +7,7 @@
  * et données structurées), et la page est régénérée toutes les heures.
  */
 import type { SeancePublique } from '~/utils/moments'
-import { MOMENT_DEBUT, MOMENT_FIN } from '~/utils/moments'
+import { heureFr } from '~/utils/moments'
 import { venues } from '~/utils/venues'
 
 const { t, locale } = useI18n()
@@ -131,7 +131,7 @@ useSeoMeta({
             <dt class="mb-1.5 text-[10px] font-bold uppercase tracking-widest text-text-secondary">{{ t('moments.scheduleLabel') }}</dt>
             <dd class="flex items-start gap-2 text-sm text-text-primary">
               <Icon name="heroicons:clock" class="mt-0.5 h-4 w-4 shrink-0 text-gold" />
-              <span>{{ MOMENT_DEBUT.replace(':', ' h ') }} – {{ MOMENT_FIN.replace(':', ' h ') }} · {{ t('moments.free') }}</span>
+              <span>{{ t('moments.schedule') }} · {{ t('moments.free') }}</span>
             </dd>
           </div>
           <div>
@@ -165,7 +165,7 @@ useSeoMeta({
           <ul class="divide-y divide-white/5">
             <li v-for="s in groupe.liste" :key="s.id ?? s.date" class="flex flex-wrap items-baseline gap-x-5 gap-y-1 py-4">
               <span class="w-full text-sm font-medium text-text-primary sm:w-auto sm:min-w-[11rem]">{{ jourCourt(s.date) }}</span>
-              <span class="text-sm text-text-secondary">{{ s.debut.replace(':', ' h ') }}</span>
+              <span class="text-sm text-text-secondary">{{ heureFr(s.debut) }}</span>
               <span class="text-sm text-text-primary">{{ s.interprete }}</span>
               <span
                 v-if="s.type === 'eleve'"
@@ -186,11 +186,11 @@ useSeoMeta({
       <section class="mt-16 border-t border-white/5 pt-10">
         <div class="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
           <div>
-            <div class="text-sm font-medium text-text-primary">{{ t('moments.studentCta') }}</div>
-            <p class="mt-1 text-sm text-text-secondary">{{ t('moments.studentCtaText') }}</p>
+            <div class="text-sm font-medium text-text-primary">{{ t('moments.teacherCta') }}</div>
+            <p class="mt-1 text-sm text-text-secondary">{{ t('moments.teacherCtaText') }}</p>
           </div>
-          <NuxtLink :to="localePath('/moments-musicaux/espace')" class="btn-premium-secondary shrink-0">
-            {{ t('moments.studentCtaButton') }}
+          <NuxtLink :to="localePath('/moments-musicaux/professeurs')" class="btn-premium-secondary shrink-0">
+            {{ t('moments.teacherCtaButton') }}
           </NuxtLink>
         </div>
       </section>

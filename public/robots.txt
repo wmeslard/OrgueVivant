@@ -4,8 +4,6 @@ Disallow: /admin
 Disallow: /en/admin
 Disallow: /auth-setup
 Disallow: /en/auth-setup
-Disallow: /moments-musicaux/candidature
-Disallow: /en/moments-musicaux/candidature
 Disallow: /moments-musicaux/espace
 Disallow: /en/moments-musicaux/espace
 Disallow: /moments-musicaux/connexion

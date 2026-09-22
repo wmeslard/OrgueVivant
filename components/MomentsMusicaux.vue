@@ -8,7 +8,7 @@
  * `compact` : bandeau resserré pour la page d'accueil.
  */
 import type { SeancePublique } from '~/utils/moments'
-import { MOMENT_DEBUT, MOMENT_FIN } from '~/utils/moments'
+import { heureFr } from '~/utils/moments'
 
 withDefaults(defineProps<{ variant?: 'full' | 'compact' }>(), { variant: 'full' })
 
@@ -82,14 +82,14 @@ const pastilleDate = 'min-h-[1.5rem] text-base font-medium text-text-primary tra
         </span>
         <span :class="[pastilleDate, prochaineLabel ? 'opacity-100' : 'opacity-0']">
           {{ prochaineLabel || '—' }}
-          <template v-if="prochaine"> · {{ prochaine.interprete }}</template>
+          <template v-if="prochaine"> · {{ heureFr(prochaine.debut) }} · {{ prochaine.interprete }}</template>
         </span>
       </div>
 
       <div class="mt-8 flex flex-wrap items-center gap-x-8 gap-y-3 border-t border-white/5 pt-7 text-sm text-text-secondary">
         <span class="flex items-center gap-2">
           <Icon name="heroicons:clock" class="h-4 w-4 shrink-0 text-gold" />
-          {{ MOMENT_DEBUT.replace(':', ' h ') }} – {{ MOMENT_FIN.replace(':', ' h ') }}
+          {{ t('moments.schedule') }}
         </span>
         <span class="flex items-center gap-2">
           <Icon name="heroicons:map-pin" class="h-4 w-4 shrink-0 text-gold" />

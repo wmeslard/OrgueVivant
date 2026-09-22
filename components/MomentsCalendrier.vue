@@ -1,19 +1,29 @@
 <script setup lang="ts">
 /**
  * Grille mensuelle des Moments musicaux, du lundi au dimanche. Chaque jour
- * reçoit un état calculé par le parent (libre, pris, régulier, fermé…) ;
- * le composant ne fait qu'afficher et remonter le jour cliqué.
+ * porte le nombre de créneaux encore libres, ou la raison pour laquelle il
+ * n'en a pas ; le composant ne fait qu'afficher et remonter le jour cliqué.
  */
 import { parseYmd, ymd } from '~/utils/moments'
 
-export type EtatJour = 'libre' | 'mienne' | 'prise' | 'regulier' | 'fermee' | 'dimanche' | 'passe' | 'hors'
+export interface EtatJour {
+  /** Créneaux libres ce jour-là. */
+  libres: number
+  /** Élèves déjà inscrits, pour le point de couleur. */
+  pris: number
+  /** Un de mes élèves joue ce jour-là. */
+  mien: boolean
+  /** Rien à proposer : dimanche, messe, indisponibilité, date trop proche. */
+  indisponible: boolean
+}
 
 const props = defineProps<{
   /** Mois affiché, « YYYY-MM ». */
   mois: string
-  /** État de chaque jour du mois (« YYYY-MM-DD » → état) et libellé éventuel. */
-  jours: Record<string, { etat: EtatJour; libelle?: string }>
+  jours: Record<string, EtatJour>
   aujourdhui: string
+  /** Jour ouvert dans le panneau des créneaux. */
+  selection?: string
 }>()
 const emit = defineEmits<{ (e: 'choisir', date: string): void; (e: 'update:mois', mois: string): void }>()
 
@@ -50,15 +60,12 @@ function decaler(n: number) {
   emit('update:mois', ymd(d).slice(0, 7))
 }
 
-const classes: Record<EtatJour, string> = {
-  libre: 'cursor-pointer border-white/10 bg-white/[0.03] hover:border-gold hover:bg-gold/10',
-  mienne: 'cursor-pointer border-gold bg-gold/20 text-text-primary',
-  prise: 'border-white/5 bg-white/[0.02] text-text-secondary',
-  regulier: 'border-white/5 bg-white/[0.02] text-text-secondary',
-  fermee: 'border-transparent bg-red-500/10 text-text-secondary',
-  dimanche: 'border-transparent text-text-secondary/40',
-  passe: 'border-transparent text-text-secondary/40',
-  hors: 'border-transparent text-text-secondary/40'
+function classes(date: string) {
+  const j = props.jours[date]
+  if (!j || j.indisponible) return 'border-transparent text-text-secondary/40'
+  if (props.selection === date) return 'cursor-pointer border-gold bg-gold/20 text-text-primary'
+  if (j.libres) return 'cursor-pointer border-white/10 bg-white/[0.03] hover:border-gold hover:bg-gold/10'
+  return 'border-white/5 bg-white/[0.02] text-text-secondary'
 }
 </script>
 
@@ -82,13 +89,23 @@ const classes: Record<EtatJour, string> = {
         <button
           v-else
           type="button"
-          class="flex min-h-[64px] flex-col items-start rounded-xl border p-2 text-left text-sm transition"
-          :class="[classes[jours[c.date]?.etat ?? 'hors'], c.date === aujourdhui && 'ring-1 ring-gold/60']"
-          :disabled="!['libre', 'mienne'].includes(jours[c.date]?.etat ?? 'hors')"
+          class="flex min-h-[62px] flex-col items-start rounded-xl border p-2 text-left text-sm transition"
+          :class="[classes(c.date), c.date === aujourdhui && 'ring-1 ring-gold/60']"
+          :disabled="!jours[c.date] || jours[c.date].indisponible"
           @click="emit('choisir', c.date)"
         >
           <span class="font-medium">{{ c.num }}</span>
-          <span v-if="jours[c.date]?.libelle" class="mt-1 line-clamp-2 text-[11px] leading-tight">{{ jours[c.date]?.libelle }}</span>
+          <span v-if="jours[c.date]?.libres" class="mt-auto text-[10px] leading-tight text-gold">
+            {{ jours[c.date].libres }}
+          </span>
+          <span v-if="jours[c.date]?.pris" class="mt-0.5 flex gap-0.5">
+            <span
+              v-for="n in Math.min(jours[c.date].pris, 4)"
+              :key="n"
+              class="h-1 w-1 rounded-full"
+              :class="jours[c.date].mien ? 'bg-gold' : 'bg-white/30'"
+            />
+          </span>
         </button>
       </template>
     </div>

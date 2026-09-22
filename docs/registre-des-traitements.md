@@ -89,31 +89,37 @@ Pas de délégué à la protection des données (non requis).
 - **Départ d'un bénévole** : suppression de son compte administrateur.
 - **Nouveau traitement** (formulaire, outil, prestataire) : mise à jour de ce registre et de la politique de confidentialité avant mise en service.
 
-## Candidatures et séances des Moments musicaux
+## Moments musicaux : professeurs et élèves
 
-**Finalité** — permettre aux élèves organistes de candidater pour jouer lors des
-Moments musicaux, puis de réserver leurs dates ; publier le calendrier des
-séances sur le site et dans l'agenda.
+**Finalité** — permettre aux professeurs des conservatoires d'inscrire leurs
+élèves aux Moments musicaux, et publier le calendrier des séances sur le site
+et dans l'agenda.
 
 **Base légale** — intérêt légitime de l'association (organisation de son
-activité musicale) ; consentement explicite pour la publication du nom.
+activité musicale) ; consentement de l'élève, ou de ses parents s'il est
+mineur, pour la publication de son prénom, recueilli par le professeur qui
+l'atteste à l'inscription.
 
-**Données** — candidature : prénom, nom, email, téléphone (facultatif),
-demande libre, accord de publication. Élève accepté : compte (email), prénom,
-nom. Séance : date, programme annoncé.
+**Données** — demande d'accès d'un professeur : prénom, nom, email, téléphone
+(facultatif), conservatoire, message. Professeur validé : compte (email),
+prénom, nom, conservatoire, date de dernière connexion. Séance : date, heure,
+prénom et nom de l'élève, email de l'élève (facultatif), programme annoncé,
+professeur qui a inscrit.
+
+**Minimisation** — les élèves n'ont pas de compte. Leur nom complet et leur
+adresse ne servent qu'à l'organisation et ne sortent pas de l'administration.
 
 **Destinataires** — le bureau de l'association. Hébergement Supabase (Union
 européenne). Envois d'emails par Resend.
 
-**Publication** — seuls la date, le prénom, l'initiale du nom et le programme
-apparaissent publiquement (site et agenda ICS). Ni l'email, ni le téléphone, ni
-le nom complet ne sortent de l'administration.
+**Publication** — seuls la date, l'heure, le prénom, l'initiale du nom et le
+programme apparaissent publiquement (site et agenda ICS). Ni l'email, ni le nom
+complet, ni le professeur qui a inscrit l'élève.
 
-**Conservation** — candidatures refusées : six mois après la décision
-(suppression automatique). Candidatures acceptées et fiches élèves : le temps de
-la participation, puis suppression sur demande. Séances passées : conservées
-comme archive de la programmation.
+**Conservation** — demandes refusées : six mois après la décision (suppression
+automatique). Professeurs : le temps de la collaboration, puis suppression sur
+demande. Séances passées : conservées comme archive de la programmation.
 
 **Droits** — accès, rectification, effacement, opposition : contact@orguevivant.fr.
-La suppression d'une candidature et la désactivation d'un élève se font depuis
+La suppression d'une demande et la désactivation d'un professeur se font depuis
 l'administration.

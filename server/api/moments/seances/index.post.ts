@@ -1,66 +1,94 @@
 import { getServiceClient } from '~/server/utils/superAdminClient'
 import { revalidatePublicPages } from '~/server/utils/revalidate'
 import {
-  adresseAssociation, aujourdhuiParis, chargerFermetures, chargerSeances, dateLongue, envoyerEmail, escapeHtml, paragraphe, requireEleve
+  adresseAssociation, aujourdhuiParis, chargerFermetures, chargerHoraires, chargerSeances,
+  envoyerEmail, escapeHtml, paragraphe, quand, requireProfesseur
 } from '~/server/utils/moments'
-import { HORIZON_MOIS, MAX_SEANCES_A_VENIR, MOMENT_DEBUT, MOMENT_FIN, plusMois, raisonNonReservable } from '~/utils/moments'
+import { finCreneau, HORIZON_MOIS, nomPublic, plusMois, raisonNonReservable } from '~/utils/moments'
 
 const MESSAGES: Record<string, string> = {
   passe: 'Cette date est passée.',
-  trop_tot: 'Réservez au moins deux jours à l\'avance.',
-  trop_loin: `Les réservations sont ouvertes sur ${HORIZON_MOIS} mois.`,
-  dimanche: 'Pas de séance le dimanche.',
-  regulier: 'Ce jeudi est celui de l\'organiste régulier.',
-  fermee: 'L\'orgue est indisponible à cette date.',
-  prise: 'Cette date est déjà réservée.'
+  trop_tot: 'Inscrivez votre élève au moins deux jours à l\'avance.',
+  trop_loin: `Les inscriptions sont ouvertes sur ${HORIZON_MOIS} mois.`,
+  ferme: 'L\'orgue est indisponible à cette date.',
+  hors_creneau: 'Ce créneau n\'est pas proposé ce jour-là.',
+  regulier: 'Ce créneau est celui de Louis-Paul Courtois.',
+  pris: 'Ce créneau vient d\'être pris.'
 }
 
-/** Réservation d'une séance par l'élève connecté (mode « réservation directe »). */
+/** Inscription d'un élève sur un créneau, par son professeur. */
 export default defineEventHandler(async (event) => {
-  const eleve = await requireEleve(event)
-  const body = await readBody<{ date?: string; programme?: string }>(event)
+  const prof = await requireProfesseur(event)
+  const body = await readBody<{
+    date?: string; heure_debut?: string
+    eleve_prenom?: string; eleve_nom?: string; eleve_email?: string
+    programme?: string
+  }>(event)
+
   const date = String(body?.date ?? '')
+  const debut = String(body?.heure_debut ?? '')
   if (!/^\d{4}-\d{2}-\d{2}$/.test(date)) throw createError({ statusCode: 400, statusMessage: 'Date invalide' })
-  const programme = typeof body?.programme === 'string' ? body.programme.trim().slice(0, 600) : ''
+  if (!/^\d{2}:\d{2}$/.test(debut)) throw createError({ statusCode: 400, statusMessage: 'Créneau invalide' })
+
+  const elevePrenom = (body?.eleve_prenom ?? '').trim().slice(0, 80)
+  const eleveNom = (body?.eleve_nom ?? '').trim().slice(0, 80)
+  if (!elevePrenom || !eleveNom) throw createError({ statusCode: 400, statusMessage: 'Prénom et nom de l\'élève requis' })
+  const eleveEmail = (body?.eleve_email ?? '').trim().slice(0, 254)
+  if (eleveEmail && !/^\S+@\S+\.\S+$/.test(eleveEmail)) throw createError({ statusCode: 400, statusMessage: 'Email de l\'élève invalide' })
+  const programme = (body?.programme ?? '').trim().slice(0, 600)
 
   const client = getServiceClient()
   const aujourdhui = aujourdhuiParis()
   const au = plusMois(aujourdhui, HORIZON_MOIS)
-  const [fermetures, actives] = await Promise.all([chargerFermetures(client, aujourdhui, au), chargerSeances(client, aujourdhui, au)])
-
-  const raison = raisonNonReservable(date, { aujourdhui, fermetures, datesPrises: new Set(actives.map(s => s.date)) })
+  const [horaires, fermetures, actives] = await Promise.all([
+    chargerHoraires(client), chargerFermetures(client, aujourdhui, au), chargerSeances(client, aujourdhui, au)
+  ])
+  const pris = actives.map(s => ({ date: s.date, heure_debut: s.heure_debut.slice(0, 5), interprete: '' }))
+  const raison = raisonNonReservable(date, debut, { aujourdhui, horaires, fermetures, pris })
   if (raison) throw createError({ statusCode: 409, statusMessage: MESSAGES[raison] })
-  if (actives.filter(s => s.eleve_id === eleve.id).length >= MAX_SEANCES_A_VENIR)
-    throw createError({ statusCode: 409, statusMessage: `Vous avez déjà ${MAX_SEANCES_A_VENIR} séances à venir : annulez-en une pour en réserver une autre.` })
 
-  const { data, error } = await client
-    .from('moments_seances')
-    .insert({ date, eleve_id: eleve.id, programme: programme || null })
-    .select()
-    .single()
-  // L'index unique tranche les réservations simultanées sur la même date.
-  if (error?.code === '23505') throw createError({ statusCode: 409, statusMessage: MESSAGES.prise })
+  const fin = finCreneau(debut)
+  const { data, error } = await client.from('moments_seances').insert({
+    date, heure_debut: debut, heure_fin: fin, professeur_id: prof.id,
+    eleve_prenom: elevePrenom, eleve_nom: eleveNom, eleve_email: eleveEmail || null,
+    programme: programme || null
+  }).select().single()
+  // L'index unique tranche deux inscriptions simultanées sur le même créneau.
+  if (error?.code === '23505') throw createError({ statusCode: 409, statusMessage: MESSAGES.pris })
   if (error) throw createError({ statusCode: 500, statusMessage: error.message })
 
-  const quand = `${dateLongue(date)}, de ${MOMENT_DEBUT.replace(':', ' h ')} à ${MOMENT_FIN.replace(':', ' h ')}`
+  const moment = quand(date, debut, fin)
+  const eleve = `${elevePrenom} ${eleveNom}`
   await Promise.all([
     envoyerEmail({
-      to: eleve.email,
-      subject: `Votre Moment musical du ${dateLongue(date)}`,
+      to: prof.email,
+      subject: `${eleve} jouera le ${moment.split(',')[0]}`,
       html: `
-        <h2 style="font-weight:300;font-size:22px;margin:0 0 16px">Séance réservée</h2>
-        <p>Bonjour ${escapeHtml(eleve.prenom)},</p>
-        <p>Votre séance est confirmée : <strong>${escapeHtml(quand)}</strong>, à l'orgue de chœur de l'église Saint-Maurice de Lille.</p>
+        <h2 style="font-weight:300;font-size:22px;margin:0 0 16px">Inscription confirmée</h2>
+        <p>Bonjour ${escapeHtml(prof.prenom)},</p>
+        <p><strong>${escapeHtml(eleve)}</strong> est inscrit·e le <strong>${escapeHtml(moment)}</strong>, à l'orgue de chœur de l'église Saint-Maurice de Lille.</p>
         ${programme ? `<p><strong>Programme annoncé</strong></p>${paragraphe(programme)}` : ''}
-        <p>Vous pouvez modifier le programme ou annuler la séance depuis votre espace jusqu'à 48 h avant. Au-delà, écrivez-nous à ${escapeHtml(adresseAssociation())}.</p>
+        <p>Le site annonce la séance au nom de « ${escapeHtml(nomPublic(elevePrenom, eleveNom))} ». Vous pouvez modifier le programme ou annuler depuis votre espace jusqu'à 48 h avant.</p>
+        <p>À bientôt,<br>l'équipe d'Orgue Vivant</p>`
+    }),
+    eleveEmail && envoyerEmail({
+      to: eleveEmail,
+      subject: `Votre Moment musical du ${moment.split(',')[0]}`,
+      html: `
+        <h2 style="font-weight:300;font-size:22px;margin:0 0 16px">À vous de jouer !</h2>
+        <p>Bonjour ${escapeHtml(elevePrenom)},</p>
+        <p>${escapeHtml(prof.prenom)} ${escapeHtml(prof.nom)} vous a inscrit·e pour un Moment musical : <strong>${escapeHtml(moment)}</strong>, à l'orgue de chœur de l'église Saint-Maurice de Lille.</p>
+        ${programme ? `<p><strong>Programme annoncé</strong></p>${paragraphe(programme)}` : ''}
+        <p>Une demi-heure de musique, en entrée libre : le public entre et sort comme il veut. Pour toute question, adressez-vous à votre professeur ou à ${escapeHtml(adresseAssociation())}.</p>
         <p>À bientôt,<br>l'équipe d'Orgue Vivant</p>`
     }),
     envoyerEmail({
       to: adresseAssociation(),
-      subject: `[Moments musicaux] ${eleve.prenom} ${eleve.nom} — ${dateLongue(date)}`,
+      subject: `[Moments musicaux] ${eleve} — ${moment.split(',')[0]}`,
       html: `
-        <h2 style="font-weight:300;font-size:22px;margin:0 0 16px">Nouvelle réservation</h2>
-        <p><strong>${escapeHtml(eleve.prenom)} ${escapeHtml(eleve.nom)}</strong> (${escapeHtml(eleve.email)}) jouera le <strong>${escapeHtml(quand)}</strong>.</p>
+        <h2 style="font-weight:300;font-size:22px;margin:0 0 16px">Nouvelle inscription</h2>
+        <p><strong>${escapeHtml(eleve)}</strong> jouera le <strong>${escapeHtml(moment)}</strong>.</p>
+        <p>Inscrit·e par ${escapeHtml(prof.prenom)} ${escapeHtml(prof.nom)} (${escapeHtml(prof.email)}).</p>
         ${programme ? `<p><strong>Programme</strong></p>${paragraphe(programme)}` : ''}`
     }),
     revalidatePublicPages()
