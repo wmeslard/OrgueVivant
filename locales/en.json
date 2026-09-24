@@ -352,14 +352,21 @@
     "showMore": "Show later Thursdays",
     "forMe": "I'm playing",
     "forStudent": "I'm signing up a student",
-    "youPlay": "You play",
     "detailsMe": "+ Programme (optional)",
     "detailsStudent": "+ Programme and student's email (optional)",
     "consentMe": "I agree that my first name and the initial of my last name appear on the site. If I am under 18, a parent agrees.",
     "confirmMe": "Sign me up",
     "confirmStudent": "Sign up {prenom}",
     "bookedMe": "You are signed up for {date}.",
-    "bookedStudent": "{nom} is signed up for {date}."
+    "bookedStudent": "{nom} is signed up for {date}.",
+    "studentNameHintEmpty": "The site will show the first name and last initial.",
+    "yourFirstName": "Your first name",
+    "yourLastName": "Your last name",
+    "yourEmail": "Your email",
+    "yourEmailHint": "The confirmation will be sent to this address.",
+    "editProfile": "Edit my details",
+    "profileTitle": "My details",
+    "profileSaved": "Details saved."
   },
   "momentsAcces": {
     "title": "Musical Moments",

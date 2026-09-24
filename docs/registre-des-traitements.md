@@ -134,4 +134,6 @@ suppression sur demande. Séances passées : conservées comme archive de la
 programmation.
 
 **Droits** — accès, rectification, effacement, opposition : contact@orguevivant.fr.
-La désactivation d'un professeur se fait depuis l'administration.
+Chacun corrige ses coordonnées depuis son espace (« Modifier mes informations ») ;
+l'administration les corrige, désactive un professeur, ou le supprime avec
+toutes ses séances.

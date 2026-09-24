@@ -30,7 +30,7 @@ const toutVoir = ref(false)
  * inscription personnelle) : d'un seul tenant, elle passe entière à la ligne
  * plutôt que de se couper.
  */
-const PASTILLE = 'ml-2 inline-block whitespace-nowrap rounded-full border border-gold/40 px-2.5 py-0.5 align-middle text-[11px] font-medium uppercase tracking-wider text-gold'
+const PASTILLE = 'ml-2 inline-block whitespace-nowrap rounded-full border border-gold/30 px-[7px] align-[1px] text-[10px] font-medium uppercase leading-4 tracking-[0.08em] text-gold'
 const horaire = `${heureFr(CRENEAU_REGULIER)} – ${heureFr(finCreneau(CRENEAU_REGULIER))}`
 
 /** Séances groupées par mois, pour aérer la suite du programme. */

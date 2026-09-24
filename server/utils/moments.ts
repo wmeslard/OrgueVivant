@@ -4,6 +4,7 @@ import type { H3Event } from 'h3'
 import type { SupabaseClient } from '@supabase/supabase-js'
 import { getServiceClient } from '~/server/utils/superAdminClient'
 import { senderAddress } from '~/server/utils/sender'
+import { revalidatePublicPages } from '~/server/utils/revalidate'
 import {
   CRENEAU_REGULIER, HORIZON_MOIS, ORGANISTE_REGULIER, type Horaire, type SeancePublique,
   creneauPossible, finCreneau, heureFr, nomPublic, parseYmd, plusMois, seanceReguliere, ymd
@@ -130,6 +131,39 @@ export async function requireProfesseur(event: H3Event): Promise<Professeur> {
 /** Trace de passage, relevée à l'ouverture de l'espace : l'administration voit qui se sert de l'outil. */
 export async function marquerConnexion(client: SupabaseClient, id: string) {
   await client.from('moments_professeurs').update({ derniere_connexion_at: new Date().toISOString() }).eq('id', id)
+}
+
+/** Champ texte d'un formulaire, nettoyé et borné. */
+export function champ(v: unknown, max: number): string {
+  return typeof v === 'string' ? v.trim().slice(0, max) : ''
+}
+
+/**
+ * Coordonnées d'un professeur, corrigées par lui-même ou par l'administration.
+ * Son nom suit sur ses séances à venir où il joue lui-même, que le site
+ * annonce à ce nom.
+ */
+export async function modifierProfesseur(client: SupabaseClient, ancien: Professeur, body: Record<string, unknown>) {
+  const prenom = champ(body.prenom, 80)
+  const nom = champ(body.nom, 80)
+  const email = champ(body.email, 254).toLowerCase()
+  const conservatoire = champ(body.conservatoire, 160)
+  if (!prenom || !nom || !email) throw createError({ statusCode: 400, statusMessage: 'Prénom, nom et email requis' })
+  if (!/^\S+@\S+\.\S+$/.test(email)) throw createError({ statusCode: 400, statusMessage: 'Email invalide' })
+
+  const { error } = await client.from('moments_professeurs')
+    .update({ prenom, nom, email, conservatoire: conservatoire || null }).eq('id', ancien.id)
+  if (error?.code === '23505') throw createError({ statusCode: 409, statusMessage: 'Cette adresse email est déjà celle d\'une autre fiche.' })
+  if (error) throw createError({ statusCode: 500, statusMessage: error.message })
+
+  if (prenom === ancien.prenom && nom === ancien.nom) return
+  const { data, error: e } = await client.from('moments_seances')
+    .update({ eleve_prenom: prenom, eleve_nom: nom })
+    .eq('professeur_id', ancien.id).eq('pour_soi', true).eq('statut', 'reservee').gte('date', aujourdhuiParis())
+    .select('id')
+  // Colonne pour_soi absente : aucune inscription personnelle à renommer.
+  if (e && !schemaAbsent(e)) throw createError({ statusCode: 500, statusMessage: e.message })
+  if (data?.length) await revalidatePublicPages()
 }
 
 /**

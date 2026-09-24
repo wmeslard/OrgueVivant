@@ -72,9 +72,16 @@ const form = reactive({ pourSoi: false, eleve_prenom: '', eleve_nom: '', eleve_e
 const envoi = ref(false)
 const erreur = ref('')
 
-const apercu = computed(() => form.pourSoi
-  ? nomPublic(espace.value?.professeur.prenom ?? '', espace.value?.professeur.nom ?? '')
-  : form.eleve_prenom ? nomPublic(form.eleve_prenom, form.eleve_nom) : '—')
+const apercuSoi = computed(() =>
+  t('momentsEspace.studentNameHint', { nom: nomPublic(espace.value?.professeur.prenom ?? '', espace.value?.professeur.nom ?? '') }))
+const apercuEleve = computed(() => form.eleve_prenom.trim()
+  ? t('momentsEspace.studentNameHint', { nom: nomPublic(form.eleve_prenom, form.eleve_nom) })
+  : t('momentsEspace.studentNameHintEmpty'))
+
+/** Classes d'un des deux modes superposés : celui qui n'est pas choisi garde sa place, invisible. */
+const couche = (visible: boolean) => ['col-start-1 row-start-1', visible ? '' : 'invisible']
+/** Valeur affichée à la place d'un champ, en mode « je joue moi-même ». */
+const VALEUR = 'truncate rounded-xl border border-transparent bg-white/5 px-4 py-3 text-base text-text-primary'
 
 function ouvrir(j: Jeudi) {
   if (!j.creneau) return
@@ -146,6 +153,34 @@ async function annuler(s: { id: string }) {
   } finally { busy.value = false }
 }
 
+// ── Mes informations ─────────────────────────────────────────────────────────
+const profil = ref<{ prenom: string; nom: string; email: string; conservatoire: string } | null>(null)
+const erreurProfil = ref('')
+
+function ouvrirProfil() {
+  const p = espace.value?.professeur
+  if (!p) return
+  profil.value = { prenom: p.prenom, nom: p.nom, email: p.email, conservatoire: p.conservatoire ?? '' }
+  erreurProfil.value = ''
+}
+
+async function enregistrerProfil() {
+  const p = profil.value
+  if (!p) return
+  erreurProfil.value = ''
+  if (!p.prenom.trim() || !p.nom.trim() || !p.email.trim()) { erreurProfil.value = t('momentsAcces.errorRequired'); return }
+  if (!/^\S+@\S+\.\S+$/.test(p.email.trim())) { erreurProfil.value = t('momentsAcces.errorEmail'); return }
+  busy.value = true
+  try {
+    await $fetch('/api/moments/profil', { method: 'PATCH', body: p })
+    profil.value = null
+    await charger(true)
+    showToast(t('momentsEspace.profileSaved'), { type: 'success' })
+  } catch (e: any) {
+    erreurProfil.value = e?.data?.statusMessage || t('momentsAcces.errorGeneric')
+  } finally { busy.value = false }
+}
+
 async function logout() {
   await quitter()
   await navigateTo(localePath('/moments-musicaux'))
@@ -159,7 +194,8 @@ async function logout() {
         <div class="text-xs font-bold uppercase tracking-[0.3em] text-gold">{{ t('moments.eyebrow') }}</div>
         <h1 class="heading-section mt-3 text-text-primary">{{ t('momentsEspace.dashboardTitle') }}</h1>
         <p v-if="espace" class="mt-2 text-sm text-text-secondary">
-          {{ espace.professeur.prenom }} {{ espace.professeur.nom }} · {{ t('moments.place') }}
+          {{ espace.professeur.prenom }} {{ espace.professeur.nom }} ·
+          <button class="text-gold underline-offset-4 hover:underline" @click="ouvrirProfil">{{ t('momentsEspace.editProfile') }}</button>
         </p>
       </div>
       <button class="text-sm text-text-secondary underline-offset-4 transition-colors hover:text-text-primary hover:underline" @click="logout">
@@ -250,68 +286,90 @@ async function logout() {
         @click.self="fiche = null"
       >
         <div class="flex max-h-[92vh] w-full flex-col rounded-t-3xl border border-white/10 bg-surface sm:max-w-md sm:rounded-3xl">
-          <div class="overflow-y-auto px-6 pt-3 sm:pt-6">
-            <div class="mx-auto mb-4 h-1 w-10 rounded-full bg-white/20 sm:hidden" />
+          <div class="overflow-y-auto px-6 pb-7 pt-3 sm:pt-7">
+            <div class="mx-auto mb-5 h-1 w-10 rounded-full bg-white/20 sm:hidden" />
             <div class="text-[10px] font-bold uppercase tracking-[0.25em] text-gold">
               {{ jourLong(fiche.date) }} · {{ heureFr(fiche.heure) }}
             </div>
 
             <!-- Qui joue ? -->
-            <div class="mt-4 grid grid-cols-2 gap-1.5 rounded-2xl bg-white/5 p-1 text-sm">
+            <div class="mt-5 grid grid-cols-2 gap-1.5 rounded-2xl bg-white/5 p-1 text-sm">
               <button
                 v-for="c in [{ soi: true, label: t('momentsEspace.forMe') }, { soi: false, label: t('momentsEspace.forStudent') }]"
                 :key="String(c.soi)"
                 type="button"
-                class="rounded-xl px-2 py-2.5 transition"
-                :class="form.pourSoi === c.soi ? 'border border-gold/40 bg-background text-text-primary' : 'text-text-secondary'"
+                class="rounded-xl border px-2 py-2.5 transition"
+                :class="form.pourSoi === c.soi ? 'border-gold/40 bg-background text-text-primary' : 'border-transparent text-text-secondary'"
                 @click="choisir(c.soi)"
               >
                 {{ c.label }}
               </button>
             </div>
 
-            <div v-if="form.pourSoi" class="mt-4 rounded-2xl border border-white/10 px-4 py-3">
-              <div class="text-xs text-text-secondary">{{ t('momentsEspace.youPlay') }}</div>
-              <div class="text-base text-text-primary">{{ espace.professeur.prenom }} {{ espace.professeur.nom }}</div>
-              <div class="mt-0.5 text-xs text-text-secondary">{{ t('momentsEspace.studentNameHint', { nom: apercu }) }}</div>
+            <!--
+              Ce qui diffère d'un mode à l'autre est superposé, l'un des deux
+              invisible : le panneau garde sa hauteur quand on change de mode.
+            -->
+            <div class="mt-6 grid">
+              <div :class="couche(!form.pourSoi)">
+                <label class="label" for="ep">{{ t('momentsEspace.studentFirstName') }}</label>
+                <input id="ep" v-model="form.eleve_prenom" maxlength="80" class="input text-base" autocapitalize="words" autocomplete="off">
+                <label class="label mt-5" for="en">{{ t('momentsEspace.studentLastName') }}</label>
+                <input id="en" v-model="form.eleve_nom" maxlength="80" class="input text-base" autocapitalize="words" autocomplete="off">
+                <p class="mt-2 text-xs text-text-secondary">{{ apercuEleve }}</p>
+              </div>
+              <div :class="couche(form.pourSoi)">
+                <div class="label">{{ t('momentsEspace.yourFirstName') }}</div>
+                <div :class="VALEUR">{{ espace.professeur.prenom }}</div>
+                <div class="label mt-5">{{ t('momentsEspace.yourLastName') }}</div>
+                <div :class="VALEUR">{{ espace.professeur.nom }}</div>
+                <p class="mt-2 text-xs text-text-secondary">
+                  {{ apercuSoi }}
+                  <button type="button" class="text-gold underline-offset-4 hover:underline" @click="ouvrirProfil">{{ t('momentsEspace.editProfile') }}</button>
+                </p>
+              </div>
             </div>
-            <template v-else>
-              <label class="label mt-4" for="ep">{{ t('momentsEspace.studentFirstName') }}</label>
-              <input id="ep" v-model="form.eleve_prenom" maxlength="80" class="input text-base" autocapitalize="words" autocomplete="off">
-              <label class="label mt-3" for="en">{{ t('momentsEspace.studentLastName') }}</label>
-              <input id="en" v-model="form.eleve_nom" maxlength="80" class="input text-base" autocapitalize="words" autocomplete="off">
-              <p class="mt-1.5 text-xs text-text-secondary">{{ t('momentsEspace.studentNameHint', { nom: apercu }) }}</p>
-            </template>
 
             <!-- Détails facultatifs, repliés -->
-            <button v-if="!form.details" type="button" class="mt-4 text-sm text-gold" @click="form.details = true">
-              {{ form.pourSoi ? t('momentsEspace.detailsMe') : t('momentsEspace.detailsStudent') }}
+            <button v-if="!form.details" type="button" class="mt-6 grid text-left text-sm text-gold" @click="form.details = true">
+              <span :class="couche(form.pourSoi)">{{ t('momentsEspace.detailsMe') }}</span>
+              <span :class="couche(!form.pourSoi)">{{ t('momentsEspace.detailsStudent') }}</span>
             </button>
             <template v-else>
-              <label class="label mt-4" for="prog">
+              <label class="label mt-6" for="prog">
                 {{ t('momentsEspace.programme') }}
                 <span class="ml-1 font-normal text-text-secondary">({{ t('momentsAcces.optional') }})</span>
               </label>
               <textarea id="prog" v-model="form.programme" rows="2" maxlength="600" class="input resize-y text-base" />
-              <template v-if="!form.pourSoi">
-                <label class="label mt-3" for="ee">
-                  {{ t('momentsEspace.studentEmail') }}
-                  <span class="ml-1 font-normal text-text-secondary">({{ t('momentsAcces.optional') }})</span>
-                </label>
-                <input id="ee" v-model="form.eleve_email" type="email" inputmode="email" maxlength="254" class="input text-base" autocomplete="off">
-                <p class="mt-1.5 text-xs text-text-secondary">{{ t('momentsEspace.studentEmailHint') }}</p>
-              </template>
+              <div class="mt-5 grid">
+                <div :class="couche(!form.pourSoi)">
+                  <label class="label" for="ee">
+                    {{ t('momentsEspace.studentEmail') }}
+                    <span class="ml-1 font-normal text-text-secondary">({{ t('momentsAcces.optional') }})</span>
+                  </label>
+                  <input id="ee" v-model="form.eleve_email" type="email" inputmode="email" maxlength="254" class="input text-base" autocomplete="off">
+                  <p class="mt-2 text-xs text-text-secondary">{{ t('momentsEspace.studentEmailHint') }}</p>
+                </div>
+                <div :class="couche(form.pourSoi)">
+                  <div class="label">{{ t('momentsEspace.yourEmail') }}</div>
+                  <div :class="VALEUR">{{ espace.professeur.email }}</div>
+                  <p class="mt-2 text-xs text-text-secondary">{{ t('momentsEspace.yourEmailHint') }}</p>
+                </div>
+              </div>
             </template>
 
-            <label class="mt-5 flex cursor-pointer items-start gap-3 text-sm text-text-secondary">
+            <label class="mt-7 flex cursor-pointer items-start gap-3 text-sm leading-relaxed text-text-secondary">
               <input v-model="form.consentement" type="checkbox" class="mt-0.5 h-5 w-5 shrink-0 accent-gold">
-              <span>{{ form.pourSoi ? t('momentsEspace.consentMe') : t('momentsEspace.consent') }}</span>
+              <span class="grid">
+                <span :class="couche(form.pourSoi)">{{ t('momentsEspace.consentMe') }}</span>
+                <span :class="couche(!form.pourSoi)">{{ t('momentsEspace.consent') }}</span>
+              </span>
             </label>
-            <p v-if="erreur" class="mt-3 text-sm text-red-400">{{ erreur }}</p>
+            <p v-if="erreur" class="mt-4 text-sm text-red-400">{{ erreur }}</p>
           </div>
 
           <!-- Bouton toujours visible en bas du panneau -->
-          <div class="flex gap-3 border-t border-white/5 px-6 pb-6 pt-4">
+          <div class="flex gap-3 border-t border-white/10 px-6 pb-6 pt-4">
             <button type="button" class="rounded-full px-4 py-3 text-sm text-text-secondary" @click="fiche = null">{{ t('momentsEspace.cancel') }}</button>
             <button
               type="button"
@@ -350,6 +408,45 @@ async function logout() {
               class="flex flex-1 items-center justify-center gap-2 rounded-full bg-gold px-5 py-3 text-[15px] font-medium text-background transition hover:bg-gold-light disabled:opacity-60"
               :disabled="busy"
               @click="enregistrer"
+            >
+              <Icon v-if="busy" name="heroicons:arrow-path" class="h-4 w-4 animate-spin" />
+              {{ t('momentsEspace.save') }}
+            </button>
+          </div>
+        </div>
+      </div>
+    </Teleport>
+
+    <!-- Mes informations : ouvert depuis l'en-tête ou le panneau d'inscription -->
+    <Teleport to="body">
+      <div
+        v-if="profil"
+        class="fixed inset-0 z-[210] flex items-end justify-center bg-black/70 sm:items-center sm:p-4"
+        @click.self="profil = null"
+      >
+        <div class="max-h-[92vh] w-full overflow-y-auto rounded-t-3xl border border-white/10 bg-surface px-6 pb-6 pt-3 sm:max-w-md sm:rounded-3xl sm:pt-7">
+          <div class="mx-auto mb-5 h-1 w-10 rounded-full bg-white/20 sm:hidden" />
+          <h2 class="font-display text-2xl font-light text-text-primary">{{ t('momentsEspace.profileTitle') }}</h2>
+          <label class="label mt-6" for="pp">{{ t('momentsAcces.firstName') }}</label>
+          <input id="pp" v-model="profil.prenom" maxlength="80" class="input text-base" autocomplete="given-name">
+          <label class="label mt-5" for="pn">{{ t('momentsAcces.lastName') }}</label>
+          <input id="pn" v-model="profil.nom" maxlength="80" class="input text-base" autocomplete="family-name">
+          <label class="label mt-5" for="pe">{{ t('momentsAcces.email') }}</label>
+          <input id="pe" v-model="profil.email" type="email" inputmode="email" maxlength="254" class="input text-base" autocomplete="email">
+          <p class="mt-2 text-xs text-text-secondary">{{ t('momentsAcces.emailHint') }}</p>
+          <label class="label mt-5" for="pc">
+            {{ t('momentsAcces.school') }}
+            <span class="ml-1 font-normal text-text-secondary">({{ t('momentsAcces.optional') }})</span>
+          </label>
+          <input id="pc" v-model="profil.conservatoire" maxlength="160" class="input text-base">
+          <p v-if="erreurProfil" class="mt-4 text-sm text-red-400">{{ erreurProfil }}</p>
+          <div class="mt-7 flex gap-3">
+            <button type="button" class="rounded-full px-4 py-3 text-sm text-text-secondary" @click="profil = null">{{ t('momentsEspace.cancel') }}</button>
+            <button
+              type="button"
+              class="flex flex-1 items-center justify-center gap-2 rounded-full bg-gold px-5 py-3 text-[15px] font-medium text-background transition hover:bg-gold-light disabled:opacity-60"
+              :disabled="busy"
+              @click="enregistrerProfil"
             >
               <Icon v-if="busy" name="heroicons:arrow-path" class="h-4 w-4 animate-spin" />
               {{ t('momentsEspace.save') }}

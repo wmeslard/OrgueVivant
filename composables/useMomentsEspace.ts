@@ -17,7 +17,7 @@ export interface SeanceProf {
 export interface EspaceProfesseur {
   aujourdhui: string
   horizon: string
-  professeur: { prenom: string; nom: string; email: string }
+  professeur: { prenom: string; nom: string; email: string; conservatoire: string | null }
   /** Règles d'ouverture de l'orgue, par défaut et temporaires. */
   horaires: Horaire[]
   /** Créneaux déjà pris, tous professeurs confondus. */

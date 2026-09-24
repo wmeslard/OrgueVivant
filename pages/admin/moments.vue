@@ -124,6 +124,29 @@ async function basculerProf(p: Professeur) {
 function seancesDe(id: string) {
   return (data.value?.seances ?? []).filter(s => s.professeur_id === id && s.statut === 'reservee').length
 }
+function seancesAVenirDe(id: string) {
+  return seancesAVenir.value.filter(s => s.professeur_id === id).length
+}
+
+const fiche = ref<{ id: string; prenom: string; nom: string; email: string; conservatoire: string } | null>(null)
+function modifierProf(p: Professeur) {
+  fiche.value = { id: p.id, prenom: p.prenom, nom: p.nom, email: p.email, conservatoire: p.conservatoire ?? '' }
+}
+async function enregistrerProf() {
+  const f = fiche.value
+  if (!f) return
+  await action(() => $fetch(`/api/admin/moments/professeurs/${f.id}`, {
+    method: 'PATCH', body: { prenom: f.prenom, nom: f.nom, email: f.email, conservatoire: f.conservatoire }
+  }), 'Fiche enregistrée.')
+  if (!erreur.value) fiche.value = null
+}
+async function supprimerProf(p: Professeur) {
+  const n = seancesAVenirDe(p.id)
+  if (!confirm(`Supprimer définitivement ${p.prenom} ${p.nom} ?\n\n`
+    + `Sa fiche et toutes ses séances sont effacées${n ? `, dont ${n} à venir, retirée(s) du site sans prévenir les élèves` : ''}. `
+    + 'Avec le lien, cette personne pourra revenir sous une nouvelle fiche : pour lui couper l\'accès, désactivez-la plutôt.')) return
+  await action(() => $fetch(`/api/admin/moments/professeurs/${p.id}`, { method: 'DELETE' }), 'Professeur supprimé.')
+}
 </script>
 
 <template>
@@ -212,21 +235,49 @@ function seancesDe(id: string) {
     <section v-else-if="onglet === 'professeurs' && data">
       <p v-if="!data?.professeurs.length" class="text-sm text-ink-500">Aucun professeur pour le moment : ils apparaissent ici dès qu'ils ouvrent le lien.</p>
       <ul v-else class="space-y-2">
-        <li v-for="p in data.professeurs" :key="p.id" class="flex flex-wrap items-start justify-between gap-3 rounded-xl border border-ink-200 px-4 py-3 text-sm dark:border-ink-800">
-          <div>
+        <li v-for="p in data.professeurs" :key="p.id" class="rounded-xl border border-ink-200 px-4 py-3 text-sm dark:border-ink-800">
+          <form v-if="fiche?.id === p.id" class="grid gap-3 py-1 sm:grid-cols-2" @submit.prevent="enregistrerProf">
             <div>
-              <span class="font-medium">{{ p.prenom }} {{ p.nom }}</span>
-              <span class="ml-3 text-ink-500">{{ p.email }}</span>
-              <span v-if="!p.actif" class="ml-3 text-ink-400">désactivé</span>
+              <label class="label" :for="`pp-${p.id}`">Prénom</label>
+              <input :id="`pp-${p.id}`" v-model="fiche.prenom" required maxlength="80" class="input">
             </div>
-            <div class="mt-1 text-ink-500">
-              <template v-if="p.conservatoire">{{ p.conservatoire }} · </template>
-              {{ seancesDe(p.id) }} séance(s) · dernière visite : {{ quandCourt(p.derniere_connexion_at) }}
+            <div>
+              <label class="label" :for="`pn-${p.id}`">Nom</label>
+              <input :id="`pn-${p.id}`" v-model="fiche.nom" required maxlength="80" class="input">
+            </div>
+            <div>
+              <label class="label" :for="`pe-${p.id}`">Email</label>
+              <input :id="`pe-${p.id}`" v-model="fiche.email" type="email" required maxlength="254" class="input">
+            </div>
+            <div>
+              <label class="label" :for="`pc-${p.id}`">Conservatoire <span class="font-normal text-ink-400">(facultatif)</span></label>
+              <input :id="`pc-${p.id}`" v-model="fiche.conservatoire" maxlength="160" class="input">
+            </div>
+            <div class="flex gap-3 sm:col-span-2">
+              <button type="submit" class="btn-primary" :disabled="busy">Enregistrer</button>
+              <button type="button" class="btn-ghost" @click="fiche = null">Annuler</button>
+            </div>
+          </form>
+          <div v-else class="flex flex-wrap items-start justify-between gap-3">
+            <div>
+              <div>
+                <span class="font-medium">{{ p.prenom }} {{ p.nom }}</span>
+                <span class="ml-3 text-ink-500">{{ p.email }}</span>
+                <span v-if="!p.actif" class="ml-3 text-ink-400">désactivé</span>
+              </div>
+              <div class="mt-1 text-ink-500">
+                <template v-if="p.conservatoire">{{ p.conservatoire }} · </template>
+                {{ seancesDe(p.id) }} séance(s) · dernière visite : {{ quandCourt(p.derniere_connexion_at) }}
+              </div>
+            </div>
+            <div class="flex gap-4">
+              <button class="text-ink-500 underline-offset-4 hover:underline" :disabled="busy" @click="modifierProf(p)">Modifier</button>
+              <button class="text-ink-500 underline-offset-4 hover:underline" :disabled="busy" @click="basculerProf(p)">
+                {{ p.actif ? 'Désactiver' : 'Réactiver' }}
+              </button>
+              <button class="text-rose-400 underline-offset-4 hover:underline" :disabled="busy" @click="supprimerProf(p)">Supprimer</button>
             </div>
           </div>
-          <button class="text-ink-400 underline-offset-4 hover:underline" :disabled="busy" @click="basculerProf(p)">
-            {{ p.actif ? 'Désactiver' : 'Réactiver' }}
-          </button>
         </li>
       </ul>
     </section>

@@ -1,14 +1,26 @@
 import { requireAdmin, getServiceClient } from '~/server/utils/superAdminClient'
 import { revalidatePublicPages } from '~/server/utils/revalidate'
-import { aujourdhuiParis } from '~/server/utils/moments'
+import { aujourdhuiParis, modifierProfesseur, type Professeur } from '~/server/utils/moments'
 
-/** Activation / désactivation d'un professeur. Désactiver annule les séances à venir de ses élèves. */
+/**
+ * Fiche d'un professeur : coordonnées, ou activation / désactivation.
+ * Désactiver annule les séances à venir de ses élèves.
+ */
 export default defineEventHandler(async (event) => {
   await requireAdmin(event)
   const id = getRouterParam(event, 'id')
-  const { actif } = await readBody<{ actif?: boolean }>(event)
-  if (typeof actif !== 'boolean') throw createError({ statusCode: 400, statusMessage: 'Valeur invalide' })
+  const body = await readBody<Record<string, unknown>>(event) ?? {}
   const client = getServiceClient()
+
+  if (body.actif === undefined) {
+    const { data: prof } = await client.from('moments_professeurs').select('*').eq('id', id).maybeSingle()
+    if (!prof) throw createError({ statusCode: 404, statusMessage: 'Professeur introuvable' })
+    await modifierProfesseur(client, prof as Professeur, body)
+    return { ok: true }
+  }
+
+  const { actif } = body
+  if (typeof actif !== 'boolean') throw createError({ statusCode: 400, statusMessage: 'Valeur invalide' })
   const { error } = await client.from('moments_professeurs').update({ actif }).eq('id', id)
   if (error) throw createError({ statusCode: 500, statusMessage: error.message })
   if (!actif) {

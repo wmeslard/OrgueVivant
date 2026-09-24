@@ -1,9 +1,5 @@
 import { getServiceClient } from '~/server/utils/superAdminClient'
-import { cleActuelle, marquerConnexion, memeCle, ouvrirAcces } from '~/server/utils/moments'
-
-function champ(v: unknown, max: number): string {
-  return typeof v === 'string' ? v.trim().slice(0, max) : ''
-}
+import { champ, cleActuelle, marquerConnexion, memeCle, ouvrirAcces } from '~/server/utils/moments'
 
 /**
  * Entrée dans l'espace des professeurs par le lien partagé. Le professeur se

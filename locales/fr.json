@@ -352,14 +352,21 @@
     "showMore": "Afficher les jeudis suivants",
     "forMe": "Je joue moi-même",
     "forStudent": "J'inscris un élève",
-    "youPlay": "Vous jouez",
     "detailsMe": "+ Programme (facultatif)",
     "detailsStudent": "+ Programme et email de l'élève (facultatifs)",
     "consentMe": "J'accepte que mon prénom et l'initiale de mon nom apparaissent sur le site. Si j'ai moins de 18 ans, j'ai l'accord d'un parent.",
     "confirmMe": "Je m'inscris",
     "confirmStudent": "Inscrire {prenom}",
     "bookedMe": "Vous êtes inscrit·e le {date}.",
-    "bookedStudent": "{nom} est inscrit·e le {date}."
+    "bookedStudent": "{nom} est inscrit·e le {date}.",
+    "studentNameHintEmpty": "Le site affichera le prénom et l'initiale du nom.",
+    "yourFirstName": "Votre prénom",
+    "yourLastName": "Votre nom",
+    "yourEmail": "Votre email",
+    "yourEmailHint": "La confirmation vous sera envoyée à cette adresse.",
+    "editProfile": "Modifier mes informations",
+    "profileTitle": "Mes informations",
+    "profileSaved": "Informations enregistrées."
   },
   "momentsAcces": {
     "title": "Moments musicaux",

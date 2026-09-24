@@ -25,7 +25,7 @@ export default defineEventHandler(async (event) => {
   return {
     aujourdhui: du,
     horizon: au,
-    professeur: { prenom: prof.prenom, nom: prof.nom, email: prof.email },
+    professeur: { prenom: prof.prenom, nom: prof.nom, email: prof.email, conservatoire: prof.conservatoire },
     horaires,
     pris: seances.map(s => ({
       date: s.date,
