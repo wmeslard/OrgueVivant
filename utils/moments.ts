@@ -3,10 +3,10 @@
  * professeurs, l'admin, le flux ICS et l'API. Sans dépendance à Nuxt.
  *
  * Les Moments musicaux ont lieu un jeudi sur deux, de 13 h 15 à 13 h 45, à
- * l'orgue de chœur de Saint-Maurice. On s'y inscrit jusqu'à trois jours avant ;
- * deux jours avant, si personne ne l'a fait, Louis-Paul Courtois est affecté à
- * la séance et prévenu par email (voir affecterOrganiste, côté serveur). Son
- * nom n'est publié qu'une fois affecté. Un blocage — par défaut ou temporaire —
+ * l'orgue de chœur de Saint-Maurice. Deux jours avant, si personne ne s'est
+ * inscrit, Louis-Paul Courtois est affecté à la séance et prévenu par email
+ * (voir affecterOrganiste, côté serveur) ; les inscriptions restent ouvertes
+ * jusque-là. Son nom n'est publié qu'une fois affecté. Un blocage — par défaut ou temporaire —
  * qui tombe sur ce créneau supprime la séance.
  */
 
@@ -20,10 +20,10 @@ export const HORIZON_MOIS = 6
 /** Délai minimal, en heures, pour annuler avant le début de la séance. */
 export const DELAI_ANNULATION_H = 48
 /**
- * Jours d'avance pour s'inscrire : jusqu'au lundi pour le jeudi. Le mardi,
- * deux jours avant, la séance sans inscrit revient à Louis-Paul Courtois.
+ * Deux jours avant (le mardi pour le jeudi), la séance sans inscrit revient à
+ * Louis-Paul Courtois ; les inscriptions ferment à ce moment-là, pas avant.
  */
-export const DELAI_INSCRIPTION_JOURS = 3
+export const JOURS_AVANT_AFFECTATION = 2
 /** Un jeudi de Moment musical : il fixe l'alternance, un jeudi sur deux. */
 export const JEUDI_DE_REFERENCE = '2026-10-01'
 
@@ -237,12 +237,14 @@ export interface ContexteJour {
   /** Date du jour, à Paris. */
   aujourdhui: string
   /**
-   * Jours d'avance pour s'inscrire : DELAI_INSCRIPTION_JOURS par le lien,
-   * 0 pour l'association, qui s'arrange directement avec la paroisse.
+   * Jours d'avance pour s'inscrire : 1 par le lien (pas le jour même), 0 pour
+   * l'association, qui s'arrange directement avec la paroisse.
    */
   delaiJours?: number
   horaires: readonly Horaire[]
   pris: readonly CreneauPris[]
+  /** Jeudis déjà revenus à Louis-Paul Courtois : les inscriptions y sont closes. */
+  affectes?: readonly string[]
 }
 
 /**
@@ -258,9 +260,9 @@ export function creneauxDuJour(date: string, ctx: ContexteJour): CreneauJour[] {
   const fin = finCreneau(debut)
   const pris = ctx.pris.find(p => p.date === date && p.heure_debut.slice(0, 5) === debut)
   if (pris) return [{ debut, fin, etat: 'pris', interprete: pris.interprete, mien: pris.mien }]
-  // Deux jours avant, la séance sans inscrit revient à Louis-Paul Courtois.
-  const tropTot = date < plusJours(ctx.aujourdhui, ctx.delaiJours ?? DELAI_INSCRIPTION_JOURS)
-  return [{ debut, fin, etat: tropTot ? 'passe' : 'libre' }]
+  // Fermé une fois Louis-Paul Courtois affecté, et le jour même.
+  const ferme = !!ctx.affectes?.includes(date) || date < plusJours(ctx.aujourdhui, ctx.delaiJours ?? 1)
+  return [{ debut, fin, etat: ferme ? 'passe' : 'libre' }]
 }
 
 /**
@@ -273,7 +275,7 @@ export function creneauPossible(date: string, debut: string, horaires: readonly 
     .some(c => c.debut === debut.slice(0, 5) && c.etat === 'libre')
 }
 
-export type RaisonRefus = 'passe' | 'trop_tot' | 'trop_loin' | 'hors_creneau' | 'ferme' | 'pris'
+export type RaisonRefus = 'passe' | 'trop_tot' | 'trop_loin' | 'hors_creneau' | 'ferme' | 'pris' | 'affecte'
 
 /**
  * Pourquoi un créneau n'est pas inscriptible — ou `null` s'il l'est.
@@ -281,13 +283,14 @@ export type RaisonRefus = 'passe' | 'trop_tot' | 'trop_loin' | 'hors_creneau' | 
  */
 export function raisonNonReservable(date: string, debut: string, ctx: ContexteJour): RaisonRefus | null {
   if (date < ctx.aujourdhui) return 'passe'
-  if (date < plusJours(ctx.aujourdhui, ctx.delaiJours ?? DELAI_INSCRIPTION_JOURS)) return 'trop_tot'
+  if (date < plusJours(ctx.aujourdhui, ctx.delaiJours ?? 1)) return 'trop_tot'
   if (date > plusMois(ctx.aujourdhui, HORIZON_MOIS)) return 'trop_loin'
   if (!estJeudiMoment(date) || debut.slice(0, 5) !== CRENEAU_REGULIER) return 'hors_creneau'
   if (creneauBloque(date, ctx.horaires)) return 'ferme'
   const creneau = creneauxDuJour(date, ctx)[0]
   if (!creneau) return 'hors_creneau'
   if (creneau.etat === 'pris') return 'pris'
+  if (ctx.affectes?.includes(date)) return 'affecte'
   if (creneau.etat === 'passe') return 'trop_tot'
   return null
 }

@@ -1,8 +1,8 @@
 import { getServiceClient } from '~/server/utils/superAdminClient'
 import { revalidatePublicPages } from '~/server/utils/revalidate'
 import {
-  adresseAssociation, aujourdhuiParis, chargerHoraires, chargerSeances, envoyerEmail, escapeHtml,
-  insererSeance, lireMusiciens, MESSAGES_REFUS, paragraphe, quand, requireProfesseur
+  adresseAssociation, aujourdhuiParis, chargerAffectations, chargerHoraires, chargerSeances, desaffecter, envoyerEmail,
+  escapeHtml, insererSeance, lireMusiciens, MESSAGES_REFUS, paragraphe, quand, requireProfesseur
 } from '~/server/utils/moments'
 import { finCreneau, HORIZON_MOIS, nomsComplets, nomsPublics, plusMois, raisonNonReservable } from '~/utils/moments'
 
@@ -30,9 +30,12 @@ export default defineEventHandler(async (event) => {
   const client = getServiceClient()
   const aujourdhui = aujourdhuiParis()
   const au = plusMois(aujourdhui, HORIZON_MOIS)
-  const [horaires, actives] = await Promise.all([chargerHoraires(client), chargerSeances(client, aujourdhui, au)])
+  const [horaires, actives, affectations] = await Promise.all([
+    chargerHoraires(client), chargerSeances(client, aujourdhui, au), chargerAffectations(client, date, date)
+  ])
   const pris = actives.map(s => ({ date: s.date, heure_debut: s.heure_debut.slice(0, 5), interprete: '' }))
-  const raison = raisonNonReservable(date, debut, { aujourdhui, horaires, pris })
+  // Les inscriptions restent ouvertes jusqu'à ce que Louis-Paul Courtois soit affecté.
+  const raison = raisonNonReservable(date, debut, { aujourdhui, horaires, pris, affectes: affectations.map(a => a.date) })
   if (raison) throw createError({ statusCode: 409, statusMessage: MESSAGES_REFUS[raison] })
 
   const fin = finCreneau(debut)
@@ -44,6 +47,9 @@ export default defineEventHandler(async (event) => {
   // L'index unique tranche deux inscriptions simultanées sur le même créneau.
   if (error?.code === '23505') throw createError({ statusCode: 409, statusMessage: MESSAGES_REFUS.pris })
   if (error) throw createError({ statusCode: 500, statusMessage: error.message })
+
+  // Affecté au même instant par la tâche quotidienne : l'inscription l'emporte, il est libéré.
+  await desaffecter(client, date, `${nomsComplets(musiciens)} ${musiciens.length > 1 ? 'joueront' : 'jouera'}`)
 
   const moment = quand(date, debut, fin)
   const jour = moment.split(',')[0]

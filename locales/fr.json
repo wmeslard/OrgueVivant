@@ -319,7 +319,7 @@
     "logout": "Déconnexion",
     "moisPrecedent": "Mois précédent",
     "moisSuivant": "Mois suivant",
-    "chooseDateHint": "Un jeudi sur deux, de 13 h 15 à 13 h 45. Inscriptions jusqu'à trois jours avant ; ensuite, si personne n'est inscrit, Louis-Paul Courtois joue.",
+    "chooseDateHint": "Un jeudi sur deux, de 13 h 15 à 13 h 45. Deux jours avant, si personne n'est inscrit, Louis-Paul Courtois joue et les inscriptions ferment.",
     "slotsFor": "Créneaux du",
     "noSlots": "Aucun créneau libre ce jour-là.",
     "pickDay": "Choisissez un jour dans le calendrier.",

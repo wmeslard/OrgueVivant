@@ -42,7 +42,7 @@ interface Jeudi { date: string; creneau?: CreneauJour; seance?: SeanceProf }
 const jeudis = computed<Jeudi[]>(() => {
   const e = espace.value
   if (!e) return []
-  const contexte = { aujourdhui: e.aujourdhui, horaires: e.horaires, pris: e.pris }
+  const contexte = { aujourdhui: e.aujourdhui, horaires: e.horaires, pris: e.pris, affectes: e.affectes }
   // Un jeudi sur deux : le premier jeudi de Moment musical, puis de deux semaines en deux semaines.
   const d = parseYmd(e.aujourdhui)
   d.setDate(d.getDate() + ((JOUR_MOMENTS - d.getDay() + 7) % 7))

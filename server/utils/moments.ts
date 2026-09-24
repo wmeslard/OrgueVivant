@@ -7,7 +7,7 @@ import { senderAddress } from '~/server/utils/sender'
 import { revalidatePublicPages } from '~/server/utils/revalidate'
 import {
   CRENEAU_REGULIER, HORIZON_MOIS, MAX_MUSICIENS, ORGANISTE_REGULIER, type Horaire, type Musicien, type SeancePublique,
-  DELAI_INSCRIPTION_JOURS, creneauPossible, finCreneau, heureFr, momentPrevu, musiciensDe, nomPublic,
+  JOURS_AVANT_AFFECTATION, creneauPossible, finCreneau, heureFr, momentPrevu, musiciensDe, nomPublic,
   nomsComplets, nomsPublics, parseYmd, plusJours, plusMois, ymd
 } from '~/utils/moments'
 
@@ -227,7 +227,8 @@ function schemaAbsent(error: { code?: string } | null): boolean {
 /** Ce que l'API répond quand un créneau n'est pas inscriptible (voir raisonNonReservable). */
 export const MESSAGES_REFUS: Record<string, string> = {
   passe: 'Cette date est passée.',
-  trop_tot: 'Les inscriptions ferment deux jours avant la séance.',
+  trop_tot: 'Les inscriptions sont closes pour ce jeudi.',
+  affecte: 'Personne ne s\'était inscrit : Louis-Paul Courtois joue ce jeudi-là, les inscriptions sont closes.',
   trop_loin: `Les inscriptions sont ouvertes sur ${HORIZON_MOIS} mois.`,
   hors_creneau: 'Les Moments musicaux ont lieu un jeudi sur deux, à 13 h 15.',
   ferme: 'L\'orgue n\'est pas disponible ce jeudi-là.',
@@ -299,15 +300,15 @@ export async function emailOrganiste(client: SupabaseClient): Promise<string | n
 }
 
 /**
- * Affecte Louis-Paul Courtois aux séances sans inscrit dont les inscriptions
- * sont closes (dans les deux prochains jours), et le prévient une seule fois
- * par séance. Appelée chaque jour par la tâche planifiée, et après une
+ * Affecte Louis-Paul Courtois aux séances sans inscrit des deux prochains
+ * jours — ce qui ferme leurs inscriptions — et le prévient une seule fois par
+ * séance. Appelée chaque jour par la tâche planifiée, et après une
  * annulation. Renvoie le nombre d'emails envoyés.
  */
 export async function affecterOrganiste(client: SupabaseClient): Promise<number> {
   const aujourdhui = aujourdhuiParis()
   const du = plusJours(aujourdhui, 1)
-  const au = plusJours(aujourdhui, DELAI_INSCRIPTION_JOURS - 1)
+  const au = plusJours(aujourdhui, JOURS_AVANT_AFFECTATION)
   const [horaires, seances] = await Promise.all([chargerHoraires(client), chargerSeances(client, du, au)])
   const inscrits = new Set(seances.map(s => s.date))
   const dates = jeudisDeMoment(du, au, horaires).filter(d => !inscrits.has(d))
@@ -317,6 +318,12 @@ export async function affecterOrganiste(client: SupabaseClient): Promise<number>
     .upsert(dates.map(date => ({ date })), { onConflict: 'date', ignoreDuplicates: true }).select('date')
   if (error && schemaAbsent(error)) { console.warn('[moments] affectations : migration non appliquée'); return 0 }
   if (error) throw createError({ statusCode: 500, statusMessage: error.message })
+  // Quelqu'un s'est inscrit pendant ce temps : ce jeudi n'est pas pour lui.
+  const inscritsEntreTemps = (await chargerSeances(client, du, au)).map(s => s.date).filter(d => dates.includes(d))
+  if (inscritsEntreTemps.length) {
+    await client.from('moments_affectations').delete().in('date', inscritsEntreTemps).is('notifie_at', null)
+    dates.splice(0, dates.length, ...dates.filter(d => !inscritsEntreTemps.includes(d)))
+  }
 
   const aPrevenir = (await chargerAffectations(client, du, au)).filter(a => dates.includes(a.date) && !a.notifie_at)
   const email = await emailOrganiste(client)

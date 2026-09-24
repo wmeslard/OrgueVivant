@@ -9,7 +9,7 @@
  */
 import {
   CRENEAU_REGULIER, DUREE_MIN, HORIZON_MOIS, JOUR_MOMENTS, ORGANISTE_REGULIER, type Horaire, type Musicien,
-  DELAI_INSCRIPTION_JOURS, estJeudiMoment, estTemporaire, finCreneau, minutes, musiciensDe, nomsComplets, parseYmd,
+  JOURS_AVANT_AFFECTATION, estJeudiMoment, estTemporaire, finCreneau, minutes, musiciensDe, nomsComplets, parseYmd,
   plusJours, plusMois, reglesDuJour, ymd
 } from '~/utils/moments'
 
@@ -60,7 +60,7 @@ const mois = computed(() => {
   return groupes
 })
 /** Le jour où, faute d'inscrit, la séance reviendra à Louis-Paul Courtois. */
-const jourAffectation = (date: string) => fmt(plusJours(date, 1 - DELAI_INSCRIPTION_JOURS), { weekday: 'long', day: 'numeric', month: 'long' }).toLowerCase()
+const jourAffectation = (date: string) => fmt(plusJours(date, -JOURS_AVANT_AFFECTATION), { weekday: 'long', day: 'numeric', month: 'long' }).toLowerCase()
 
 // ── Adresse de Louis-Paul Courtois ───────────────────────────────────────────
 const email = ref(props.emailOrganiste ?? '')
@@ -129,8 +129,8 @@ async function bloquerPeriode() {
 <template>
   <div class="space-y-10">
     <p class="max-w-3xl text-sm text-ink-500">
-      Les Moments musicaux ont lieu un jeudi sur deux, de 13 h 15 à 13 h 45. On s'y inscrit jusqu'à trois jours avant ;
-      deux jours avant, si personne ne l'a fait, {{ ORGANISTE_REGULIER }} est affecté à la séance et prévenu par email.
+      Les Moments musicaux ont lieu un jeudi sur deux, de 13 h 15 à 13 h 45. Deux jours avant, si personne ne s'est
+      inscrit, {{ ORGANISTE_REGULIER }} est affecté à la séance et prévenu par email ; les inscriptions ferment à ce moment-là.
       Bloquer un jeudi supprime la séance prévue ce jour-là, quelle qu'elle soit.
     </p>
 
