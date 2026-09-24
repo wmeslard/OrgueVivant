@@ -24,6 +24,8 @@ interface Seance {
   statut: 'reservee' | 'annulee'; annulee_par: 'professeur' | 'admin' | null
   /** Null : inscrite par l'association. */
   professeur_id: string | null
+  /** La personne entrée par le lien joue elle-même. */
+  pour_soi?: boolean
   professeur?: { prenom: string; nom: string; email: string } | null
 }
 interface Vue {
@@ -58,7 +60,8 @@ function jourLong(date: string) {
 function quandCourt(d: string | null) {
   return d ? new Date(d).toLocaleDateString('fr-FR', { day: 'numeric', month: 'short', year: 'numeric' }) : 'jamais'
 }
-const inscritPar = (s: Seance) => s.professeur ? `${s.professeur.prenom} ${s.professeur.nom}` : 'l\'association'
+const inscritPar = (s: Seance) => s.pour_soi ? 'Inscription personnelle'
+  : `Inscrit·e par ${s.professeur ? `${s.professeur.prenom} ${s.professeur.nom}` : 'l\'association'}`
 
 async function action(fn: () => Promise<unknown>, message: string) {
   busy.value = true; erreur.value = ''
@@ -183,7 +186,7 @@ function seancesDe(id: string) {
                 <span class="text-right font-medium text-text-primary">{{ s.eleve_prenom }} {{ s.eleve_nom }}</span>
               </div>
               <div class="mt-1 text-xs text-text-secondary">
-                Inscrit·e par {{ inscritPar(s) }}<template v-if="s.eleve_email"> · {{ s.eleve_email }}</template>
+                {{ inscritPar(s) }}<template v-if="s.eleve_email"> · {{ s.eleve_email }}</template>
               </div>
               <p v-if="s.programme" class="mt-1 text-xs text-text-secondary/80">{{ s.programme }}</p>
               <button class="mt-2 text-xs text-rose-300 underline-offset-4 hover:underline" :disabled="busy" @click="annulerSeance(s)">

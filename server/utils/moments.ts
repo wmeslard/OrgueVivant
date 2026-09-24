@@ -34,6 +34,8 @@ export interface SeanceRow {
   eleve_nom: string
   eleve_email: string | null
   programme: string | null
+  /** Inscription personnelle ; absent tant que la migration n'est pas appliquée. */
+  pour_soi?: boolean
   statut: 'reservee' | 'annulee'
   annulee_par: 'professeur' | 'admin' | null
   annulee_at: string | null
@@ -220,7 +222,8 @@ export async function calendrierPublic(du: string, au: string): Promise<SeancePu
       fin: s.heure_fin.slice(0, 5),
       type: 'eleve',
       interprete: nomPublic(s.eleve_prenom, s.eleve_nom),
-      programme: s.programme
+      programme: s.programme,
+      pourSoi: !!s.pour_soi
     })
   }
   return out.sort((a, b) => a.date.localeCompare(b.date) || a.debut.localeCompare(b.debut))

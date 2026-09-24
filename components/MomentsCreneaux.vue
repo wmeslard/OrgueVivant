@@ -10,9 +10,7 @@
  * seul juge au moment de l'enregistrement.
  *
  * Le slot `pris` permet à l'administration d'afficher le détail d'une séance
- * (nom complet, professeur, annulation) à la place du seul nom affiché ; le
- * slot `colonne` ajoute un bloc sous les créneaux du jour (les prochaines
- * séances du professeur). `choisir(date)` ouvre un jour depuis l'extérieur.
+ * (nom complet, professeur, annulation) à la place du seul nom affiché.
  */
 import type { EtatJour } from '~/components/MomentsCalendrier.vue'
 import { creneauxDuJour, heureFr, nomPublic, ymd, type ContexteJour, type CreneauJour } from '~/utils/moments'
@@ -34,10 +32,7 @@ const props = defineProps<{
   association?: boolean
 }>()
 const emit = defineEmits<{ (e: 'inscrit'): void; (e: 'echec'): void }>()
-defineSlots<{
-  pris?: (p: { creneau: CreneauJour; date: string }) => unknown
-  colonne?: () => unknown
-}>()
+defineSlots<{ pris?: (p: { creneau: CreneauJour; date: string }) => unknown }>()
 
 const { t, locale } = useI18n()
 
@@ -60,13 +55,6 @@ const jours = computed<Record<string, EtatJour>>(() => {
 })
 
 const creneaux = computed(() => jourChoisi.value ? creneauxDuJour(jourChoisi.value, props.contexte) : [])
-
-/** Ouvre un jour, en affichant son mois. */
-function choisir(date: string) {
-  mois.value = date.slice(0, 7)
-  jourChoisi.value = date
-}
-defineExpose({ choisir })
 
 function jourLong(date: string) {
   const [y, m, d] = date.split('-').map(Number)
@@ -167,7 +155,6 @@ const legende = computed(() => [
         </template>
       </aside>
 
-      <slot name="colonne" />
     </div>
 
     <!-- Fiche de l'élève -->

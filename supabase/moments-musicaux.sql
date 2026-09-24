@@ -17,7 +17,7 @@
 --
 -- Schéma complet, pour une base neuve : à exécuter dans Supabase → SQL Editor.
 -- La base de production, créée avec une version antérieure, se met à jour avec
--- moments-musicaux-lien.sql puis moments-musicaux-regles.sql.
+-- moments-musicaux-lien.sql, moments-musicaux-regles.sql puis moments-musicaux-soi.sql.
 
 -- ─────────────────────────────────────────────────────────────────────────────
 -- Le lien partagé
@@ -77,6 +77,8 @@ create table if not exists moments_seances (
   -- Facultatif : si l'élève a une adresse, il reçoit la confirmation.
   eleve_email    text,
   programme      text,
+  -- Vrai quand la personne entrée par le lien joue elle-même (pas d'élève).
+  pour_soi       boolean not null default false,
   statut         moments_statut_seance not null default 'reservee',
   annulee_par    text check (annulee_par in ('professeur', 'admin')),
   annulee_at     timestamptz,

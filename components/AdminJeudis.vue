@@ -14,7 +14,7 @@ import {
 type Regle = Horaire & { id: string }
 interface SeanceAdmin {
   id: string; date: string; heure_debut: string; statut: string
-  eleve_prenom: string; eleve_nom: string
+  eleve_prenom: string; eleve_nom: string; pour_soi?: boolean
   professeur?: { prenom: string; nom: string } | null
 }
 
@@ -152,7 +152,8 @@ async function bloquerPeriode() {
             <span v-else-if="j.seance">
               {{ j.seance.eleve_prenom }} {{ j.seance.eleve_nom }}
               <span class="ml-2 text-xs text-ink-500">
-                inscrit·e par {{ j.seance.professeur ? `${j.seance.professeur.prenom} ${j.seance.professeur.nom}` : 'l\'association' }}
+                <template v-if="j.seance.pour_soi">inscription personnelle</template>
+                <template v-else>inscrit·e par {{ j.seance.professeur ? `${j.seance.professeur.prenom} ${j.seance.professeur.nom}` : 'l\'association' }}</template>
               </span>
             </span>
             <span v-else class="text-ink-500">Libre</span>

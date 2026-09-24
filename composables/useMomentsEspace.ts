@@ -9,6 +9,8 @@ export interface SeanceProf {
   eleve_nom: string
   eleve_email: string | null
   programme: string | null
+  /** La personne joue elle-même (pas d'élève). */
+  pour_soi?: boolean
   statut: 'reservee' | 'annulee'
 }
 

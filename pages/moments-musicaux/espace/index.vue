@@ -1,12 +1,15 @@
 <script setup lang="ts">
 /**
- * Espace du professeur, sur une seule page : le calendrier des créneaux — un
- * clic sur un créneau libre inscrit un élève — et, à côté, la liste de ses
- * prochaines séances. Souvent ouverte depuis un téléphone : sur petit écran,
- * le calendrier passe au-dessus, les créneaux et la liste en dessous.
+ * Espace des personnes entrées par le lien : les prochains jeudis en liste.
+ * Un jeudi libre se réserve d'un bouton, qui ouvre un panneau — monté du bas
+ * de l'écran sur téléphone — pour jouer soi-même ou inscrire un élève. Ses
+ * propres séances se modifient ou s'annulent depuis la même liste.
  */
-import type { FicheEleve } from '~/components/MomentsCreneaux.vue'
-import { annulable, heureFr } from '~/utils/moments'
+import type { SeanceProf } from '~/composables/useMomentsEspace'
+import {
+  HORIZON_MOIS, JOUR_MOMENTS, annulable, creneauxDuJour, heureFr, nomPublic, parseYmd, plusJours, plusMois, ymd,
+  type CreneauJour
+} from '~/utils/moments'
 
 definePageMeta({ middleware: 'professeur', layout: 'default' })
 
@@ -22,30 +25,100 @@ useHead({
   meta: [{ name: 'robots', content: 'noindex, nofollow' }]
 })
 
-// ── Calendrier et inscription ────────────────────────────────────────────────
-const calendrier = ref<{ choisir: (date: string) => void } | null>(null)
-const contexte = computed(() => ({
-  aujourdhui: espace.value?.aujourdhui ?? '',
-  horaires: espace.value?.horaires ?? [],
-  pris: espace.value?.pris ?? []
-}))
-const envoyer = (fiche: FicheEleve) => $fetch('/api/moments/seances', { method: 'POST', body: fiche })
-async function inscrit() {
-  await charger(true)
-  showToast(t('momentsEspace.booked'), { type: 'success' })
+function formater(date: string, options: Intl.DateTimeFormatOptions) {
+  const s = parseYmd(date).toLocaleDateString(locale.value === 'fr' ? 'fr-FR' : 'en-US', options)
+  // « Jeudi 1er octobre » : en français, le premier du mois s'écrit ainsi.
+  const f = locale.value === 'fr' && options.day ? s.replace(/^(\S+ )?1 /, '$11er ') : s
+  return f.charAt(0).toUpperCase() + f.slice(1)
+}
+const jourLong = (date: string) => formater(date, { weekday: 'long', day: 'numeric', month: 'long' })
+const jourAnnee = (date: string) => formater(date, { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' })
+
+// ── Les jeudis ───────────────────────────────────────────────────────────────
+interface Jeudi { date: string; creneau?: CreneauJour; seance?: SeanceProf }
+
+const jeudis = computed<Jeudi[]>(() => {
+  const e = espace.value
+  if (!e) return []
+  const contexte = { aujourdhui: e.aujourdhui, horaires: e.horaires, pris: e.pris }
+  const d = parseYmd(e.aujourdhui)
+  d.setDate(d.getDate() + ((JOUR_MOMENTS - d.getDay() + 7) % 7))
+  const fin = plusMois(e.aujourdhui, HORIZON_MOIS)
+  const out: Jeudi[] = []
+  for (let s = ymd(d); s <= fin; s = plusJours(s, 7)) {
+    out.push({ date: s, creneau: creneauxDuJour(s, contexte)[0], seance: aVenir.value.find(x => x.date === s) })
+  }
+  return out
+})
+
+/** Dix jeudis d'abord : l'essentiel tient sur un écran de téléphone. */
+const NB_INITIAL = 10
+const tout = ref(false)
+const parMois = computed(() => {
+  const groupes: { titre: string; jeudis: Jeudi[] }[] = []
+  for (const j of tout.value ? jeudis.value : jeudis.value.slice(0, NB_INITIAL)) {
+    const titre = formater(j.date, { month: 'long', year: 'numeric' })
+    if (groupes.at(-1)?.titre !== titre) groupes.push({ titre, jeudis: [] })
+    groupes.at(-1)!.jeudis.push(j)
+  }
+  return groupes
+})
+
+// ── Inscription ──────────────────────────────────────────────────────────────
+// Le dernier choix (« je joue » ou « un élève ») est retenu sur ce navigateur.
+const CLE_CHOIX = 'ov_moments_pour_soi'
+const fiche = ref<{ date: string; heure: string } | null>(null)
+const form = reactive({ pourSoi: false, eleve_prenom: '', eleve_nom: '', eleve_email: '', programme: '', consentement: false, details: false })
+const envoi = ref(false)
+const erreur = ref('')
+
+const apercu = computed(() => form.pourSoi
+  ? nomPublic(espace.value?.professeur.prenom ?? '', espace.value?.professeur.nom ?? '')
+  : form.eleve_prenom ? nomPublic(form.eleve_prenom, form.eleve_nom) : '—')
+
+function ouvrir(j: Jeudi) {
+  if (!j.creneau) return
+  let pourSoi = false
+  try { pourSoi = localStorage.getItem(CLE_CHOIX) === '1' } catch { /* stockage indisponible */ }
+  Object.assign(form, { pourSoi, eleve_prenom: '', eleve_nom: '', eleve_email: '', programme: '', consentement: false, details: false })
+  erreur.value = ''
+  fiche.value = { date: j.date, heure: j.creneau.debut }
 }
 
-function formater(date: string, options: Intl.DateTimeFormatOptions) {
-  const [y, m, d] = date.split('-').map(Number)
-  const s = new Date(y, m - 1, d).toLocaleDateString(locale.value === 'fr' ? 'fr-FR' : 'en-US', options)
-  return s.charAt(0).toUpperCase() + s.slice(1)
+function choisir(pourSoi: boolean) {
+  form.pourSoi = pourSoi
+  erreur.value = ''
+  try { localStorage.setItem(CLE_CHOIX, pourSoi ? '1' : '0') } catch { /* stockage indisponible */ }
 }
-const jourLong = (date: string) => formater(date, { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' })
-const jourCourt = (date: string) => formater(date, { weekday: 'short', day: 'numeric', month: 'short' })
+
+async function inscrire() {
+  if (!fiche.value) return
+  erreur.value = ''
+  if (!form.pourSoi && (!form.eleve_prenom.trim() || !form.eleve_nom.trim())) { erreur.value = t('momentsAcces.errorRequired'); return }
+  if (!form.pourSoi && form.eleve_email && !/^\S+@\S+\.\S+$/.test(form.eleve_email)) { erreur.value = t('momentsAcces.errorEmail'); return }
+  if (!form.consentement) { erreur.value = t('momentsEspace.errorConsent'); return }
+  envoi.value = true
+  try {
+    await $fetch('/api/moments/seances', {
+      method: 'POST',
+      body: {
+        date: fiche.value.date, heure_debut: fiche.value.heure, programme: form.programme, pour_soi: form.pourSoi,
+        ...(!form.pourSoi && { eleve_prenom: form.eleve_prenom, eleve_nom: form.eleve_nom, eleve_email: form.eleve_email })
+      }
+    })
+    const date = jourLong(fiche.value.date)
+    fiche.value = null
+    await charger(true)
+    showToast(form.pourSoi ? t('momentsEspace.bookedMe', { date }) : t('momentsEspace.bookedStudent', { nom: form.eleve_prenom.trim(), date }), { type: 'success' })
+  } catch (e: any) {
+    erreur.value = e?.data?.statusMessage || t('momentsAcces.errorGeneric')
+    // Le jeudi vient peut-être d'être pris : la liste est rechargée.
+    await charger(true)
+  } finally { envoi.value = false }
+}
 
 // ── Séances inscrites ────────────────────────────────────────────────────────
 const busy = ref(false)
-const erreur = ref('')
 const edition = ref<{ id: string; date: string; heure_debut: string; programme: string | null } | null>(null)
 
 async function enregistrer() {
@@ -66,7 +139,6 @@ async function annuler(s: { id: string }) {
   busy.value = true
   try {
     await $fetch(`/api/moments/seances/${s.id}`, { method: 'DELETE' })
-    edition.value = null
     await charger(true)
     showToast(t('momentsEspace.cancelled'), { type: 'success' })
   } catch (e: any) {
@@ -82,7 +154,7 @@ async function logout() {
 
 <template>
   <div class="container-premium py-16 md:py-20 bg-background">
-    <header class="mb-10 flex flex-wrap items-end justify-between gap-x-6 gap-y-3">
+    <header class="mb-8 flex flex-wrap items-end justify-between gap-x-6 gap-y-3">
       <div>
         <div class="text-xs font-bold uppercase tracking-[0.3em] text-gold">{{ t('moments.eyebrow') }}</div>
         <h1 class="heading-section mt-3 text-text-primary">{{ t('momentsEspace.dashboardTitle') }}</h1>
@@ -95,65 +167,191 @@ async function logout() {
       </button>
     </header>
 
-    <p class="mb-6 max-w-3xl text-sm text-text-secondary">{{ t('momentsEspace.chooseDateHint') }}</p>
+    <p class="mb-8 max-w-2xl text-sm text-text-secondary">{{ t('momentsEspace.chooseDateHint') }}</p>
 
-    <MomentsCreneaux v-if="espace" ref="calendrier" :contexte="contexte" :envoyer="envoyer" @inscrit="inscrit" @echec="charger(true)">
-      <template #colonne>
-        <!-- Mes prochaines séances -->
-        <section class="card-premium p-6 md:p-8">
-          <h2 class="mb-4 text-[10px] font-bold uppercase tracking-widest text-text-secondary">{{ t('momentsEspace.mySessions') }}</h2>
-          <p v-if="!aVenir.length" class="text-sm text-text-secondary">{{ t('momentsEspace.emptyCta') }}</p>
-          <ul v-else class="divide-y divide-white/5">
-            <li v-for="s in aVenir" :key="s.id" class="py-3 first:pt-0 last:pb-0">
-              <button class="w-full text-left" @click="calendrier?.choisir(s.date)">
-                <div class="flex items-baseline justify-between gap-3 text-sm">
-                  <span class="text-text-primary">{{ jourCourt(s.date) }} · {{ heureFr(s.heure_debut) }}</span>
-                  <span class="truncate text-gold">{{ s.eleve_prenom }} {{ s.eleve_nom }}</span>
+    <!-- Les jeudis -->
+    <div class="max-w-2xl space-y-8">
+      <section v-for="m in parMois" :key="m.titre">
+        <h2 class="mb-3 font-display text-xl font-light text-text-primary">{{ m.titre }}</h2>
+        <ul class="space-y-2">
+          <li
+            v-for="j in m.jeudis"
+            :key="j.date"
+            class="rounded-2xl border px-4 py-3.5"
+            :class="j.seance ? 'border-gold/50 bg-gold/10'
+              : j.creneau?.etat === 'libre' ? 'border-white/15 bg-surface' : 'border-white/5 bg-transparent'"
+          >
+            <div class="flex items-center justify-between gap-3">
+              <div class="min-w-0">
+                <div class="text-[15px] font-medium" :class="j.creneau?.etat === 'libre' || j.seance ? 'text-text-primary' : 'text-text-secondary'">
+                  {{ jourLong(j.date) }}
                 </div>
-                <p v-if="s.programme" class="mt-1 truncate text-xs text-text-secondary">{{ s.programme }}</p>
-              </button>
-              <div class="mt-2 flex gap-4 text-xs">
-                <button class="text-gold underline-offset-4 hover:underline" @click="edition = { ...s }; erreur = ''">
-                  {{ t('momentsEspace.edit') }}
-                </button>
-                <button
-                  v-if="annulable(s.date, s.heure_debut)"
-                  class="text-text-secondary underline-offset-4 hover:underline"
-                  :disabled="busy"
-                  @click="annuler(s)"
-                >
-                  {{ t('momentsEspace.cancelSession') }}
-                </button>
+                <div class="mt-0.5 text-sm">
+                  <template v-if="j.seance">
+                    <span class="text-text-primary">{{ j.seance.eleve_prenom }} {{ j.seance.eleve_nom }}</span>
+                    <span class="text-gold"> · {{ j.seance.pour_soi ? t('momentsEspace.you') : t('momentsEspace.yourStudent') }}</span>
+                  </template>
+                  <span v-else-if="!j.creneau" class="text-text-secondary">{{ t('momentsEspace.noSession') }}</span>
+                  <span v-else-if="j.creneau.etat === 'regulier'" class="text-gold/80">{{ j.creneau.interprete }}</span>
+                  <span v-else-if="j.creneau.etat === 'pris'" class="text-text-secondary">{{ j.creneau.interprete }}</span>
+                  <span v-else-if="j.creneau.etat === 'passe'" class="text-text-secondary">{{ t('momentsEspace.tooLate') }}</span>
+                  <span v-else class="text-text-secondary">{{ heureFr(j.creneau.debut) }} · {{ t('momentsEspace.free') }}</span>
+                </div>
+                <p v-if="j.seance?.programme" class="mt-1 text-xs font-light text-text-secondary">{{ j.seance.programme }}</p>
               </div>
-            </li>
-          </ul>
-        </section>
-      </template>
-    </MomentsCreneaux>
+              <button
+                v-if="!j.seance && j.creneau?.etat === 'libre'"
+                class="shrink-0 rounded-full bg-gold px-5 py-2.5 text-sm font-medium text-background transition hover:bg-gold-light"
+                @click="ouvrir(j)"
+              >
+                {{ t('momentsEspace.signUp') }}
+              </button>
+            </div>
+            <div v-if="j.seance" class="mt-3 flex gap-5 border-t border-white/5 pt-3 text-sm">
+              <button class="text-gold underline-offset-4 hover:underline" @click="edition = { ...j.seance }; erreur = ''">
+                {{ t('momentsEspace.edit') }}
+              </button>
+              <button
+                v-if="annulable(j.seance.date, j.seance.heure_debut)"
+                class="text-text-secondary underline-offset-4 hover:underline"
+                :disabled="busy"
+                @click="annuler(j.seance)"
+              >
+                {{ t('momentsEspace.cancelSession') }}
+              </button>
+            </div>
+          </li>
+        </ul>
+      </section>
 
-    <section v-if="passees.length" class="mt-14 border-t border-white/5 pt-8">
+      <button
+        v-if="!tout && jeudis.length > NB_INITIAL"
+        class="text-sm text-gold underline-offset-4 hover:underline"
+        @click="tout = true"
+      >
+        {{ t('momentsEspace.showMore') }}
+      </button>
+    </div>
+
+    <section v-if="passees.length" class="mt-14 max-w-2xl border-t border-white/5 pt-8">
       <h2 class="mb-4 text-[10px] font-bold uppercase tracking-widest text-text-secondary">{{ t('momentsEspace.history') }}</h2>
       <ul class="space-y-1.5 text-sm text-text-secondary">
         <li v-for="s in passees.slice(0, 12)" :key="s.id">
-          {{ jourLong(s.date) }} · {{ heureFr(s.heure_debut) }} — {{ s.eleve_prenom }} {{ s.eleve_nom }}
+          {{ jourAnnee(s.date) }} · {{ heureFr(s.heure_debut) }} — {{ s.eleve_prenom }} {{ s.eleve_nom }}
         </li>
       </ul>
     </section>
 
+    <!-- Panneau d'inscription : du bas de l'écran sur téléphone, centré ailleurs -->
+    <Teleport to="body">
+      <div
+        v-if="fiche && espace"
+        class="fixed inset-0 z-[200] flex items-end justify-center bg-black/70 sm:items-center sm:p-4"
+        @click.self="fiche = null"
+      >
+        <div class="flex max-h-[92vh] w-full flex-col rounded-t-3xl border border-white/10 bg-surface sm:max-w-md sm:rounded-3xl">
+          <div class="overflow-y-auto px-6 pt-3 sm:pt-6">
+            <div class="mx-auto mb-4 h-1 w-10 rounded-full bg-white/20 sm:hidden" />
+            <div class="text-[10px] font-bold uppercase tracking-[0.25em] text-gold">
+              {{ jourLong(fiche.date) }} · {{ heureFr(fiche.heure) }}
+            </div>
+
+            <!-- Qui joue ? -->
+            <div class="mt-4 grid grid-cols-2 gap-1.5 rounded-2xl bg-white/5 p-1 text-sm">
+              <button
+                v-for="c in [{ soi: true, label: t('momentsEspace.forMe') }, { soi: false, label: t('momentsEspace.forStudent') }]"
+                :key="String(c.soi)"
+                type="button"
+                class="rounded-xl px-2 py-2.5 transition"
+                :class="form.pourSoi === c.soi ? 'border border-gold/40 bg-background text-text-primary' : 'text-text-secondary'"
+                @click="choisir(c.soi)"
+              >
+                {{ c.label }}
+              </button>
+            </div>
+
+            <div v-if="form.pourSoi" class="mt-4 rounded-2xl border border-white/10 px-4 py-3">
+              <div class="text-xs text-text-secondary">{{ t('momentsEspace.youPlay') }}</div>
+              <div class="text-base text-text-primary">{{ espace.professeur.prenom }} {{ espace.professeur.nom }}</div>
+              <div class="mt-0.5 text-xs text-text-secondary">{{ t('momentsEspace.studentNameHint', { nom: apercu }) }}</div>
+            </div>
+            <template v-else>
+              <label class="label mt-4" for="ep">{{ t('momentsEspace.studentFirstName') }}</label>
+              <input id="ep" v-model="form.eleve_prenom" maxlength="80" class="input text-base" autocapitalize="words" autocomplete="off">
+              <label class="label mt-3" for="en">{{ t('momentsEspace.studentLastName') }}</label>
+              <input id="en" v-model="form.eleve_nom" maxlength="80" class="input text-base" autocapitalize="words" autocomplete="off">
+              <p class="mt-1.5 text-xs text-text-secondary">{{ t('momentsEspace.studentNameHint', { nom: apercu }) }}</p>
+            </template>
+
+            <!-- Détails facultatifs, repliés -->
+            <button v-if="!form.details" type="button" class="mt-4 text-sm text-gold" @click="form.details = true">
+              {{ form.pourSoi ? t('momentsEspace.detailsMe') : t('momentsEspace.detailsStudent') }}
+            </button>
+            <template v-else>
+              <label class="label mt-4" for="prog">
+                {{ t('momentsEspace.programme') }}
+                <span class="ml-1 font-normal text-text-secondary">({{ t('momentsAcces.optional') }})</span>
+              </label>
+              <textarea id="prog" v-model="form.programme" rows="2" maxlength="600" class="input resize-y text-base" />
+              <template v-if="!form.pourSoi">
+                <label class="label mt-3" for="ee">
+                  {{ t('momentsEspace.studentEmail') }}
+                  <span class="ml-1 font-normal text-text-secondary">({{ t('momentsAcces.optional') }})</span>
+                </label>
+                <input id="ee" v-model="form.eleve_email" type="email" inputmode="email" maxlength="254" class="input text-base" autocomplete="off">
+                <p class="mt-1.5 text-xs text-text-secondary">{{ t('momentsEspace.studentEmailHint') }}</p>
+              </template>
+            </template>
+
+            <label class="mt-5 flex cursor-pointer items-start gap-3 text-sm text-text-secondary">
+              <input v-model="form.consentement" type="checkbox" class="mt-0.5 h-5 w-5 shrink-0 accent-gold">
+              <span>{{ form.pourSoi ? t('momentsEspace.consentMe') : t('momentsEspace.consent') }}</span>
+            </label>
+            <p v-if="erreur" class="mt-3 text-sm text-red-400">{{ erreur }}</p>
+          </div>
+
+          <!-- Bouton toujours visible en bas du panneau -->
+          <div class="flex gap-3 border-t border-white/5 px-6 pb-6 pt-4">
+            <button type="button" class="rounded-full px-4 py-3 text-sm text-text-secondary" @click="fiche = null">{{ t('momentsEspace.cancel') }}</button>
+            <button
+              type="button"
+              class="flex flex-1 items-center justify-center gap-2 rounded-full bg-gold px-5 py-3 text-[15px] font-medium text-background transition hover:bg-gold-light disabled:opacity-60"
+              :disabled="envoi"
+              @click="inscrire"
+            >
+              <Icon v-if="envoi" name="heroicons:arrow-path" class="h-4 w-4 animate-spin" />
+              {{ form.pourSoi ? t('momentsEspace.confirmMe') : form.eleve_prenom.trim() ? t('momentsEspace.confirmStudent', { prenom: form.eleve_prenom.trim() }) : t('momentsEspace.confirm') }}
+            </button>
+          </div>
+        </div>
+      </div>
+    </Teleport>
+
     <!-- Programme d'une séance -->
     <Teleport to="body">
-      <div v-if="edition" class="fixed inset-0 z-[200] flex items-center justify-center bg-black/70 p-4" @click.self="edition = null">
-        <div class="card-premium w-full max-w-md p-7">
-          <h2 class="font-display text-2xl font-light text-text-primary">{{ jourLong(edition.date) }}</h2>
-          <p class="mt-1 text-sm text-text-secondary">{{ heureFr(edition.heure_debut) }}</p>
-          <label class="label mt-6" for="prog">{{ t('momentsEspace.programme') }}</label>
-          <textarea id="prog" v-model="edition.programme" rows="3" maxlength="600" class="input resize-y" />
+      <div
+        v-if="edition"
+        class="fixed inset-0 z-[200] flex items-end justify-center bg-black/70 sm:items-center sm:p-4"
+        @click.self="edition = null"
+      >
+        <div class="w-full rounded-t-3xl border border-white/10 bg-surface px-6 pb-6 pt-3 sm:max-w-md sm:rounded-3xl sm:pt-6">
+          <div class="mx-auto mb-4 h-1 w-10 rounded-full bg-white/20 sm:hidden" />
+          <div class="text-[10px] font-bold uppercase tracking-[0.25em] text-gold">
+            {{ jourLong(edition.date) }} · {{ heureFr(edition.heure_debut) }}
+          </div>
+          <label class="label mt-4" for="progm">{{ t('momentsEspace.programme') }}</label>
+          <textarea id="progm" v-model="edition.programme" rows="3" maxlength="600" class="input resize-y text-base" />
           <p class="mt-1.5 text-xs text-text-secondary">{{ t('momentsEspace.programmeHint') }}</p>
           <p v-if="erreur" class="mt-3 text-sm text-red-400">{{ erreur }}</p>
-          <div class="mt-6 flex justify-end gap-3">
-            <button class="btn-ghost" @click="edition = null">{{ t('momentsEspace.cancel') }}</button>
-            <button class="btn-primary" :disabled="busy" @click="enregistrer">
-              <Icon v-if="busy" name="heroicons:arrow-path" class="mr-2 h-4 w-4 animate-spin" />
+          <div class="mt-5 flex gap-3">
+            <button type="button" class="rounded-full px-4 py-3 text-sm text-text-secondary" @click="edition = null">{{ t('momentsEspace.cancel') }}</button>
+            <button
+              type="button"
+              class="flex flex-1 items-center justify-center gap-2 rounded-full bg-gold px-5 py-3 text-[15px] font-medium text-background transition hover:bg-gold-light disabled:opacity-60"
+              :disabled="busy"
+              @click="enregistrer"
+            >
+              <Icon v-if="busy" name="heroicons:arrow-path" class="h-4 w-4 animate-spin" />
               {{ t('momentsEspace.save') }}
             </button>
           </div>

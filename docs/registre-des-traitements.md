@@ -92,13 +92,14 @@ Pas de délégué à la protection des données (non requis).
 ## Moments musicaux : professeurs et élèves
 
 **Finalité** — permettre aux professeurs des conservatoires d'inscrire leurs
-élèves aux Moments musicaux, et publier le calendrier des séances sur le site
-et dans l'agenda.
+élèves aux Moments musicaux, ou à un·e organiste de s'y inscrire lui-même, et
+publier le calendrier des séances sur le site et dans l'agenda.
 
 **Base légale** — intérêt légitime de l'association (organisation de son
 activité musicale) ; consentement de l'élève, ou de ses parents s'il est
 mineur, pour la publication de son prénom, recueilli par le professeur qui
-l'atteste à l'inscription.
+l'atteste à l'inscription ; pour une inscription personnelle, accord donné par
+la personne elle-même (ou un parent si elle est mineure).
 
 **Données** — professeur : prénom, nom, email, conservatoire (facultatif),
 date de dernière visite, saisis par lui-même à l'entrée dans l'espace. Séance :

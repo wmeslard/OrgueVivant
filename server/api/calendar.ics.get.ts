@@ -103,7 +103,7 @@ export default defineEventHandler(async (event) => {
       : `Moment musical — ${s.interprete}${s.programme ? ` · ${s.programme}` : ''}`
     const description = s.type === 'regulier'
       ? `Une demi-heure de musique à l'orgue de chœur de l'église Saint-Maurice, par ${s.interprete}. Un jeudi sur deux, les semaines paires.`
-      : `Une demi-heure de musique à l'orgue de chœur de l'église Saint-Maurice, par ${s.interprete}, élève organiste.${s.programme ? `\nProgramme : ${s.programme}` : ''}`
+      : `Une demi-heure de musique à l'orgue de chœur de l'église Saint-Maurice, par ${s.interprete}${s.pourSoi ? '' : ', élève organiste'}.${s.programme ? `\nProgramme : ${s.programme}` : ''}`
     vevents.push([
       'BEGIN:VEVENT',
       // Les séances d'élèves gardent leur identifiant de réservation : une

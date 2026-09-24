@@ -6,24 +6,29 @@ import {
 } from '~/server/utils/moments'
 import { finCreneau, HORIZON_MOIS, nomPublic, plusMois, raisonNonReservable } from '~/utils/moments'
 
-/** Inscription d'un élève sur un créneau, par son professeur. */
+/**
+ * Inscription sur un jeudi : un élève, par son professeur, ou la personne
+ * elle-même (`pour_soi`) — son nom est alors celui de sa fiche, jamais celui
+ * qu'enverrait le navigateur.
+ */
 export default defineEventHandler(async (event) => {
   const prof = await requireProfesseur(event)
   const body = await readBody<{
     date?: string; heure_debut?: string
     eleve_prenom?: string; eleve_nom?: string; eleve_email?: string
-    programme?: string
+    programme?: string; pour_soi?: boolean
   }>(event)
+  const pourSoi = body?.pour_soi === true
 
   const date = String(body?.date ?? '')
   const debut = String(body?.heure_debut ?? '')
   if (!/^\d{4}-\d{2}-\d{2}$/.test(date)) throw createError({ statusCode: 400, statusMessage: 'Date invalide' })
   if (!/^\d{2}:\d{2}$/.test(debut)) throw createError({ statusCode: 400, statusMessage: 'Créneau invalide' })
 
-  const elevePrenom = (body?.eleve_prenom ?? '').trim().slice(0, 80)
-  const eleveNom = (body?.eleve_nom ?? '').trim().slice(0, 80)
+  const elevePrenom = pourSoi ? prof.prenom : (body?.eleve_prenom ?? '').trim().slice(0, 80)
+  const eleveNom = pourSoi ? prof.nom : (body?.eleve_nom ?? '').trim().slice(0, 80)
   if (!elevePrenom || !eleveNom) throw createError({ statusCode: 400, statusMessage: 'Prénom et nom de l\'élève requis' })
-  const eleveEmail = (body?.eleve_email ?? '').trim().slice(0, 254)
+  const eleveEmail = pourSoi ? '' : (body?.eleve_email ?? '').trim().slice(0, 254)
   if (eleveEmail && !/^\S+@\S+\.\S+$/.test(eleveEmail)) throw createError({ statusCode: 400, statusMessage: 'Email de l\'élève invalide' })
   const programme = (body?.programme ?? '').trim().slice(0, 600)
 
@@ -39,16 +44,31 @@ export default defineEventHandler(async (event) => {
   const { data, error } = await client.from('moments_seances').insert({
     date, heure_debut: debut, heure_fin: fin, professeur_id: prof.id,
     eleve_prenom: elevePrenom, eleve_nom: eleveNom, eleve_email: eleveEmail || null,
-    programme: programme || null
+    programme: programme || null,
+    ...(pourSoi && { pour_soi: true })
   }).select().single()
   // L'index unique tranche deux inscriptions simultanées sur le même créneau.
   if (error?.code === '23505') throw createError({ statusCode: 409, statusMessage: MESSAGES_REFUS.pris })
+  // Colonne pour_soi absente : supabase/moments-musicaux-soi.sql pas encore appliqué.
+  if (error?.code === 'PGRST204' || error?.code === '42703')
+    throw createError({ statusCode: 503, statusMessage: 'L\'inscription personnelle n\'est pas encore disponible. Réessayez plus tard.' })
   if (error) throw createError({ statusCode: 500, statusMessage: error.message })
 
   const moment = quand(date, debut, fin)
   const eleve = `${elevePrenom} ${eleveNom}`
+  const programmeHtml = programme ? `<p><strong>Programme annoncé</strong></p>${paragraphe(programme)}` : ''
   await Promise.all([
-    envoyerEmail({
+    pourSoi ? envoyerEmail({
+      to: prof.email,
+      subject: `Votre Moment musical du ${moment.split(',')[0]}`,
+      html: `
+        <h2 style="font-weight:300;font-size:22px;margin:0 0 16px">À vous de jouer !</h2>
+        <p>Bonjour ${escapeHtml(prof.prenom)},</p>
+        <p>Vous êtes inscrit·e pour un Moment musical : <strong>${escapeHtml(moment)}</strong>, à l'orgue de chœur de l'église Saint-Maurice de Lille.</p>
+        ${programmeHtml}
+        <p>Le site annonce la séance au nom de « ${escapeHtml(nomPublic(elevePrenom, eleveNom))} ». Vous pouvez modifier le programme ou annuler depuis votre espace jusqu'à 48 h avant.</p>
+        <p>À bientôt,<br>l'équipe d'Orgue Vivant</p>`
+    }) : envoyerEmail({
       to: prof.email,
       subject: `${eleve} jouera le ${moment.split(',')[0]}`,
       html: `
@@ -76,7 +96,7 @@ export default defineEventHandler(async (event) => {
       html: `
         <h2 style="font-weight:300;font-size:22px;margin:0 0 16px">Nouvelle inscription</h2>
         <p><strong>${escapeHtml(eleve)}</strong> jouera le <strong>${escapeHtml(moment)}</strong>.</p>
-        <p>Inscrit·e par ${escapeHtml(prof.prenom)} ${escapeHtml(prof.nom)} (${escapeHtml(prof.email)}).</p>
+        <p>${pourSoi ? `Inscription personnelle (${escapeHtml(prof.email)}).` : `Inscrit·e par ${escapeHtml(prof.prenom)} ${escapeHtml(prof.nom)} (${escapeHtml(prof.email)}).`}</p>
         ${programme ? `<p><strong>Programme</strong></p>${paragraphe(programme)}` : ''}`
     }),
     revalidatePublicPages()

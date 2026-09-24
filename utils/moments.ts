@@ -56,6 +56,8 @@ export interface SeancePublique {
   programme?: string | null
   /** Identifiant de la réservation, pour les séances d'élèves. */
   id?: string
+  /** Vrai si la personne s'est inscrite elle-même : pas de mention « Élève ». */
+  pourSoi?: boolean
 }
 
 // ── Dates ────────────────────────────────────────────────────────────────────
