@@ -46,7 +46,7 @@ export interface CreneauPris {
   mien?: boolean
 }
 
-/** Une séance publiée : Louis-Paul Courtois ou un élève. */
+/** Une séance publiée : Louis-Paul Courtois ou une séance inscrite. */
 export interface SeancePublique {
   date: string
   debut: string
@@ -56,8 +56,6 @@ export interface SeancePublique {
   programme?: string | null
   /** Identifiant de la réservation, pour les séances d'élèves. */
   id?: string
-  /** Vrai si la personne s'est inscrite elle-même : pas de mention « Élève ». */
-  pourSoi?: boolean
 }
 
 // ── Dates ────────────────────────────────────────────────────────────────────

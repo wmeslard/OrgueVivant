@@ -21,7 +21,7 @@ export default defineEventHandler(async (event) => {
   const corps = (prenom: string) => `
     <p>Bonjour ${escapeHtml(prenom)},</p>
     <p>La séance de <strong>${escapeHtml(s.eleve_prenom)} ${escapeHtml(s.eleve_nom)}</strong>, prévue le <strong>${escapeHtml(moment)}</strong>, est annulée par l'association${texte ? ` : ${escapeHtml(texte)}` : ''}.</p>
-    <p>Un autre créneau peut être choisi depuis l'espace des professeurs. Pour toute question : ${escapeHtml(adresseAssociation())}.</p>
+    <p>Un autre jeudi peut être choisi depuis l'espace d'inscription. Pour toute question : ${escapeHtml(adresseAssociation())}.</p>
     <p>L'équipe d'Orgue Vivant</p>`
   await Promise.all([
     prof && envoyerEmail({ to: prof.email, subject: `Séance annulée — ${moment.split(',')[0]}`, html: corps(prof.prenom) }),

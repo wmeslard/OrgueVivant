@@ -28,7 +28,7 @@ const props = defineProps<{
   contexte: ContexteJour
   /** Enregistre la fiche ; une erreur levée s'affiche dans la fiche. */
   envoyer: (fiche: FicheEleve) => Promise<unknown>
-  /** Vue de l'association : pas de légende « Mes élèves ». */
+  /** Vue de l'association : pas de légende « Mes inscriptions ». */
   association?: boolean
 }>()
 const emit = defineEmits<{ (e: 'inscrit'): void; (e: 'echec'): void }>()
@@ -157,7 +157,7 @@ const legende = computed(() => [
 
     </div>
 
-    <!-- Fiche de l'élève -->
+    <!-- Fiche d'inscription -->
     <Teleport to="body">
       <div v-if="creneauChoisi" class="fixed inset-0 z-[200] overflow-y-auto bg-black/70">
         <!-- Centrée à l'écran ; sur un écran trop bas, elle défile au lieu d'être coupée -->

@@ -182,7 +182,7 @@ function schemaAbsent(error: { code?: string } | null): boolean {
 /** Ce que l'API répond quand un créneau n'est pas inscriptible (voir raisonNonReservable). */
 export const MESSAGES_REFUS: Record<string, string> = {
   passe: 'Cette date est passée.',
-  trop_tot: 'Inscrivez votre élève au moins deux jours à l\'avance.',
+  trop_tot: 'Les inscriptions ferment deux jours avant la séance.',
   trop_loin: `Les inscriptions sont ouvertes sur ${HORIZON_MOIS} mois.`,
   hors_creneau: 'Les Moments musicaux ont lieu le jeudi, à 13 h 15.',
   ferme: 'L\'orgue n\'est pas disponible ce jeudi-là.',
@@ -256,8 +256,7 @@ export async function calendrierPublic(du: string, au: string): Promise<SeancePu
       fin: s.heure_fin.slice(0, 5),
       type: 'eleve',
       interprete: nomPublic(s.eleve_prenom, s.eleve_nom),
-      programme: s.programme,
-      pourSoi: !!s.pour_soi
+      programme: s.programme
     })
   }
   return out.sort((a, b) => a.date.localeCompare(b.date) || a.debut.localeCompare(b.debut))

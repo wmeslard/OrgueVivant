@@ -7,7 +7,7 @@ import {
 import { finCreneau, HORIZON_MOIS, nomPublic, plusMois, raisonNonReservable } from '~/utils/moments'
 
 /**
- * Inscription sur un jeudi : un élève, par son professeur, ou la personne
+ * Inscription sur un jeudi : quelqu'un, inscrit par la personne entrée par le lien, ou celle-ci
  * elle-même (`pour_soi`) — son nom est alors celui de sa fiche, jamais celui
  * qu'enverrait le navigateur.
  */
@@ -27,9 +27,9 @@ export default defineEventHandler(async (event) => {
 
   const elevePrenom = pourSoi ? prof.prenom : (body?.eleve_prenom ?? '').trim().slice(0, 80)
   const eleveNom = pourSoi ? prof.nom : (body?.eleve_nom ?? '').trim().slice(0, 80)
-  if (!elevePrenom || !eleveNom) throw createError({ statusCode: 400, statusMessage: 'Prénom et nom de l\'élève requis' })
+  if (!elevePrenom || !eleveNom) throw createError({ statusCode: 400, statusMessage: 'Prénom et nom requis' })
   const eleveEmail = pourSoi ? '' : (body?.eleve_email ?? '').trim().slice(0, 254)
-  if (eleveEmail && !/^\S+@\S+\.\S+$/.test(eleveEmail)) throw createError({ statusCode: 400, statusMessage: 'Email de l\'élève invalide' })
+  if (eleveEmail && !/^\S+@\S+\.\S+$/.test(eleveEmail)) throw createError({ statusCode: 400, statusMessage: 'Email invalide' })
   const programme = (body?.programme ?? '').trim().slice(0, 600)
 
   const client = getServiceClient()
@@ -87,7 +87,7 @@ export default defineEventHandler(async (event) => {
         <p>Bonjour ${escapeHtml(elevePrenom)},</p>
         <p>${escapeHtml(prof.prenom)} ${escapeHtml(prof.nom)} vous a inscrit·e pour un Moment musical : <strong>${escapeHtml(moment)}</strong>, à l'orgue de chœur de l'église Saint-Maurice de Lille.</p>
         ${programme ? `<p><strong>Programme annoncé</strong></p>${paragraphe(programme)}` : ''}
-        <p>Une demi-heure de musique, en entrée libre : le public entre et sort comme il veut. Pour toute question, adressez-vous à votre professeur ou à ${escapeHtml(adresseAssociation())}.</p>
+        <p>Une demi-heure de musique, en entrée libre : le public entre et sort comme il veut. Pour toute question, adressez-vous à la personne qui vous a inscrit·e ou à ${escapeHtml(adresseAssociation())}.</p>
         <p>À bientôt,<br>l'équipe d'Orgue Vivant</p>`
     }),
     envoyerEmail({

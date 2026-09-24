@@ -3,8 +3,8 @@
  * Les jeudis des Moments musicaux (13 h 15 – 13 h 45) sur l'horizon
  * d'inscription : qui joue, ce qui reste libre, ce qui est bloqué. On bloque
  * un jeudi, ou une période entière (vacances, travaux), et on débloque ici.
- * Bloquer un jeudi où un élève est inscrit annule sa séance : le serveur
- * prévient son professeur et l'élève.
+ * Bloquer un jeudi où quelqu'un est inscrit annule sa séance : le serveur
+ * prévient les personnes concernées.
  */
 import {
   CRENEAU_REGULIER, DUREE_MIN, HORIZON_MOIS, JOUR_MOMENTS, ORGANISTE_REGULIER, type Horaire,
@@ -62,7 +62,7 @@ async function envoyer(fn: () => Promise<{ seances_annulees?: number }>, message
     const r = await fn()
     emit('modifie')
     const n = r?.seances_annulees ?? 0
-    showToast(n ? `${message} — ${n} séance${n > 1 ? 's' : ''} annulée${n > 1 ? 's' : ''}, professeurs et élèves prévenus.` : message, { type: 'success' })
+    showToast(n ? `${message} — ${n} séance${n > 1 ? 's' : ''} annulée${n > 1 ? 's' : ''}, les personnes inscrites prévenues.` : message, { type: 'success' })
   } catch (e: any) {
     showToast(e?.data?.statusMessage || 'Erreur', { type: 'error' })
   } finally { busy.value = false }
@@ -76,7 +76,7 @@ const regleJeudis = (du: string, au: string, motif: string) => ({
 async function bloquer(date: string) {
   const s = seanceDu(date)
   const motif = prompt(`Bloquer le ${fmt(date, { weekday: 'long', day: 'numeric', month: 'long' })} ?`
-    + (s ? `\n\nLa séance de ${s.eleve_prenom} ${s.eleve_nom} sera annulée, professeur et élève prévenus.` : '')
+    + (s ? `\n\nLa séance de ${s.eleve_prenom} ${s.eleve_nom} sera annulée, les personnes inscrites prévenues.` : '')
     + '\n\nMotif (facultatif) :', '')
   if (motif === null) return
   await envoyer(() => $fetch('/api/admin/moments/horaires', { method: 'POST', body: regleJeudis(date, date, motif) }), 'Jeudi bloqué.')
@@ -95,7 +95,7 @@ const touchees = computed(() => !periode.du || !periode.au ? []
   : props.seances.filter(s => s.statut === 'reservee' && s.date >= periode.du && s.date <= periode.au && s.date >= props.aujourdhui))
 async function bloquerPeriode() {
   if (!periode.du || !periode.au || periode.au < periode.du) { showToast('Indiquez une période valide.', { type: 'error' }); return }
-  if (touchees.value.length && !confirm(`${touchees.value.length} séance(s) d'élève dans cette période seront annulées, professeurs et élèves prévenus. Continuer ?`)) return
+  if (touchees.value.length && !confirm(`${touchees.value.length} séance(s) inscrite(s) dans cette période seront annulées, les personnes inscrites prévenues. Continuer ?`)) return
   await envoyer(() => $fetch('/api/admin/moments/horaires', { method: 'POST', body: regleJeudis(periode.du, periode.au, periode.motif) }), 'Période bloquée.')
   Object.assign(periode, { du: '', au: '', motif: '' })
 }
@@ -105,7 +105,7 @@ async function bloquerPeriode() {
   <div class="space-y-10">
     <p class="max-w-3xl text-sm text-ink-500">
       Les Moments musicaux ont lieu le jeudi, de 13 h 15 à 13 h 45. Un jeudi sur deux est celui de {{ ORGANISTE_REGULIER }} ;
-      l'autre est proposé aux élèves. Bloquer un jeudi supprime la séance prévue ce jour-là, quelle qu'elle soit.
+      l'autre est ouvert aux inscriptions. Bloquer un jeudi supprime la séance prévue ce jour-là, quelle qu'elle soit.
     </p>
 
     <!-- Bloquer une période -->
@@ -127,7 +127,7 @@ async function bloquerPeriode() {
         </div>
       </div>
       <p v-if="touchees.length" class="mt-3 text-sm text-rose-300">
-        {{ touchees.length }} séance(s) d'élève dans cette période seront annulées.
+        {{ touchees.length }} séance(s) inscrite(s) dans cette période seront annulées.
       </p>
       <button class="btn-primary mt-5" :disabled="busy" @click="bloquerPeriode">Bloquer la période</button>
     </section>

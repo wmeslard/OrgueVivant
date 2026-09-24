@@ -23,9 +23,9 @@ export default defineEventHandler(async (event) => {
   if (!/^\d{2}:\d{2}$/.test(debut)) throw createError({ statusCode: 400, statusMessage: 'Créneau invalide' })
   const elevePrenom = (body?.eleve_prenom ?? '').trim().slice(0, 80)
   const eleveNom = (body?.eleve_nom ?? '').trim().slice(0, 80)
-  if (!elevePrenom || !eleveNom) throw createError({ statusCode: 400, statusMessage: 'Prénom et nom de l\'élève requis' })
+  if (!elevePrenom || !eleveNom) throw createError({ statusCode: 400, statusMessage: 'Prénom et nom requis' })
   const eleveEmail = (body?.eleve_email ?? '').trim().slice(0, 254)
-  if (eleveEmail && !/^\S+@\S+\.\S+$/.test(eleveEmail)) throw createError({ statusCode: 400, statusMessage: 'Email de l\'élève invalide' })
+  if (eleveEmail && !/^\S+@\S+\.\S+$/.test(eleveEmail)) throw createError({ statusCode: 400, statusMessage: 'Email invalide' })
   const programme = (body?.programme ?? '').trim().slice(0, 600)
 
   const client = getServiceClient()

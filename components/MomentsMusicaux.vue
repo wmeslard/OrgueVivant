@@ -38,8 +38,6 @@ const prochaine = computed(() => seances.value[0])
 /** Trois lignes réservées tant que les séances ne sont pas arrivées : la tuile ne bouge pas. */
 const lignes = computed<(SeancePublique | null)[]>(() => charge.value ? prochaines.value : [null, null, null])
 const horaire = `${heureFr(CRENEAU_REGULIER)} – ${heureFr(finCreneau(CRENEAU_REGULIER))}`
-/** Même pastille « Élève » que sur la page des Moments musicaux. */
-const PASTILLE = 'ml-2 inline-block whitespace-nowrap rounded-full border border-gold/30 px-[7px] align-[1px] text-[10px] font-medium uppercase leading-4 tracking-[0.08em] text-gold'
 
 function jourLong(date: string) {
   const [y, m, d] = date.split('-').map(Number)
@@ -155,7 +153,6 @@ const pastilleDate = 'min-h-[1.5rem] text-base font-medium text-text-primary tra
               </span>
               <span v-else-if="s" class="text-text-primary">
                 {{ s.interprete }}
-                <span v-if="!s.pourSoi" :class="PASTILLE">{{ t('moments.eleveTag') }}</span>
               </span>
             </li>
           </ul>

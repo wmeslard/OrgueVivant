@@ -4,7 +4,7 @@
  * professeurs, et jeudis (13 h 15) avec leurs blocages.
  *
  * Contrairement au site public, l'administration voit tout : le nom complet de
- * l'élève, et le professeur qui l'a inscrit.
+ * la personne inscrite, et qui l'a inscrite.
  */
 import type { FicheEleve } from '~/components/MomentsCreneaux.vue'
 import { heureFr, type Horaire } from '~/utils/moments'
@@ -91,7 +91,7 @@ async function regenererLien() {
 
 // ── Calendrier des séances ───────────────────────────────────────────────────
 // Le même calendrier que celui des professeurs, sans délai de prévenance, avec
-// le nom complet des élèves déjà inscrits.
+// le nom complet des personnes déjà inscrites.
 const contexte = computed(() => ({
   aujourdhui: data.value?.aujourdhui ?? '',
   delaiJours: 0,
@@ -106,7 +106,7 @@ const seanceDu = (date: string, debut: string) =>
 const inscrireEleve = (fiche: FicheEleve) => $fetch('/api/admin/moments/seances', { method: 'POST', body: fiche })
 async function inscrit() {
   await refresh()
-  showToast('Élève inscrit.', { type: 'success' })
+  showToast('Inscription enregistrée.', { type: 'success' })
 }
 
 async function annulerSeance(s: Seance) {
@@ -117,7 +117,7 @@ async function annulerSeance(s: Seance) {
 
 // ── Professeurs ──────────────────────────────────────────────────────────────
 async function basculerProf(p: Professeur) {
-  if (p.actif && !confirm(`Désactiver ${p.prenom} ${p.nom} ? Les séances à venir de ses élèves seront annulées.`)) return
+  if (p.actif && !confirm(`Désactiver ${p.prenom} ${p.nom} ? Ses séances à venir seront annulées.`)) return
   await action(() => $fetch(`/api/admin/moments/professeurs/${p.id}`, { method: 'PATCH', body: { actif: !p.actif } }),
     p.actif ? 'Professeur désactivé.' : 'Professeur réactivé.')
 }
@@ -143,7 +143,7 @@ async function enregistrerProf() {
 async function supprimerProf(p: Professeur) {
   const n = seancesAVenirDe(p.id)
   if (!confirm(`Supprimer définitivement ${p.prenom} ${p.nom} ?\n\n`
-    + `Sa fiche et toutes ses séances sont effacées${n ? `, dont ${n} à venir, retirée(s) du site sans prévenir les élèves` : ''}. `
+    + `Sa fiche et toutes ses séances sont effacées${n ? `, dont ${n} à venir, retirée(s) du site sans prévenir les personnes inscrites` : ''}. `
     + 'Avec le lien, cette personne pourra revenir sous une nouvelle fiche : pour lui couper l\'accès, désactivez-la plutôt.')) return
   await action(() => $fetch(`/api/admin/moments/professeurs/${p.id}`, { method: 'DELETE' }), 'Professeur supprimé.')
 }
@@ -159,7 +159,7 @@ async function supprimerProf(p: Professeur) {
     <section class="mb-10 rounded-2xl border border-ink-200 p-6 dark:border-ink-800">
       <h2 class="mb-1 font-display text-xl">Lien pour les professeurs</h2>
       <p class="mb-4 text-sm text-ink-500">
-        Toute personne qui ouvre ce lien peut inscrire des élèves : transmettez-le aux professeurs d'orgue, par email
+        Toute personne qui ouvre ce lien peut s'inscrire ou inscrire quelqu'un : transmettez-le aux organistes et à leurs professeurs, par email
         ou par message, sans le publier. S'il circule trop largement, régénérez-le — l'ancien cesse aussitôt de
         fonctionner, et les professeurs devront utiliser le nouveau.
       </p>
@@ -196,7 +196,7 @@ async function supprimerProf(p: Professeur) {
     <section v-else-if="onglet === 'calendrier' && data" class="space-y-10">
       <p class="text-sm text-ink-500">
         Les Moments musicaux ont lieu le jeudi à 13 h 15. Cliquez un jeudi : la séance inscrite s'affiche avec son
-        détail, ou le créneau libre ouvre la fiche d'inscription d'un élève. L'association n'est pas tenue par le délai
+        détail, ou le créneau libre ouvre la fiche d'inscription. L'association n'est pas tenue par le délai
         de deux jours.
       </p>
 

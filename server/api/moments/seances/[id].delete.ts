@@ -28,7 +28,7 @@ export default defineEventHandler(async (event) => {
     s.eleve_email && envoyerEmail({
       to: s.eleve_email,
       subject: `Votre Moment musical du ${moment.split(',')[0]} est annulé`,
-      html: `<p>Bonjour ${escapeHtml(s.eleve_prenom)},</p><p>Votre séance du <strong>${escapeHtml(moment)}</strong> a été annulée par votre professeur.</p><p>L'équipe d'Orgue Vivant</p>`
+      html: `<p>Bonjour ${escapeHtml(s.eleve_prenom)},</p><p>Votre séance du <strong>${escapeHtml(moment)}</strong> a été annulée par la personne qui vous avait inscrit·e.</p><p>L'équipe d'Orgue Vivant</p>`
     }),
     revalidatePublicPages()
   ])

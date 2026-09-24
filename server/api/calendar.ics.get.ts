@@ -62,7 +62,7 @@ const LIEUX = {
 } as const
 
 // ── Moments musicaux ─────────────────────────────────────────────────────────
-// Séances du régulier (un jeudi sur deux) et séances réservées par les élèves,
+// Séances du régulier (un jeudi sur deux) et séances inscrites par le lien,
 // telles que le site les publie : voir server/utils/moments.ts.
 const MONTHS_AHEAD = 12
 
@@ -103,10 +103,10 @@ export default defineEventHandler(async (event) => {
       : `Moment musical — ${s.interprete}${s.programme ? ` · ${s.programme}` : ''}`
     const description = s.type === 'regulier'
       ? `Une demi-heure de musique à l'orgue de chœur de l'église Saint-Maurice, par ${s.interprete}. Un jeudi sur deux, les semaines paires.`
-      : `Une demi-heure de musique à l'orgue de chœur de l'église Saint-Maurice, par ${s.interprete}${s.pourSoi ? '' : ', élève organiste'}.${s.programme ? `\nProgramme : ${s.programme}` : ''}`
+      : `Une demi-heure de musique à l'orgue de chœur de l'église Saint-Maurice, par ${s.interprete}.${s.programme ? `\nProgramme : ${s.programme}` : ''}`
     vevents.push([
       'BEGIN:VEVENT',
-      // Les séances d'élèves gardent leur identifiant de réservation : une
+      // Les séances inscrites gardent leur identifiant de réservation : une
       // annulation retire l'événement, une nouvelle réservation en crée un autre.
       `UID:${s.type === 'regulier' ? `moment-${day}` : `moment-${s.id}`}@orgue-vivant`,
       `DTSTAMP:${stamp}`,
