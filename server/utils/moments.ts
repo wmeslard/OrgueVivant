@@ -186,7 +186,6 @@ export const MESSAGES_REFUS: Record<string, string> = {
   trop_loin: `Les inscriptions sont ouvertes sur ${HORIZON_MOIS} mois.`,
   hors_creneau: 'Les Moments musicaux ont lieu le jeudi, à 13 h 15.',
   ferme: 'L\'orgue n\'est pas disponible ce jeudi-là.',
-  regulier: 'Ce créneau est celui de Louis-Paul Courtois.',
   pris: 'Ce créneau vient d\'être pris.'
 }
 
@@ -234,14 +233,16 @@ export function jeudisReguliers(du: string, au: string, horaires: readonly Horai
 }
 
 /**
- * Le calendrier tel que le site le publie : les séances de Louis-Paul Courtois
- * et celles des élèves, par date puis par heure. Rien n'en sort de plus que le
- * prénom et l'initiale de l'élève — ni son nom complet, ni son professeur.
+ * Le calendrier tel que le site le publie : chaque jeudi ouvert, la séance
+ * inscrite, ou à défaut Louis-Paul Courtois. Rien n'en sort de plus que le
+ * prénom et l'initiale de la personne inscrite — ni son nom complet, ni qui l'a
+ * inscrite.
  */
 export async function calendrierPublic(du: string, au: string): Promise<SeancePublique[]> {
   const client = getServiceClient()
   const [horaires, seances] = await Promise.all([chargerHoraires(client), chargerSeances(client, du, au)])
-  const out: SeancePublique[] = jeudisReguliers(du, au, horaires).map(date => ({
+  const inscrits = new Set(seances.map(s => s.date))
+  const out: SeancePublique[] = jeudisReguliers(du, au, horaires).filter(date => !inscrits.has(date)).map(date => ({
     date,
     debut: CRENEAU_REGULIER,
     fin: finCreneau(CRENEAU_REGULIER),

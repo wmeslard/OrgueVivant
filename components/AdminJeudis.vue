@@ -8,7 +8,7 @@
  */
 import {
   CRENEAU_REGULIER, DUREE_MIN, HORIZON_MOIS, JOUR_MOMENTS, ORGANISTE_REGULIER, type Horaire,
-  estJeudiRegulier, estTemporaire, finCreneau, minutes, parseYmd, plusJours, plusMois, reglesDuJour, ymd
+  estTemporaire, finCreneau, minutes, parseYmd, plusJours, plusMois, reglesDuJour, ymd
 } from '~/utils/moments'
 
 type Regle = Horaire & { id: string }
@@ -42,11 +42,11 @@ const mois = computed(() => {
   const d = parseYmd(props.aujourdhui)
   d.setDate(d.getDate() + ((JOUR_MOMENTS - d.getDay() + 7) % 7))
   const fin = plusMois(props.aujourdhui, HORIZON_MOIS)
-  const groupes: { titre: string; jeudis: { date: string; blocage?: Regle; regulier: boolean; seance?: SeanceAdmin }[] }[] = []
+  const groupes: { titre: string; jeudis: { date: string; blocage?: Regle; seance?: SeanceAdmin }[] }[] = []
   for (let s = ymd(d); s <= fin; s = plusJours(s, 7)) {
     const titre = fmt(s, { month: 'long', year: 'numeric' })
     if (groupes.at(-1)?.titre !== titre) groupes.push({ titre, jeudis: [] })
-    groupes.at(-1)!.jeudis.push({ date: s, blocage: blocageDu(s), regulier: estJeudiRegulier(s), seance: seanceDu(s) })
+    groupes.at(-1)!.jeudis.push({ date: s, blocage: blocageDu(s), seance: seanceDu(s) })
   }
   return groupes
 })
@@ -104,8 +104,8 @@ async function bloquerPeriode() {
 <template>
   <div class="space-y-10">
     <p class="max-w-3xl text-sm text-ink-500">
-      Les Moments musicaux ont lieu le jeudi, de 13 h 15 à 13 h 45. Un jeudi sur deux est celui de {{ ORGANISTE_REGULIER }} ;
-      l'autre est ouvert aux inscriptions. Bloquer un jeudi supprime la séance prévue ce jour-là, quelle qu'elle soit.
+      Les Moments musicaux ont lieu le jeudi, de 13 h 15 à 13 h 45. Tous les jeudis sont ouverts aux inscriptions ;
+      quand personne n'est inscrit, {{ ORGANISTE_REGULIER }} joue. Bloquer un jeudi supprime la séance prévue ce jour-là, quelle qu'elle soit.
     </p>
 
     <!-- Bloquer une période -->
@@ -148,7 +148,6 @@ async function bloquerPeriode() {
               Bloqué<template v-if="j.blocage.motif"> — {{ j.blocage.motif }}</template>
               <span class="ml-2 text-xs text-ink-500">({{ portee(j.blocage) }})</span>
             </span>
-            <span v-else-if="j.regulier" class="text-gold">{{ ORGANISTE_REGULIER }}</span>
             <span v-else-if="j.seance">
               {{ j.seance.eleve_prenom }} {{ j.seance.eleve_nom }}
               <span class="ml-2 text-xs text-ink-500">
@@ -156,7 +155,10 @@ async function bloquerPeriode() {
                 <template v-else>inscrit·e par {{ j.seance.professeur ? `${j.seance.professeur.prenom} ${j.seance.professeur.nom}` : 'l\'association' }}</template>
               </span>
             </span>
-            <span v-else class="text-ink-500">Libre</span>
+            <span v-else class="text-gold">
+              {{ ORGANISTE_REGULIER }}
+              <span class="ml-2 text-xs text-ink-500">personne d'inscrit</span>
+            </span>
           </span>
           <button v-if="j.blocage" class="text-ink-400 underline-offset-4 hover:underline" :disabled="busy" @click="debloquer(j.blocage)">
             Débloquer

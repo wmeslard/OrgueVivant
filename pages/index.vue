@@ -284,7 +284,7 @@ function needsMore(n: NewsItem) {
       </div>
     </section>
 
-    <!-- SECTION MOMENTS MUSICAUX (un jeudi sur deux) -->
+    <!-- SECTION MOMENTS MUSICAUX (tous les jeudis) -->
     <MomentsMusicaux variant="compact" />
 
     <!-- SECTION PATRIMOINE / STORYTELLING -->

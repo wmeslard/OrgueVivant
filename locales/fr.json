@@ -317,7 +317,7 @@
     "logout": "Déconnexion",
     "moisPrecedent": "Mois précédent",
     "moisSuivant": "Mois suivant",
-    "chooseDateHint": "Le jeudi, de 13 h 15 à 13 h 45. Un jeudi sur deux est celui de Louis-Paul Courtois ; les autres sont ouverts aux inscriptions.",
+    "chooseDateHint": "Le jeudi, de 13 h 15 à 13 h 45. Tous les jeudis sont ouverts aux inscriptions ; quand personne n'est inscrit, Louis-Paul Courtois joue.",
     "slotsFor": "Créneaux du",
     "noSlots": "Aucun créneau libre ce jour-là.",
     "pickDay": "Choisissez un jour dans le calendrier.",
@@ -343,9 +343,8 @@
     "legendMine": "Mes inscriptions",
     "legendTaken": "Pris",
     "legendClosed": "Orgue indisponible",
-    "free": "libre",
     "signUp": "Inscrire",
-    "tooLate": "Inscriptions closes",
+    "tooLate": "inscriptions closes",
     "noSession": "Pas de séance ce jeudi",
     "you": "vous",
     "yourStudent": "inscrit·e par vous",
@@ -366,7 +365,8 @@
     "yourEmailHint": "La confirmation vous sera envoyée à cette adresse.",
     "editProfile": "Modifier mes informations",
     "profileTitle": "Mes informations",
-    "profileSaved": "Informations enregistrées."
+    "profileSaved": "Informations enregistrées.",
+    "freeDefault": "Libre · sinon {nom}"
   },
   "momentsAcces": {
     "title": "Moments musicaux",

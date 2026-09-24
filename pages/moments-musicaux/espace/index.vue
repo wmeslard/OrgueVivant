@@ -228,10 +228,12 @@ async function logout() {
                     <span class="text-gold"> · {{ j.seance.pour_soi ? t('momentsEspace.you') : t('momentsEspace.yourStudent') }}</span>
                   </template>
                   <span v-else-if="!j.creneau" class="text-text-secondary">{{ t('momentsEspace.noSession') }}</span>
-                  <span v-else-if="j.creneau.etat === 'regulier'" class="text-gold/80">{{ j.creneau.interprete }}</span>
                   <span v-else-if="j.creneau.etat === 'pris'" class="text-text-secondary">{{ j.creneau.interprete }}</span>
-                  <span v-else-if="j.creneau.etat === 'passe'" class="text-text-secondary">{{ t('momentsEspace.tooLate') }}</span>
-                  <span v-else class="text-text-secondary">{{ heureFr(j.creneau.debut) }} · {{ t('momentsEspace.free') }}</span>
+                  <template v-else-if="j.creneau.etat === 'passe'">
+                    <span class="text-gold/80">{{ j.creneau.interprete }}</span>
+                    <span class="text-text-secondary"> · {{ t('momentsEspace.tooLate') }}</span>
+                  </template>
+                  <span v-else class="text-text-secondary">{{ t('momentsEspace.freeDefault', { nom: j.creneau.interprete }) }}</span>
                 </div>
                 <p v-if="j.seance?.programme" class="mt-1 text-xs font-light text-text-secondary">{{ j.seance.programme }}</p>
               </div>

@@ -48,7 +48,7 @@ const jours = computed<Record<string, EtatJour>>(() => {
     const date = ymd(cursor)
     const creneaux = creneauxDuJour(date, props.contexte)
     const libres = creneaux.filter(c => c.etat === 'libre').length
-    const pris = creneaux.filter(c => c.etat === 'pris' || c.etat === 'regulier').length
+    const pris = creneaux.filter(c => c.etat === 'pris').length
     out[date] = { libres, pris, mien: creneaux.some(c => c.mien), indisponible: !creneaux.length }
   }
   return out

@@ -62,7 +62,7 @@ const LIEUX = {
 } as const
 
 // ── Moments musicaux ─────────────────────────────────────────────────────────
-// Séances du régulier (un jeudi sur deux) et séances inscrites par le lien,
+// Chaque jeudi ouvert : la séance inscrite par le lien, ou Louis-Paul Courtois,
 // telles que le site les publie : voir server/utils/moments.ts.
 const MONTHS_AHEAD = 12
 
@@ -102,7 +102,7 @@ export default defineEventHandler(async (event) => {
       ? `Moment musical — ${s.interprete}`
       : `Moment musical — ${s.interprete}${s.programme ? ` · ${s.programme}` : ''}`
     const description = s.type === 'regulier'
-      ? `Une demi-heure de musique à l'orgue de chœur de l'église Saint-Maurice, par ${s.interprete}. Un jeudi sur deux, les semaines paires.`
+      ? `Une demi-heure de musique à l'orgue de chœur de l'église Saint-Maurice, par ${s.interprete}.`
       : `Une demi-heure de musique à l'orgue de chœur de l'église Saint-Maurice, par ${s.interprete}.${s.programme ? `\nProgramme : ${s.programme}` : ''}`
     vevents.push([
       'BEGIN:VEVENT',

@@ -3,15 +3,15 @@
  * professeurs, l'admin, le flux ICS et l'API. Sans dépendance à Nuxt.
  *
  * Les Moments musicaux ont lieu le jeudi, de 13 h 15 à 13 h 45, à l'orgue de
- * chœur de Saint-Maurice. Un jeudi sur deux, Louis-Paul Courtois joue (séance
- * calculée, non stockée) ; l'autre jeudi est proposé aux élèves, inscrits par
- * leur professeur. Un blocage — par défaut ou temporaire — qui tombe sur ce
- * créneau supprime la séance, celle de Louis-Paul comprise.
+ * chœur de Saint-Maurice. Tous les jeudis sont ouverts aux inscriptions ; quand
+ * personne n'est inscrit, Louis-Paul Courtois joue (séance calculée, non
+ * stockée). Un blocage — par défaut ou temporaire — qui tombe sur ce créneau
+ * supprime la séance, celle de Louis-Paul comprise.
  */
 
 export const DUREE_MIN = 30
 export const ORGANISTE_REGULIER = 'Louis-Paul Courtois'
-/** Créneau que Louis-Paul Courtois occupe, un jeudi sur deux. */
+/** Le créneau des Moments musicaux, le jeudi. */
 export const CRENEAU_REGULIER = '13:15'
 
 /** Horizon d'inscription, en mois. */
@@ -60,15 +60,6 @@ export interface SeancePublique {
 
 // ── Dates ────────────────────────────────────────────────────────────────────
 
-/** Numéro de semaine ISO 8601 (celui des calendriers français). */
-export function isoWeek(d: Date): number {
-  const t = new Date(Date.UTC(d.getFullYear(), d.getMonth(), d.getDate()))
-  const day = t.getUTCDay() || 7
-  t.setUTCDate(t.getUTCDate() + 4 - day)
-  const yearStart = new Date(Date.UTC(t.getUTCFullYear(), 0, 1))
-  return Math.ceil(((t.getTime() - yearStart.getTime()) / 86400000 + 1) / 7)
-}
-
 export function ymd(d: Date): string {
   return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`
 }
@@ -82,12 +73,6 @@ export function parseYmd(s: string): Date {
 /** Jour de la semaine, 0 = dimanche. */
 export function jourSemaine(date: string): number {
   return parseYmd(date).getDay()
-}
-
-/** Le créneau de Louis-Paul Courtois : un jeudi de semaine ISO paire. */
-export function estJeudiRegulier(date: string): boolean {
-  const d = parseYmd(date)
-  return d.getDay() === 4 && isoWeek(d) % 2 === 0
 }
 
 /** « Camille D. » : ce que le site publie d'un élève. */
@@ -171,19 +156,22 @@ export function creneauBloque(date: string, horaires: readonly Horaire[]): boole
     .some(h => h.type === 'blocage' && minutes(h.heure_debut) < b && minutes(h.heure_fin) > a)
 }
 
-/** Louis-Paul Courtois joue-t-il ce jour-là ? Un jeudi sur deux, sauf blocage. */
+/**
+ * Un Moment musical a-t-il lieu ce jour-là ? Tout jeudi non bloqué : Louis-Paul
+ * Courtois y joue si personne ne s'est inscrit.
+ */
 export function seanceReguliere(date: string, horaires: readonly Horaire[]): boolean {
-  return estJeudiRegulier(date) && !creneauBloque(date, horaires)
+  return jourSemaine(date) === JOUR_MOMENTS && !creneauBloque(date, horaires)
 }
 
 export interface CreneauJour {
   debut: string
   fin: string
-  /** Libre, ou la raison pour laquelle il ne l'est pas. */
-  etat: 'libre' | 'pris' | 'regulier' | 'passe'
-  /** Interprète déjà inscrit, ou Louis-Paul Courtois. */
+  /** Libre, pris, ou trop proche pour s'inscrire (`passe`). */
+  etat: 'libre' | 'pris' | 'passe'
+  /** Interprète inscrit, ou Louis-Paul Courtois, qui joue si personne ne s'inscrit. */
   interprete?: string
-  /** Vrai si c'est le professeur connecté qui a inscrit cet élève. */
+  /** Vrai si c'est la personne connectée qui a fait cette inscription. */
   mien?: boolean
 }
 
@@ -201,9 +189,9 @@ export interface ContexteJour {
 
 /**
  * Le créneau d'une journée, s'il y en a un : les Moments musicaux ont lieu le
- * jeudi seulement, de 13 h 15 à 13 h 45. Un jeudi sur deux est celui de
- * Louis-Paul Courtois ; l'autre est proposé aux élèves. Liste vide les autres
- * jours, les jeudis bloqués et hors de l'horizon d'inscription.
+ * jeudi seulement, de 13 h 15 à 13 h 45, et tous les jeudis sont ouverts aux
+ * inscriptions. Liste vide les autres jours, les jeudis bloqués et hors de
+ * l'horizon d'inscription.
  */
 export function creneauxDuJour(date: string, ctx: ContexteJour): CreneauJour[] {
   if (date < ctx.aujourdhui || date > plusMois(ctx.aujourdhui, HORIZON_MOIS)) return []
@@ -211,12 +199,12 @@ export function creneauxDuJour(date: string, ctx: ContexteJour): CreneauJour[] {
 
   const debut = CRENEAU_REGULIER
   const fin = finCreneau(debut)
-  if (estJeudiRegulier(date)) return [{ debut, fin, etat: 'regulier', interprete: ORGANISTE_REGULIER }]
   const pris = ctx.pris.find(p => p.date === date && p.heure_debut.slice(0, 5) === debut)
   if (pris) return [{ debut, fin, etat: 'pris', interprete: pris.interprete, mien: pris.mien }]
-  // Trop tard, le jour même comme la veille, pour prévenir la paroisse et l'élève.
+  // Trop tard, le jour même comme la veille, pour prévenir la paroisse et les
+  // musiciens : Louis-Paul Courtois joue.
   const tropTot = date < plusJours(ctx.aujourdhui, ctx.delaiJours ?? 2)
-  return [{ debut, fin, etat: tropTot ? 'passe' : 'libre' }]
+  return [{ debut, fin, etat: tropTot ? 'passe' : 'libre', interprete: ORGANISTE_REGULIER }]
 }
 
 /**
@@ -229,7 +217,7 @@ export function creneauPossible(date: string, debut: string, horaires: readonly 
     .some(c => c.debut === debut.slice(0, 5) && c.etat === 'libre')
 }
 
-export type RaisonRefus = 'passe' | 'trop_tot' | 'trop_loin' | 'hors_creneau' | 'ferme' | 'regulier' | 'pris'
+export type RaisonRefus = 'passe' | 'trop_tot' | 'trop_loin' | 'hors_creneau' | 'ferme' | 'pris'
 
 /**
  * Pourquoi un créneau n'est pas inscriptible — ou `null` s'il l'est.
@@ -243,7 +231,6 @@ export function raisonNonReservable(date: string, debut: string, ctx: ContexteJo
   if (creneauBloque(date, ctx.horaires)) return 'ferme'
   const creneau = creneauxDuJour(date, ctx)[0]
   if (!creneau) return 'hors_creneau'
-  if (creneau.etat === 'regulier') return 'regulier'
   if (creneau.etat === 'pris') return 'pris'
   if (creneau.etat === 'passe') return 'trop_tot'
   return null

@@ -317,7 +317,7 @@
     "logout": "Sign out",
     "moisPrecedent": "Previous month",
     "moisSuivant": "Next month",
-    "chooseDateHint": "Thursdays, from 1:15 to 1:45 pm. Every other Thursday belongs to Louis-Paul Courtois; the others are open for sign-ups.",
+    "chooseDateHint": "Thursdays, 1:15 to 1:45 pm. Every Thursday is open for sign-up; when nobody signs up, Louis-Paul Courtois plays.",
     "slotsFor": "Slots for",
     "noSlots": "No free slot that day.",
     "pickDay": "Pick a day in the calendar.",
@@ -343,9 +343,8 @@
     "legendMine": "My sign-ups",
     "legendTaken": "Taken",
     "legendClosed": "Organ unavailable",
-    "free": "free",
     "signUp": "Sign up",
-    "tooLate": "Sign-ups closed",
+    "tooLate": "sign-ups closed",
     "noSession": "No session this Thursday",
     "you": "you",
     "yourStudent": "signed up by you",
@@ -366,7 +365,8 @@
     "yourEmailHint": "The confirmation will be sent to this address.",
     "editProfile": "Edit my details",
     "profileTitle": "My details",
-    "profileSaved": "Details saved."
+    "profileSaved": "Details saved.",
+    "freeDefault": "Free · otherwise {nom}"
   },
   "momentsAcces": {
     "title": "Musical Moments",
