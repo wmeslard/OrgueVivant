@@ -254,8 +254,10 @@ useSeoMeta({
         </div>
       </section>
 
-      <!-- Abonnement à l'agenda -->
-      <CalendarSubscribe class="mt-16" />
+      <!-- Abonnement à l'agenda, dans la même carte que sur la page des concerts -->
+      <div class="card-premium mt-16 p-8 md:p-12">
+        <CalendarSubscribe />
+      </div>
     </div>
   </div>
 </template>
