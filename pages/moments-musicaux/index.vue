@@ -25,6 +25,8 @@ const suivantes = computed(() => seances.value.slice(1, 5))
 /** Le reste du programme, déplié à la demande. */
 const reste = computed(() => seances.value.slice(5))
 const toutVoir = ref(false)
+/** Pastille « Élève » : d'un seul tenant, elle passe entière à la ligne plutôt que de se couper. */
+const PASTILLE = 'ml-2 inline-block whitespace-nowrap rounded-full border border-gold/40 px-2.5 py-0.5 align-middle text-[11px] font-medium uppercase tracking-wider text-gold'
 const horaire = `${heureFr(CRENEAU_REGULIER)} – ${heureFr(finCreneau(CRENEAU_REGULIER))}`
 
 /** Séances groupées par mois, pour aérer la suite du programme. */
@@ -166,7 +168,7 @@ useSeoMeta({
         <span v-if="prochaine.type === 'regulier'" class="text-gold">{{ prochaine.interprete }}</span>
         <span v-else class="text-text-primary">
           {{ prochaine.interprete }}
-          <span class="ml-1 rounded-full border border-gold/30 px-2 py-0.5 align-[2px] text-[9px] uppercase tracking-widest text-gold">{{ t('moments.eleveTag') }}</span>
+          <span :class="PASTILLE">{{ t('moments.eleveTag') }}</span>
         </span>
       </div>
 
@@ -207,7 +209,7 @@ useSeoMeta({
               </span>
               <span v-else class="text-text-primary">
                 {{ s.interprete }}
-                <span class="ml-1 rounded-full border border-gold/30 px-2 py-0.5 align-[2px] text-[9px] uppercase tracking-widest text-gold">{{ t('moments.eleveTag') }}</span>
+                <span :class="PASTILLE">{{ t('moments.eleveTag') }}</span>
               </span>
             </div>
             <p v-if="s.programme" class="mt-1.5 text-xs font-light leading-relaxed text-text-secondary">{{ s.programme }}</p>
@@ -244,7 +246,7 @@ useSeoMeta({
                   </span>
                   <span v-else class="text-text-primary">
                     {{ s.interprete }}
-                    <span class="ml-1 rounded-full border border-gold/30 px-2 py-0.5 align-[2px] text-[9px] uppercase tracking-widest text-gold">{{ t('moments.eleveTag') }}</span>
+                    <span :class="PASTILLE">{{ t('moments.eleveTag') }}</span>
                   </span>
                   <p v-if="s.programme" class="mt-0.5 font-light text-text-secondary">{{ s.programme }}</p>
                 </div>
