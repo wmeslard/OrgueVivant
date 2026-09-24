@@ -218,7 +218,8 @@
     "liability": "L'association ORGUE VIVANT s'efforce d'assurer l'exactitude et la mise à jour des informations diffusées sur le Site, dont elle se réserve le droit de modifier le contenu à tout moment et sans préavis. Les dates, horaires, lieux et programmes des concerts sont communiqués à titre indicatif et peuvent être modifiés ; l'association ne saurait être tenue responsable des conséquences d'une modification, d'un report ou d'une annulation.\n\nLe Site peut contenir des liens vers des sites tiers. L'association n'exerce aucun contrôle sur leur contenu et décline toute responsabilité à leur égard.\n\nL'association ne saurait être tenue responsable des dommages directs ou indirects résultant de l'accès au Site ou de l'impossibilité d'y accéder, ni de la présence de virus ou d'autres éléments nuisibles.",
     "lawsTitle": "Droit applicable",
     "laws": "Les présentes mentions légales sont régies par le droit français. En cas de litige, et à défaut de résolution amiable, les tribunaux français seront seuls compétents.\n\nTextes de référence :\n\n– Règlement (UE) 2016/679 du 27 avril 2016 relatif à la protection des données (RGPD)\n– Loi n° 78-17 du 6 janvier 1978 relative à l'informatique, aux fichiers et aux libertés, dans sa version en vigueur\n– Loi n° 2004-575 du 21 juin 2004 pour la confiance dans l'économie numérique\n– Code de la propriété intellectuelle",
-    "updated": "Dernière mise à jour : 15 septembre 2026."
+    "updated": "Dernière mise à jour : 15 septembre 2026.",
+    "seoDesc": "Mentions légales du site d'Orgue Vivant, association de concerts d'orgue à Lille : éditeur, hébergement, propriété intellectuelle."
   },
   "privacy": {
     "intro": "La présente politique de confidentialité décrit les traitements de données à caractère personnel mis en œuvre par le site orguevivant.fr (ci-après « le Site »), leurs finalités, leurs bases légales, les durées de conservation appliquées, les destinataires des données et les droits dont disposent les personnes concernées.\n\nElle est établie en application du Règlement (UE) 2016/679 du 27 avril 2016 (RGPD) et de la loi n° 78-17 du 6 janvier 1978 relative à l'informatique, aux fichiers et aux libertés.",
@@ -242,7 +243,8 @@
     "changes": "L'association se réserve le droit de modifier la présente politique afin de l'adapter à l'évolution du Site ou de la réglementation. La version applicable est celle publiée sur le Site ; sa date de mise à jour figure ci-dessous.",
     "title": "Politique de confidentialité",
     "linkLabel": "politique de confidentialité",
-    "updated": "Dernière mise à jour : 15 septembre 2026."
+    "updated": "Dernière mise à jour : 15 septembre 2026.",
+    "seoDesc": "Politique de confidentialité d'Orgue Vivant : données collectées, finalités, durées de conservation et exercice de vos droits."
   },
   "admin": {
     "eyebrow": "Administration",

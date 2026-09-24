@@ -33,7 +33,8 @@ export default defineNuxtConfig({
         { property: 'og:title', content: 'Orgue Vivant' },
         { property: 'og:description', content: 'Concerts d\'orgue dans le centre-ville de Lille' },
         { property: 'og:type', content: 'website' },
-        { property: 'og:image', content: '/og-image.jpg' },
+        // Adresse complète : les réseaux sociaux ignorent une image de partage relative.
+        { property: 'og:image', content: `${process.env.SITE_URL || 'https://orguevivant.fr'}/og-image.jpg` },
         { name: 'twitter:card', content: 'summary_large_image' },
         { name: 'theme-color', content: '#0a0a0a' }
       ],

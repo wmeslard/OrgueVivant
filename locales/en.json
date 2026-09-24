@@ -218,7 +218,8 @@
     "liability": "The association ORGUE VIVANT strives to ensure the accuracy and currency of the information published on the Site, the content of which it reserves the right to modify at any time without notice. Concert dates, times, venues and programmes are given for information only and may change; the association cannot be held liable for the consequences of any change, postponement or cancellation.\n\nThe Site may contain links to third-party websites. The association has no control over their content and accepts no liability in respect of them.\n\nThe association cannot be held liable for any direct or indirect damage resulting from access to the Site or from the inability to access it, nor for the presence of viruses or other harmful elements.",
     "lawsTitle": "Governing law",
     "laws": "This legal notice is governed by French law. In the event of a dispute, and failing an amicable settlement, the French courts shall have sole jurisdiction.\n\nReference texts:\n\n– Regulation (EU) 2016/679 of 27 April 2016 on the protection of personal data (GDPR)\n– French Law No. 78-17 of 6 January 1978 on information technology, files and civil liberties, as amended\n– French Law No. 2004-575 of 21 June 2004 on confidence in the digital economy\n– French Intellectual Property Code",
-    "updated": "Last updated: 15 September 2026."
+    "updated": "Last updated: 15 September 2026.",
+    "seoDesc": "Legal notice of the Orgue Vivant website, an organ concert association in Lille: publisher, hosting, intellectual property."
   },
   "privacy": {
     "intro": "This privacy policy describes the processing of personal data carried out by the website orguevivant.fr (hereinafter \"the Site\"), its purposes, its legal bases, the retention periods applied, the recipients of the data and the rights of the persons concerned.\n\nIt is drawn up pursuant to Regulation (EU) 2016/679 of 27 April 2016 (GDPR) and French Law No. 78-17 of 6 January 1978 on information technology, files and civil liberties.",
@@ -242,7 +243,8 @@
     "changes": "The association reserves the right to amend this policy to reflect changes to the Site or to the applicable regulations. The applicable version is the one published on the Site; its update date appears below.",
     "title": "Privacy policy",
     "linkLabel": "privacy policy",
-    "updated": "Last updated: 15 September 2026."
+    "updated": "Last updated: 15 September 2026.",
+    "seoDesc": "Orgue Vivant's privacy policy: data collected, purposes, retention periods and how to exercise your rights."
   },
   "admin": {
     "eyebrow": "Administration",

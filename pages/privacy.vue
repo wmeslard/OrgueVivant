@@ -1,6 +1,7 @@
 <script setup lang="ts">
 const { t } = useI18n()
 useHead({ title: `${t('privacy.title')} — Orgue Vivant` })
+useSeoMeta({ description: t('privacy.seoDesc'), ogDescription: t('privacy.seoDesc') })
 
 const articles = computed(() => [
   { title: t('privacy.controllerTitle'), body: t('privacy.controller') },

@@ -2,6 +2,7 @@
 const { t } = useI18n()
 const localePath = useLocalePath()
 useHead({ title: `${t('footer.legalMentions')} — Orgue Vivant` })
+useSeoMeta({ description: t('legal.seoDesc'), ogDescription: t('legal.seoDesc') })
 
 const articles = computed(() => [
   { title: t('legal.editorTitle'), body: t('legal.editor') },
