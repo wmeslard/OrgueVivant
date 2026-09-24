@@ -134,7 +134,13 @@ export default defineNuxtConfig({
     // d'un build et demande ses scripts après le suivant tombait sur la page
     // d'erreur : Search Console classait l'accueil en « Soft 404 ». On
     // recharge la page sur-le-champ, ce qui ramène un HTML cohérent.
-    emitRouteChunkError: 'automatic-immediate'
+    emitRouteChunkError: 'automatic-immediate',
+    // Navigation interne : les pages rechargent leurs données par l'API au lieu
+    // de lire un _payload.json mis en cache. Le premier affichage d'une page ISR
+    // passe toujours par ce fichier (Nuxt l'impose) : server/utils/revalidate.ts
+    // le purge avec la page, sans quoi le navigateur hydratait un HTML à jour
+    // avec des données vieilles d'une heure au plus.
+    payloadExtraction: false
   },
 
   vite: {

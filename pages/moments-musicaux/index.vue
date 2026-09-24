@@ -1,8 +1,9 @@
 <script setup lang="ts">
 /**
  * Page publique des Moments musicaux : le rendez-vous du jeudi en une ligne,
- * la prochaine séance à la une, puis les quatre suivantes en cartes (Louis-Paul
- * Courtois sur fond doré, les élèves avec leur programme). Le reste du
+ * la prochaine séance à la une, puis les quatre suivantes en cartes, toutes du
+ * même style (le nom de Louis-Paul Courtois en or, les élèves avec leur
+ * programme). Le reste du
  * programme se déplie à la demande, sans jamais aligner six mois de jeudis.
  *
  * Les séances sont chargées côté serveur pour être dans le HTML (référencement
@@ -197,8 +198,7 @@ useSeoMeta({
           <li
             v-for="s in suivantes"
             :key="s.id ?? s.date"
-            class="rounded-2xl border p-4 sm:p-5"
-            :class="s.type === 'regulier' ? 'border-gold/35 bg-gold/10' : 'border-white/10 bg-surface'"
+            class="rounded-2xl border border-white/10 bg-surface p-4 sm:p-5"
           >
             <div class="font-display text-2xl font-light text-text-primary">{{ jourMois(s.date) }}</div>
             <div class="mt-3 text-sm">

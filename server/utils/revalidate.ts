@@ -23,8 +23,16 @@ export async function revalidatePublicPages(paths: readonly string[] = PUBLIC_IS
 
   const base = (config.public.siteUrl as string).replace(/\/$/, '')
 
+  // Le navigateur hydrate une page ISR avec ses données, servies à part
+  // (_payload.json) et mises en cache par Vercel sous leur adresse complète,
+  // identifiant du build compris. Ne purger que la page laissait ces données
+  // vieilles d'une heure au plus : le HTML était à jour, l'affichage non.
+  const buildId = (config.app as { buildId?: string }).buildId
+  const urls = paths.flatMap(path =>
+    buildId ? [path, `${path === '/' ? '' : path}/_payload.json?${buildId}`] : [path])
+
   await Promise.allSettled(
-    paths.map(async (path) => {
+    urls.map(async (path) => {
       try {
         const res = await fetch(base + path, {
           method: 'GET',
