@@ -1,8 +1,7 @@
 <script setup lang="ts">
 /**
  * Moments musicaux : lien d'accès des professeurs, calendrier des séances,
- * professeurs, et horaires d'ouverture de l'orgue (règles par défaut et
- * temporaires, indisponibilités comprises).
+ * professeurs, et jeudis (13 h 15) avec leurs blocages.
  *
  * Contrairement au site public, l'administration voit tout : le nom complet de
  * l'élève, et le professeur qui l'a inscrit.
@@ -154,7 +153,7 @@ function seancesDe(id: string) {
         v-for="o in [
           { id: 'calendrier', label: `Séances (${seancesAVenir.length})` },
           { id: 'professeurs', label: `Professeurs (${profsActifs.length})` },
-          { id: 'horaires', label: 'Horaires d\'ouverture de l\'orgue' }
+          { id: 'horaires', label: 'Jeudis et blocages' }
         ]"
         :key="o.id"
         class="pb-3 text-sm font-medium transition-colors"
@@ -170,8 +169,9 @@ function seancesDe(id: string) {
     <!-- SÉANCES -->
     <section v-else-if="onglet === 'calendrier' && data" class="space-y-10">
       <p class="text-sm text-ink-500">
-        Cliquez un jour : les séances inscrites s'affichent avec leur détail, et un créneau libre ouvre la fiche
-        d'inscription d'un élève. L'association n'est pas tenue par le délai de deux jours.
+        Les Moments musicaux ont lieu le jeudi à 13 h 15. Cliquez un jeudi : la séance inscrite s'affiche avec son
+        détail, ou le créneau libre ouvre la fiche d'inscription d'un élève. L'association n'est pas tenue par le délai
+        de deux jours.
       </p>
 
       <MomentsCreneaux association :contexte="contexte" :envoyer="inscrireEleve" @inscrit="inscrit" @echec="refresh()">
@@ -228,8 +228,8 @@ function seancesDe(id: string) {
       </ul>
     </section>
 
-    <!-- HORAIRES D'OUVERTURE DE L'ORGUE -->
-    <AdminHoraires
+    <!-- JEUDIS ET BLOCAGES -->
+    <AdminJeudis
       v-else-if="data"
       :horaires="data.horaires"
       :seances="data.seances"

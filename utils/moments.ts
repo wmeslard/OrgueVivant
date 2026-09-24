@@ -2,16 +2,11 @@
  * Règles des Moments musicaux, partagées entre les pages, l'espace des
  * professeurs, l'admin, le flux ICS et l'API. Sans dépendance à Nuxt.
  *
- * Une séance dure une demi-heure, à l'orgue de chœur de Saint-Maurice. Deux
- * sortes de séances :
- *  - celle de Louis-Paul Courtois, un jeudi sur deux à 13 h 15, calculée et
- *    non stockée ;
- *  - celles des élèves, inscrites par leur professeur sur un créneau libre.
- *
- * Les créneaux libres d'un jour se déduisent des horaires d'ouverture de
- * l'orgue — règles par défaut de chaque semaine et règles temporaires :
- * ouvertures, moins les messes, les confessions et les fermetures — et des
- * créneaux déjà pris.
+ * Les Moments musicaux ont lieu le jeudi, de 13 h 15 à 13 h 45, à l'orgue de
+ * chœur de Saint-Maurice. Un jeudi sur deux, Louis-Paul Courtois joue (séance
+ * calculée, non stockée) ; l'autre jeudi est proposé aux élèves, inscrits par
+ * leur professeur. Un blocage — par défaut ou temporaire — qui tombe sur ce
+ * créneau supprime la séance, celle de Louis-Paul comprise.
  */
 
 export const DUREE_MIN = 30
@@ -161,24 +156,24 @@ export function reglesDuJour(date: string, horaires: readonly Horaire[]): Horair
     && (!h.date_debut || (h.date_debut <= date && date <= (h.date_fin ?? h.date_debut))))
 }
 
+/** Le jeudi, jour des Moments musicaux (convention JavaScript : 0 = dimanche). */
+export const JOUR_MOMENTS = 4
+
 /**
- * Louis-Paul Courtois joue-t-il ce jour-là ? Un jeudi sur deux, si les
- * horaires ouvrent l'orgue à 13 h 15 et que rien ne s'y oppose — une
- * fermeture temporaire comprise.
+ * Le créneau du jeudi (13 h 15 – 13 h 45) est-il bloqué à cette date ? Il
+ * l'est dès qu'un blocage — par défaut ou temporaire, fermeture comprise —
+ * empiète sur cette demi-heure.
  */
-export function seanceReguliere(date: string, horaires: readonly Horaire[]): boolean {
-  if (!estJeudiRegulier(date)) return false
-  const m = minutes(CRENEAU_REGULIER)
-  const couvre = (h: Horaire) => minutes(h.heure_debut) <= m && m < minutes(h.heure_fin)
-  const regles = reglesDuJour(date, horaires)
-  return regles.some(h => h.type === 'ouverture' && couvre(h)) && !regles.some(h => h.type === 'blocage' && couvre(h))
+export function creneauBloque(date: string, horaires: readonly Horaire[]): boolean {
+  const a = minutes(CRENEAU_REGULIER)
+  const b = a + DUREE_MIN
+  return reglesDuJour(date, horaires)
+    .some(h => h.type === 'blocage' && minutes(h.heure_debut) < b && minutes(h.heure_fin) > a)
 }
 
-/** Vrai si la demi-heure qui commence à `debut` empiète sur celle de Louis-Paul Courtois. */
-function chevaucheRegulier(debut: string): boolean {
-  const m = minutes(debut)
-  const r = minutes(CRENEAU_REGULIER)
-  return m < r + DUREE_MIN && m + DUREE_MIN > r
+/** Louis-Paul Courtois joue-t-il ce jour-là ? Un jeudi sur deux, sauf blocage. */
+export function seanceReguliere(date: string, horaires: readonly Horaire[]): boolean {
+  return estJeudiRegulier(date) && !creneauBloque(date, horaires)
 }
 
 export interface CreneauJour {
@@ -205,62 +200,36 @@ export interface ContexteJour {
 }
 
 /**
- * Les créneaux d'une journée, dans l'ordre. Liste vide si l'orgue n'est pas
- * disponible ce jour-là : jour sans ouverture (le dimanche, par défaut),
- * fermeture temporaire, date hors de l'horizon d'inscription.
+ * Le créneau d'une journée, s'il y en a un : les Moments musicaux ont lieu le
+ * jeudi seulement, de 13 h 15 à 13 h 45. Un jeudi sur deux est celui de
+ * Louis-Paul Courtois ; l'autre est proposé aux élèves. Liste vide les autres
+ * jours, les jeudis bloqués et hors de l'horizon d'inscription.
  */
 export function creneauxDuJour(date: string, ctx: ContexteJour): CreneauJour[] {
   if (date < ctx.aujourdhui || date > plusMois(ctx.aujourdhui, HORIZON_MOIS)) return []
+  if (jourSemaine(date) !== JOUR_MOMENTS || creneauBloque(date, ctx.horaires)) return []
 
-  const duJour = reglesDuJour(date, ctx.horaires)
-  const ouvertures = duJour.filter(h => h.type === 'ouverture')
-  const blocages = duJour.filter(h => h.type === 'blocage')
-  if (!ouvertures.length) return []
-
-  const prisParHeure = new Map(ctx.pris.filter(p => p.date === date).map(p => [p.heure_debut.slice(0, 5), p]))
+  const debut = CRENEAU_REGULIER
+  const fin = finCreneau(debut)
+  if (estJeudiRegulier(date)) return [{ debut, fin, etat: 'regulier', interprete: ORGANISTE_REGULIER }]
+  const pris = ctx.pris.find(p => p.date === date && p.heure_debut.slice(0, 5) === debut)
+  if (pris) return [{ debut, fin, etat: 'pris', interprete: pris.interprete, mien: pris.mien }]
   // Trop tard, le jour même comme la veille, pour prévenir la paroisse et l'élève.
   const tropTot = date < plusJours(ctx.aujourdhui, ctx.delaiJours ?? 2)
-  const out: CreneauJour[] = []
-
-  // Le jeudi de Louis-Paul Courtois, sa demi-heure (13 h 15 – 13 h 45) est
-  // tenue : les créneaux de la grille qui la chevauchent, 13 h 00 et 13 h 30,
-  // ne sont pas proposés.
-  const regulier = seanceReguliere(date, ctx.horaires)
-  if (regulier) {
-    out.push({ debut: CRENEAU_REGULIER, fin: finCreneau(CRENEAU_REGULIER), etat: 'regulier', interprete: ORGANISTE_REGULIER })
-  }
-
-  for (const o of ouvertures) {
-    const fin = minutes(o.heure_fin)
-    for (let m = minutes(o.heure_debut); m + DUREE_MIN <= fin; m += DUREE_MIN) {
-      const debut = heure(m)
-      // Un créneau qui empiète sur une messe ou des confessions n'existe pas.
-      if (blocages.some(b => m < minutes(b.heure_fin) && m + DUREE_MIN > minutes(b.heure_debut))) continue
-      if (regulier && chevaucheRegulier(debut)) continue
-      if (out.some(c => c.debut === debut)) continue
-
-      const pris = prisParHeure.get(debut)
-      if (pris) {
-        out.push({ debut, fin: finCreneau(debut), etat: 'pris', interprete: pris.interprete, mien: pris.mien })
-        continue
-      }
-      out.push({ debut, fin: finCreneau(debut), etat: tropTot ? 'passe' : 'libre' })
-    }
-  }
-  return out.sort((a, b) => a.debut.localeCompare(b.debut))
+  return [{ debut, fin, etat: tropTot ? 'passe' : 'libre' }]
 }
 
 /**
- * Vrai si les horaires proposent encore ce créneau, abstraction faite des
- * délais et des autres inscriptions. Sert à repérer les séances qu'une
- * modification des horaires rend impossibles.
+ * Vrai si ce créneau est encore proposé, abstraction faite des délais et des
+ * autres inscriptions. Sert à repérer les séances qu'un blocage rend
+ * impossibles.
  */
 export function creneauPossible(date: string, debut: string, horaires: readonly Horaire[]): boolean {
   return creneauxDuJour(date, { aujourdhui: date, delaiJours: 0, horaires, pris: [] })
     .some(c => c.debut === debut.slice(0, 5) && c.etat === 'libre')
 }
 
-export type RaisonRefus = 'passe' | 'trop_tot' | 'trop_loin' | 'hors_creneau' | 'regulier' | 'pris'
+export type RaisonRefus = 'passe' | 'trop_tot' | 'trop_loin' | 'hors_creneau' | 'ferme' | 'regulier' | 'pris'
 
 /**
  * Pourquoi un créneau n'est pas inscriptible — ou `null` s'il l'est.
@@ -270,8 +239,9 @@ export function raisonNonReservable(date: string, debut: string, ctx: ContexteJo
   if (date < ctx.aujourdhui) return 'passe'
   if (date < plusJours(ctx.aujourdhui, ctx.delaiJours ?? 2)) return 'trop_tot'
   if (date > plusMois(ctx.aujourdhui, HORIZON_MOIS)) return 'trop_loin'
-  if (seanceReguliere(date, ctx.horaires) && chevaucheRegulier(debut)) return 'regulier'
-  const creneau = creneauxDuJour(date, ctx).find(c => c.debut === debut)
+  if (jourSemaine(date) !== JOUR_MOMENTS || debut.slice(0, 5) !== CRENEAU_REGULIER) return 'hors_creneau'
+  if (creneauBloque(date, ctx.horaires)) return 'ferme'
+  const creneau = creneauxDuJour(date, ctx)[0]
   if (!creneau) return 'hors_creneau'
   if (creneau.etat === 'regulier') return 'regulier'
   if (creneau.etat === 'pris') return 'pris'

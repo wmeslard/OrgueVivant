@@ -148,7 +148,8 @@ export const MESSAGES_REFUS: Record<string, string> = {
   passe: 'Cette date est passée.',
   trop_tot: 'Inscrivez votre élève au moins deux jours à l\'avance.',
   trop_loin: `Les inscriptions sont ouvertes sur ${HORIZON_MOIS} mois.`,
-  hors_creneau: 'Ce créneau n\'est pas proposé ce jour-là.',
+  hors_creneau: 'Les Moments musicaux ont lieu le jeudi, à 13 h 15.',
+  ferme: 'L\'orgue n\'est pas disponible ce jeudi-là.',
   regulier: 'Ce créneau est celui de Louis-Paul Courtois.',
   pris: 'Ce créneau vient d\'être pris.'
 }
