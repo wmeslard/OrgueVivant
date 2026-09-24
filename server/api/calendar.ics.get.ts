@@ -62,7 +62,7 @@ const LIEUX = {
 } as const
 
 // ── Moments musicaux ─────────────────────────────────────────────────────────
-// Chaque jeudi ouvert : la séance inscrite par le lien, ou Louis-Paul Courtois,
+// Un jeudi sur deux : la séance inscrite par le lien, Louis-Paul Courtois une fois affecté, ou « à venir »,
 // telles que le site les publie : voir server/utils/moments.ts.
 const MONTHS_AHEAD = 12
 
@@ -104,17 +104,22 @@ export default defineEventHandler(async (event) => {
       ? s.musiciens!.map(m => m.instrument.toLocaleLowerCase('fr')).filter(Boolean).join(', ')
       : ''
     const avec = `${qui}${instruments ? ` (${instruments})` : ''}`
-    const titre = s.type === 'regulier'
-      ? `Moment musical — ${qui}`
-      : `Moment musical — ${avec}${s.programme ? ` · ${s.programme}` : ''}`
-    const description = s.type === 'regulier'
-      ? `Une demi-heure de musique à l'orgue de chœur de l'église Saint-Maurice, par ${qui}.`
-      : `Une demi-heure de musique à l'orgue de chœur de l'église Saint-Maurice, par ${avec}.${s.programme ? `\nProgramme : ${s.programme}` : ''}`
+    // Personne encore : ni nom ni programme, l'événement se complète ensuite.
+    const titre = s.type === 'a_venir' ? 'Moment musical'
+      : s.type === 'regulier' ? `Moment musical — ${qui}`
+        : `Moment musical — ${avec}${s.programme ? ` · ${s.programme}` : ''}`
+    const description = s.type === 'a_venir'
+      ? 'Une demi-heure de musique à l\'orgue de chœur de l\'église Saint-Maurice. Programme à venir.'
+      : s.type === 'regulier'
+        ? `Une demi-heure de musique à l'orgue de chœur de l'église Saint-Maurice, par ${qui}.`
+        : `Une demi-heure de musique à l'orgue de chœur de l'église Saint-Maurice, par ${avec}.${s.programme ? `\nProgramme : ${s.programme}` : ''}`
     vevents.push([
       'BEGIN:VEVENT',
       // Les séances inscrites gardent leur identifiant de réservation : une
       // annulation retire l'événement, une nouvelle réservation en crée un autre.
-      `UID:${s.type === 'regulier' ? `moment-${day}` : `moment-${s.id}`}@orgue-vivant`,
+      // Sans inscrit, l'événement du jour reste le même, « à venir » puis
+      // Louis-Paul Courtois.
+      `UID:${s.id ? `moment-${s.id}` : `moment-${day}`}@orgue-vivant`,
       `DTSTAMP:${stamp}`,
       `DTSTART:${day}T${s.debut.replace(':', '')}00`,
       `DTEND:${day}T${s.fin.replace(':', '')}00`,

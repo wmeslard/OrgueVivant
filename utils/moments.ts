@@ -2,11 +2,12 @@
  * Règles des Moments musicaux, partagées entre les pages, l'espace des
  * professeurs, l'admin, le flux ICS et l'API. Sans dépendance à Nuxt.
  *
- * Les Moments musicaux ont lieu le jeudi, de 13 h 15 à 13 h 45, à l'orgue de
- * chœur de Saint-Maurice. Tous les jeudis sont ouverts aux inscriptions ; quand
- * personne n'est inscrit, Louis-Paul Courtois joue (séance calculée, non
- * stockée). Un blocage — par défaut ou temporaire — qui tombe sur ce créneau
- * supprime la séance, celle de Louis-Paul comprise.
+ * Les Moments musicaux ont lieu un jeudi sur deux, de 13 h 15 à 13 h 45, à
+ * l'orgue de chœur de Saint-Maurice. On s'y inscrit jusqu'à trois jours avant ;
+ * deux jours avant, si personne ne l'a fait, Louis-Paul Courtois est affecté à
+ * la séance et prévenu par email (voir affecterOrganiste, côté serveur). Son
+ * nom n'est publié qu'une fois affecté. Un blocage — par défaut ou temporaire —
+ * qui tombe sur ce créneau supprime la séance.
  */
 
 export const DUREE_MIN = 30
@@ -16,8 +17,15 @@ export const CRENEAU_REGULIER = '13:15'
 
 /** Horizon d'inscription, en mois. */
 export const HORIZON_MOIS = 6
-/** Délai minimal, en heures, pour inscrire ou annuler avant le début de la séance. */
+/** Délai minimal, en heures, pour annuler avant le début de la séance. */
 export const DELAI_ANNULATION_H = 48
+/**
+ * Jours d'avance pour s'inscrire : jusqu'au lundi pour le jeudi. Le mardi,
+ * deux jours avant, la séance sans inscrit revient à Louis-Paul Courtois.
+ */
+export const DELAI_INSCRIPTION_JOURS = 3
+/** Un jeudi de Moment musical : il fixe l'alternance, un jeudi sur deux. */
+export const JEUDI_DE_REFERENCE = '2026-10-01'
 
 /**
  * Une règle d'horaires. Par défaut, elle vaut chaque semaine le jour
@@ -63,8 +71,12 @@ export interface SeancePublique {
   date: string
   debut: string
   fin: string
-  type: 'regulier' | 'eleve'
-  /** « Salomé G. & Marie D. » */
+  /**
+   * `regulier` : Louis-Paul Courtois, affecté faute d'inscrit ; `eleve` : une
+   * séance inscrite ; `a_venir` : personne encore, aucun nom publié.
+   */
+  type: 'regulier' | 'eleve' | 'a_venir'
+  /** « Salomé G. & Marie D. » ; vide pour une séance à venir. */
   interprete: string
   /** Les musiciens d'une séance inscrite, tels que le site les publie. */
   musiciens?: { nom: string; instrument: string }[]
@@ -88,6 +100,14 @@ export function parseYmd(s: string): Date {
 /** Jour de la semaine, 0 = dimanche. */
 export function jourSemaine(date: string): number {
   return parseYmd(date).getDay()
+}
+
+/** Un jeudi de Moment musical : un jeudi sur deux, à partir de JEUDI_DE_REFERENCE. */
+export function estJeudiMoment(date: string): boolean {
+  if (jourSemaine(date) !== JOUR_MOMENTS) return false
+  const jour = (s: string) => { const [y, m, d] = s.split('-').map(Number); return Date.UTC(y, m - 1, d) }
+  const semaines = Math.round((jour(date) - jour(JEUDI_DE_REFERENCE)) / (7 * 86_400_000))
+  return semaines % 2 === 0
 }
 
 /** « Camille D. » : ce que le site publie d'une personne inscrite. */
@@ -197,12 +217,9 @@ export function creneauBloque(date: string, horaires: readonly Horaire[]): boole
     .some(h => h.type === 'blocage' && minutes(h.heure_debut) < b && minutes(h.heure_fin) > a)
 }
 
-/**
- * Un Moment musical a-t-il lieu ce jour-là ? Tout jeudi non bloqué : Louis-Paul
- * Courtois y joue si personne ne s'est inscrit.
- */
-export function seanceReguliere(date: string, horaires: readonly Horaire[]): boolean {
-  return jourSemaine(date) === JOUR_MOMENTS && !creneauBloque(date, horaires)
+/** Un Moment musical a-t-il lieu ce jour-là ? Un jeudi sur deux, sauf blocage. */
+export function momentPrevu(date: string, horaires: readonly Horaire[]): boolean {
+  return estJeudiMoment(date) && !creneauBloque(date, horaires)
 }
 
 export interface CreneauJour {
@@ -210,7 +227,7 @@ export interface CreneauJour {
   fin: string
   /** Libre, pris, ou trop proche pour s'inscrire (`passe`). */
   etat: 'libre' | 'pris' | 'passe'
-  /** Interprète inscrit, ou Louis-Paul Courtois, qui joue si personne ne s'inscrit. */
+  /** Interprète inscrit. */
   interprete?: string
   /** Vrai si c'est la personne connectée qui a fait cette inscription. */
   mien?: boolean
@@ -220,7 +237,7 @@ export interface ContexteJour {
   /** Date du jour, à Paris. */
   aujourdhui: string
   /**
-   * Jours de prévenance avant une inscription : 2 pour les professeurs,
+   * Jours d'avance pour s'inscrire : DELAI_INSCRIPTION_JOURS par le lien,
    * 0 pour l'association, qui s'arrange directement avec la paroisse.
    */
   delaiJours?: number
@@ -229,23 +246,21 @@ export interface ContexteJour {
 }
 
 /**
- * Le créneau d'une journée, s'il y en a un : les Moments musicaux ont lieu le
- * jeudi seulement, de 13 h 15 à 13 h 45, et tous les jeudis sont ouverts aux
- * inscriptions. Liste vide les autres jours, les jeudis bloqués et hors de
- * l'horizon d'inscription.
+ * Le créneau d'une journée, s'il y en a un : les Moments musicaux ont lieu un
+ * jeudi sur deux, de 13 h 15 à 13 h 45. Liste vide les autres jours, les
+ * jeudis bloqués et hors de l'horizon d'inscription.
  */
 export function creneauxDuJour(date: string, ctx: ContexteJour): CreneauJour[] {
   if (date < ctx.aujourdhui || date > plusMois(ctx.aujourdhui, HORIZON_MOIS)) return []
-  if (jourSemaine(date) !== JOUR_MOMENTS || creneauBloque(date, ctx.horaires)) return []
+  if (!momentPrevu(date, ctx.horaires)) return []
 
   const debut = CRENEAU_REGULIER
   const fin = finCreneau(debut)
   const pris = ctx.pris.find(p => p.date === date && p.heure_debut.slice(0, 5) === debut)
   if (pris) return [{ debut, fin, etat: 'pris', interprete: pris.interprete, mien: pris.mien }]
-  // Trop tard, le jour même comme la veille, pour prévenir la paroisse et les
-  // musiciens : Louis-Paul Courtois joue.
-  const tropTot = date < plusJours(ctx.aujourdhui, ctx.delaiJours ?? 2)
-  return [{ debut, fin, etat: tropTot ? 'passe' : 'libre', interprete: ORGANISTE_REGULIER }]
+  // Deux jours avant, la séance sans inscrit revient à Louis-Paul Courtois.
+  const tropTot = date < plusJours(ctx.aujourdhui, ctx.delaiJours ?? DELAI_INSCRIPTION_JOURS)
+  return [{ debut, fin, etat: tropTot ? 'passe' : 'libre' }]
 }
 
 /**
@@ -266,9 +281,9 @@ export type RaisonRefus = 'passe' | 'trop_tot' | 'trop_loin' | 'hors_creneau' | 
  */
 export function raisonNonReservable(date: string, debut: string, ctx: ContexteJour): RaisonRefus | null {
   if (date < ctx.aujourdhui) return 'passe'
-  if (date < plusJours(ctx.aujourdhui, ctx.delaiJours ?? 2)) return 'trop_tot'
+  if (date < plusJours(ctx.aujourdhui, ctx.delaiJours ?? DELAI_INSCRIPTION_JOURS)) return 'trop_tot'
   if (date > plusMois(ctx.aujourdhui, HORIZON_MOIS)) return 'trop_loin'
-  if (jourSemaine(date) !== JOUR_MOMENTS || debut.slice(0, 5) !== CRENEAU_REGULIER) return 'hors_creneau'
+  if (!estJeudiMoment(date) || debut.slice(0, 5) !== CRENEAU_REGULIER) return 'hors_creneau'
   if (creneauBloque(date, ctx.horaires)) return 'ferme'
   const creneau = creneauxDuJour(date, ctx)[0]
   if (!creneau) return 'hors_creneau'

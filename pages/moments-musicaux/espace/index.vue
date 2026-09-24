@@ -8,7 +8,8 @@
  */
 import type { SeanceProf } from '~/composables/useMomentsEspace'
 import {
-  HORIZON_MOIS, INSTRUMENT_PAR_DEFAUT, JOUR_MOMENTS, MAX_MUSICIENS, annulable, creneauxDuJour, heureFr, lierNoms,
+  HORIZON_MOIS, INSTRUMENT_PAR_DEFAUT, JOUR_MOMENTS, MAX_MUSICIENS, ORGANISTE_REGULIER, annulable, creneauxDuJour,
+  estJeudiMoment, heureFr, lierNoms,
   musiciensDe, nomsComplets, nomsPublics, parseYmd, plusJours, plusMois, ymd, type CreneauJour, type Musicien
 } from '~/utils/moments'
 
@@ -42,11 +43,13 @@ const jeudis = computed<Jeudi[]>(() => {
   const e = espace.value
   if (!e) return []
   const contexte = { aujourdhui: e.aujourdhui, horaires: e.horaires, pris: e.pris }
+  // Un jeudi sur deux : le premier jeudi de Moment musical, puis de deux semaines en deux semaines.
   const d = parseYmd(e.aujourdhui)
   d.setDate(d.getDate() + ((JOUR_MOMENTS - d.getDay() + 7) % 7))
+  const premier = estJeudiMoment(ymd(d)) ? ymd(d) : plusJours(ymd(d), 7)
   const fin = plusMois(e.aujourdhui, HORIZON_MOIS)
   const out: Jeudi[] = []
-  for (let s = ymd(d); s <= fin; s = plusJours(s, 7)) {
+  for (let s = premier; s <= fin; s = plusJours(s, 14)) {
     out.push({ date: s, creneau: creneauxDuJour(s, contexte)[0], seance: aVenir.value.find(x => x.date === s) })
   }
   return out
@@ -263,11 +266,9 @@ async function logout() {
                   </template>
                   <span v-else-if="!j.creneau" class="text-text-secondary">{{ t('momentsEspace.noSession') }}</span>
                   <span v-else-if="j.creneau.etat === 'pris'" class="text-text-secondary">{{ j.creneau.interprete }}</span>
-                  <template v-else-if="j.creneau.etat === 'passe'">
-                    <span class="text-gold/80">{{ j.creneau.interprete }}</span>
-                    <span class="text-text-secondary"> · {{ t('momentsEspace.tooLate') }}</span>
-                  </template>
-                  <span v-else class="text-text-secondary">{{ t('momentsEspace.freeDefault', { nom: j.creneau.interprete }) }}</span>
+                  <span v-else-if="espace?.affectes?.includes(j.date)" class="text-gold/80">{{ ORGANISTE_REGULIER }}</span>
+                  <span v-else-if="j.creneau.etat === 'passe'" class="text-text-secondary">{{ t('momentsEspace.tooLate') }}</span>
+                  <span v-else class="text-text-secondary">{{ t('momentsEspace.free') }}</span>
                 </div>
                 <p v-if="j.seance?.programme" class="mt-1 text-xs font-light text-text-secondary">{{ j.seance.programme }}</p>
               </div>

@@ -34,6 +34,8 @@ interface Vue {
   professeurs: Professeur[]
   seances: Seance[]
   horaires: (Horaire & { id: string })[]
+  affectations: { date: string; notifie_at: string | null }[]
+  emailOrganiste: string | null
   lienProfesseurs: string | null
 }
 
@@ -196,9 +198,9 @@ async function supprimerProf(p: Professeur) {
     <!-- SÉANCES -->
     <section v-else-if="onglet === 'calendrier' && data" class="space-y-10">
       <p class="text-sm text-ink-500">
-        Les Moments musicaux ont lieu le jeudi à 13 h 15. Cliquez un jeudi : la séance inscrite s'affiche avec son
+        Les Moments musicaux ont lieu un jeudi sur deux, à 13 h 15. Cliquez un jeudi : la séance inscrite s'affiche avec son
         détail, ou le créneau libre ouvre la fiche d'inscription. L'association n'est pas tenue par le délai
-        de deux jours.
+        d'inscription ; si Louis-Paul Courtois était déjà affecté à ce jeudi, il est prévenu qu'il ne joue plus.
       </p>
 
       <MomentsCreneaux association :contexte="contexte" :envoyer="inscrireEleve" @inscrit="inscrit" @echec="refresh()">
@@ -289,6 +291,8 @@ async function supprimerProf(p: Professeur) {
       :horaires="data.horaires"
       :seances="data.seances"
       :aujourdhui="data.aujourdhui"
+      :affectations="data.affectations"
+      :email-organiste="data.emailOrganiste"
       @modifie="refresh()"
     />
   </div>

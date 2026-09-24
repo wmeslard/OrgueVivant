@@ -2,7 +2,7 @@ import { requireAdmin, getServiceClient } from '~/server/utils/superAdminClient'
 import { revalidatePublicPages } from '~/server/utils/revalidate'
 import {
   adresseAssociation, aujourdhuiParis, chargerHoraires, chargerSeances, envoyerEmail, escapeHtml,
-  insererSeance, lireMusiciens, MESSAGES_REFUS, paragraphe, quand
+  desaffecter, insererSeance, lireMusiciens, MESSAGES_REFUS, paragraphe, quand
 } from '~/server/utils/moments'
 import { finCreneau, HORIZON_MOIS, nomsComplets, plusMois, raisonNonReservable } from '~/utils/moments'
 
@@ -45,6 +45,8 @@ export default defineEventHandler(async (event) => {
   if (error) throw createError({ statusCode: 500, statusMessage: error.message })
 
   const moment = quand(date, debut, fin)
+  // Louis-Paul Courtois était peut-être déjà affecté à ce jeudi : il est libéré.
+  await desaffecter(client, date, `${nomsComplets(musiciens)} ${musiciens.length > 1 ? 'joueront' : 'jouera'}`)
   await Promise.all([
     eleveEmail && envoyerEmail({
       to: eleveEmail,

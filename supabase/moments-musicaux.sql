@@ -10,6 +10,8 @@
 --   moments_seances        les créneaux réservés, avec l'élève et son professeur
 --   moments_horaires       les horaires d'ouverture de l'orgue : règles par
 --                          défaut (chaque semaine) et règles temporaires
+--   moments_reglages       l'adresse de Louis-Paul Courtois (une ligne)
+--   moments_affectations   les jeudis où il joue faute d'inscrit
 --
 -- Aucun droit pour les rôles `anon` et `authenticated`, comme pour la
 -- newsletter : toutes les lectures et écritures passent par /api/moments/** et
@@ -17,8 +19,8 @@
 --
 -- Schéma complet, pour une base neuve : à exécuter dans Supabase → SQL Editor.
 -- La base de production, créée avec une version antérieure, se met à jour avec
--- moments-musicaux-lien.sql, moments-musicaux-regles.sql, moments-musicaux-soi.sql puis
--- moments-musicaux-musiciens.sql.
+-- moments-musicaux-lien.sql, moments-musicaux-regles.sql, moments-musicaux-soi.sql,
+-- moments-musicaux-musiciens.sql puis moments-musicaux-affectations.sql.
 
 -- ─────────────────────────────────────────────────────────────────────────────
 -- Le lien partagé
@@ -165,12 +167,35 @@ where not exists (select 1 from moments_horaires);
 -- Droits : rien pour les rôles publics
 -- ─────────────────────────────────────────────────────────────────────────────
 
+-- ─────────────────────────────────────────────────────────────────────────────
+-- Louis-Paul Courtois, quand personne n'est inscrit
+-- ─────────────────────────────────────────────────────────────────────────────
+-- Deux jours avant une séance sans inscrit, il y est affecté et prévenu par
+-- email (tâche quotidienne /api/cron/moments). Son adresse est ici, réglée
+-- depuis l'administration, jamais dans le code.
+
+create table if not exists moments_reglages (
+  id               smallint primary key default 1 check (id = 1),
+  email_organiste  text
+);
+insert into moments_reglages (id) values (1) on conflict (id) do nothing;
+
+create table if not exists moments_affectations (
+  date        date primary key,
+  notifie_at  timestamptz,
+  created_at  timestamptz not null default now()
+);
+
 alter table moments_lien        enable row level security;
 alter table moments_professeurs enable row level security;
 alter table moments_seances     enable row level security;
 alter table moments_horaires    enable row level security;
+alter table moments_reglages     enable row level security;
+alter table moments_affectations enable row level security;
 
 revoke all on moments_lien        from anon, authenticated;
 revoke all on moments_professeurs from anon, authenticated;
 revoke all on moments_seances     from anon, authenticated;
 revoke all on moments_horaires    from anon, authenticated;
+revoke all on moments_reglages     from anon, authenticated;
+revoke all on moments_affectations from anon, authenticated;

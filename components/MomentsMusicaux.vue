@@ -96,7 +96,7 @@ const pastilleDate = 'min-h-[1.5rem] text-base font-medium text-text-primary tra
         </span>
         <span :class="[pastilleDate, prochaineLabel ? 'opacity-100' : 'opacity-0']">
           {{ prochaineLabel || '—' }}
-          <template v-if="prochaine"> · {{ heureFr(prochaine.debut) }} · {{ prochaine.interprete }}</template>
+          <template v-if="prochaine"> · {{ heureFr(prochaine.debut) }}<template v-if="prochaine.interprete"> · {{ prochaine.interprete }}</template></template>
         </span>
       </div>
 
@@ -157,6 +157,7 @@ const pastilleDate = 'min-h-[1.5rem] text-base font-medium text-text-primary tra
               <span v-if="s?.type === 'regulier'" class="text-gold">
                 <span class="mr-2 inline-block h-2 w-2 rounded-full bg-gold align-[1px]" />{{ s.interprete }}
               </span>
+              <span v-else-if="s?.type === 'a_venir'" class="text-text-secondary">{{ t('moments.toCome') }}</span>
               <span v-else-if="s" class="text-text-primary">
                 {{ qui(s) }}
               </span>

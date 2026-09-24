@@ -1,9 +1,12 @@
 import { requireAdmin, getServiceClient } from '~/server/utils/superAdminClient'
 import { revalidatePublicPages } from '~/server/utils/revalidate'
-import { adresseAssociation, envoyerEmail, escapeHtml, quand } from '~/server/utils/moments'
+import { adresseAssociation, affecterOrganiste, envoyerEmail, escapeHtml, quand } from '~/server/utils/moments'
 import { musiciensDe, nomsComplets } from '~/utils/moments'
 
-/** Annulation d'une séance par l'association ; le professeur et l'élève sont prévenus. */
+/**
+ * Annulation d'une séance par l'association ; les personnes inscrites sont
+ * prévenues. À moins de deux jours, Louis-Paul Courtois reprend la séance.
+ */
 export default defineEventHandler(async (event) => {
   await requireAdmin(event)
   const id = getRouterParam(event, 'id')
@@ -29,5 +32,6 @@ export default defineEventHandler(async (event) => {
     s.eleve_email && envoyerEmail({ to: s.eleve_email, subject: `Votre Moment musical du ${moment.split(',')[0]} est annulé`, html: corps(s.eleve_prenom) }),
     revalidatePublicPages()
   ])
+  await affecterOrganiste(client)
   return { ok: true }
 })

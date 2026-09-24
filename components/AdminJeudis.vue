@@ -1,14 +1,16 @@
 <script setup lang="ts">
 /**
- * Les jeudis des Moments musicaux (13 h 15 – 13 h 45) sur l'horizon
- * d'inscription : qui joue, ce qui reste libre, ce qui est bloqué. On bloque
+ * Les jeudis des Moments musicaux (un jeudi sur deux, 13 h 15 – 13 h 45) sur
+ * l'horizon d'inscription : qui joue, ce qui reste libre, ce qui est bloqué,
+ * et quand Louis-Paul Courtois a été prévenu. On bloque
  * un jeudi, ou une période entière (vacances, travaux), et on débloque ici.
  * Bloquer un jeudi où quelqu'un est inscrit annule sa séance : le serveur
  * prévient les personnes concernées.
  */
 import {
   CRENEAU_REGULIER, DUREE_MIN, HORIZON_MOIS, JOUR_MOMENTS, ORGANISTE_REGULIER, type Horaire, type Musicien,
-  estTemporaire, finCreneau, minutes, musiciensDe, nomsComplets, parseYmd, plusJours, plusMois, reglesDuJour, ymd
+  DELAI_INSCRIPTION_JOURS, estJeudiMoment, estTemporaire, finCreneau, minutes, musiciensDe, nomsComplets, parseYmd,
+  plusJours, plusMois, reglesDuJour, ymd
 } from '~/utils/moments'
 
 type Regle = Horaire & { id: string }
@@ -18,7 +20,13 @@ interface SeanceAdmin {
   professeur?: { prenom: string; nom: string } | null
 }
 
-const props = defineProps<{ horaires: Regle[]; seances: SeanceAdmin[]; aujourdhui: string }>()
+const props = defineProps<{
+  horaires: Regle[]
+  seances: SeanceAdmin[]
+  aujourdhui: string
+  affectations: { date: string; notifie_at: string | null }[]
+  emailOrganiste: string | null
+}>()
 const emit = defineEmits<{ (e: 'modifie'): void }>()
 const { show: showToast } = useToast()
 
@@ -37,19 +45,36 @@ function blocageDu(date: string): Regle | undefined {
 const seanceDu = (date: string) =>
   props.seances.find(s => s.statut === 'reservee' && s.date === date && s.heure_debut.startsWith(CRENEAU_REGULIER))
 
-/** Les jeudis à venir, groupés par mois. */
+/** Les jeudis de Moment musical à venir (un sur deux), groupés par mois. */
 const mois = computed(() => {
   const d = parseYmd(props.aujourdhui)
   d.setDate(d.getDate() + ((JOUR_MOMENTS - d.getDay() + 7) % 7))
+  const premier = estJeudiMoment(ymd(d)) ? ymd(d) : plusJours(ymd(d), 7)
   const fin = plusMois(props.aujourdhui, HORIZON_MOIS)
-  const groupes: { titre: string; jeudis: { date: string; blocage?: Regle; seance?: SeanceAdmin }[] }[] = []
-  for (let s = ymd(d); s <= fin; s = plusJours(s, 7)) {
+  const groupes: { titre: string; jeudis: { date: string; blocage?: Regle; seance?: SeanceAdmin; affectation?: { notifie_at: string | null } }[] }[] = []
+  for (let s = premier; s <= fin; s = plusJours(s, 14)) {
     const titre = fmt(s, { month: 'long', year: 'numeric' })
     if (groupes.at(-1)?.titre !== titre) groupes.push({ titre, jeudis: [] })
-    groupes.at(-1)!.jeudis.push({ date: s, blocage: blocageDu(s), seance: seanceDu(s) })
+    groupes.at(-1)!.jeudis.push({ date: s, blocage: blocageDu(s), seance: seanceDu(s), affectation: props.affectations.find(a => a.date === s) })
   }
   return groupes
 })
+/** Le jour où, faute d'inscrit, la séance reviendra à Louis-Paul Courtois. */
+const jourAffectation = (date: string) => fmt(plusJours(date, 1 - DELAI_INSCRIPTION_JOURS), { weekday: 'long', day: 'numeric', month: 'long' }).toLowerCase()
+
+// ── Adresse de Louis-Paul Courtois ───────────────────────────────────────────
+const email = ref(props.emailOrganiste ?? '')
+watch(() => props.emailOrganiste, v => { email.value = v ?? '' })
+async function enregistrerEmail() {
+  busy.value = true
+  try {
+    await $fetch('/api/admin/moments/reglages', { method: 'POST', body: { email_organiste: email.value } })
+    emit('modifie')
+    showToast('Adresse enregistrée.', { type: 'success' })
+  } catch (e: any) {
+    showToast(e?.data?.statusMessage || 'Erreur', { type: 'error' })
+  } finally { busy.value = false }
+}
 
 function portee(h: Regle): string {
   if (!estTemporaire(h)) return 'chaque semaine'
@@ -104,9 +129,23 @@ async function bloquerPeriode() {
 <template>
   <div class="space-y-10">
     <p class="max-w-3xl text-sm text-ink-500">
-      Les Moments musicaux ont lieu le jeudi, de 13 h 15 à 13 h 45. Tous les jeudis sont ouverts aux inscriptions ;
-      quand personne n'est inscrit, {{ ORGANISTE_REGULIER }} joue. Bloquer un jeudi supprime la séance prévue ce jour-là, quelle qu'elle soit.
+      Les Moments musicaux ont lieu un jeudi sur deux, de 13 h 15 à 13 h 45. On s'y inscrit jusqu'à trois jours avant ;
+      deux jours avant, si personne ne l'a fait, {{ ORGANISTE_REGULIER }} est affecté à la séance et prévenu par email.
+      Bloquer un jeudi supprime la séance prévue ce jour-là, quelle qu'elle soit.
     </p>
+
+    <!-- Adresse de Louis-Paul Courtois -->
+    <section class="rounded-2xl border border-ink-200 p-6 dark:border-ink-800">
+      <h2 class="mb-1 font-display text-xl">{{ ORGANISTE_REGULIER }}</h2>
+      <p class="mb-4 text-sm text-ink-500">
+        L'adresse qui reçoit l'email « à vous de jouer » quand personne ne s'est inscrit. Sans adresse, il est affecté
+        quand même, mais pas prévenu.
+      </p>
+      <form class="flex flex-wrap items-center gap-3" @submit.prevent="enregistrerEmail">
+        <input v-model="email" type="email" maxlength="254" class="input min-w-[16rem] flex-1" placeholder="adresse@exemple.fr">
+        <button class="btn-primary" :disabled="busy">Enregistrer</button>
+      </form>
+    </section>
 
     <!-- Bloquer une période -->
     <section class="rounded-2xl border border-ink-200 p-6 dark:border-ink-800">
@@ -155,9 +194,16 @@ async function bloquerPeriode() {
                 <template v-else>inscrit·e par {{ j.seance.professeur ? `${j.seance.professeur.prenom} ${j.seance.professeur.nom}` : 'l\'association' }}</template>
               </span>
             </span>
-            <span v-else class="text-gold">
+            <span v-else-if="j.affectation" class="text-gold">
               {{ ORGANISTE_REGULIER }}
-              <span class="ml-2 text-xs text-ink-500">personne d'inscrit</span>
+              <span class="ml-2 text-xs text-ink-500">
+                <template v-if="j.affectation.notifie_at">prévenu le {{ fmt(j.affectation.notifie_at.slice(0, 10), { day: 'numeric', month: 'long' }) }}</template>
+                <template v-else>affecté, pas encore prévenu (adresse manquante ?)</template>
+              </span>
+            </span>
+            <span v-else class="text-ink-500">
+              Libre
+              <span class="ml-2 text-xs">sinon {{ ORGANISTE_REGULIER }}, prévenu le {{ jourAffectation(j.date) }}</span>
             </span>
           </span>
           <button v-if="j.blocage" class="text-ink-400 underline-offset-4 hover:underline" :disabled="busy" @click="debloquer(j.blocage)">

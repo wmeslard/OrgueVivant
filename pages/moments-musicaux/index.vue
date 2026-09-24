@@ -93,7 +93,8 @@ const jsonLd = computed(() => safeJsonLd({
   '@context': 'https://schema.org',
   '@type': 'ItemList',
   name: t('moments.pageTitle'),
-  itemListElement: seances.value.slice(0, 20).map((s, i) => ({
+  // Une séance sans interprète annoncé n'est pas encore un événement à publier.
+  itemListElement: seances.value.filter(s => s.type !== 'a_venir').slice(0, 20).map((s, i) => ({
     '@type': 'ListItem',
     position: i + 1,
     item: {
@@ -197,6 +198,7 @@ useSeoMeta({
               <span v-if="prochaine.type === 'regulier'" class="text-gold">
                 <span class="mr-2 inline-block h-2 w-2 rounded-full bg-gold align-[1px]" />{{ prochaine.interprete }}
               </span>
+              <span v-else-if="prochaine.type === 'a_venir'" class="text-text-secondary">{{ t('moments.toCome') }}</span>
               <span v-else class="text-text-primary">
                 {{ prochaine.interprete }}
               </span>
@@ -215,6 +217,7 @@ useSeoMeta({
               <span v-if="s.type === 'regulier'" class="text-gold">
                 <span class="mr-2 inline-block h-2 w-2 rounded-full bg-gold align-[1px]" />{{ s.interprete }}
               </span>
+              <span v-else-if="s.type === 'a_venir'" class="text-text-secondary">{{ t('moments.toCome') }}</span>
               <span v-else class="text-text-primary">
                 {{ s.interprete }}
               </span>
@@ -254,6 +257,7 @@ useSeoMeta({
                   <span v-if="s.type === 'regulier'" class="text-gold">
                     <span class="mr-2 inline-block h-2 w-2 rounded-full bg-gold align-[1px]" />{{ s.interprete }}
                   </span>
+                  <span v-else-if="s.type === 'a_venir'" class="text-text-secondary">{{ t('moments.toCome') }}</span>
                   <span v-else class="text-text-primary">
                     {{ s.interprete }}
                   </span>
