@@ -5,10 +5,11 @@
  * calendrier complet. Le détail vit sur /moments-musicaux.
  *
  * `full` : carte détaillée pour la page Concerts.
- * `compact` : bandeau resserré pour la page d'accueil.
+ * `compact` : tuile de la page d'accueil, la présentation à gauche et les
+ * prochaines séances à droite.
  */
 import type { SeancePublique } from '~/utils/moments'
-import { heureFr } from '~/utils/moments'
+import { CRENEAU_REGULIER, finCreneau, heureFr } from '~/utils/moments'
 
 withDefaults(defineProps<{ variant?: 'full' | 'compact' }>(), { variant: 'full' })
 
@@ -22,22 +23,31 @@ const localePath = useLocalePath()
  */
 const seances = ref<SeancePublique[]>([])
 const aujourdhui = ref('')
+const charge = ref(false)
 onMounted(async () => {
   aujourdhui.value = new Intl.DateTimeFormat('fr-CA', { timeZone: 'Europe/Paris' }).format(new Date())
   try {
     const { seances: data } = await $fetch<{ seances: SeancePublique[] }>('/api/moments', { query: { mois: 2 } })
     seances.value = data
   } catch { seances.value = [] }
+  charge.value = true
 })
 
 const prochaines = computed(() => seances.value.slice(0, 3))
 const prochaine = computed(() => seances.value[0])
+/** Trois lignes réservées tant que les séances ne sont pas arrivées : la tuile ne bouge pas. */
+const lignes = computed<(SeancePublique | null)[]>(() => charge.value ? prochaines.value : [null, null, null])
+const horaire = `${heureFr(CRENEAU_REGULIER)} – ${heureFr(finCreneau(CRENEAU_REGULIER))}`
+/** Même pastille « Élève » que sur la page des Moments musicaux. */
+const PASTILLE = 'ml-2 inline-block whitespace-nowrap rounded-full border border-gold/30 px-[7px] align-[1px] text-[10px] font-medium uppercase leading-4 tracking-[0.08em] text-gold'
 
 function jourLong(date: string) {
   const [y, m, d] = date.split('-').map(Number)
   const s = new Date(y, m - 1, d).toLocaleDateString(locale.value === 'fr' ? 'fr-FR' : 'en-US',
     { weekday: 'long', day: 'numeric', month: 'long' })
-  return s.charAt(0).toUpperCase() + s.slice(1)
+  // « Jeudi 1er octobre » : en français, le premier du mois s'écrit ainsi.
+  const f = locale.value === 'fr' ? s.replace(/^(\S+) 1 /, '$1 1er ') : s
+  return f.charAt(0).toUpperCase() + f.slice(1)
 }
 
 const prochaineLabel = computed(() => {
@@ -103,7 +113,7 @@ const pastilleDate = 'min-h-[1.5rem] text-base font-medium text-text-primary tra
     </div>
   </section>
 
-  <!-- Accueil : mention resserrée -->
+  <!-- Accueil : la présentation à gauche, les prochaines séances à droite -->
   <section v-else class="py-16 bg-background">
     <div class="container-premium">
       <div class="card-premium flex flex-col gap-7 p-7 md:flex-row md:items-center md:gap-12 md:p-10">
@@ -117,29 +127,43 @@ const pastilleDate = 'min-h-[1.5rem] text-base font-medium text-text-primary tra
           <p class="mt-3 max-w-xl text-sm font-light leading-relaxed text-text-secondary">
             {{ t('moments.intro') }}
           </p>
-          <div class="mt-5" :class="pastille">
-            <span :class="pastilleIntitule">
-              <Icon name="heroicons:calendar-days" class="h-4 w-4 shrink-0" />
-              {{ t('moments.nextLabel') }}
-            </span>
-            <span :class="[pastilleDate, prochaineLabel ? 'opacity-100' : 'opacity-0']">
-              {{ prochaineLabel || '—' }}
-            </span>
-          </div>
+          <p class="mt-4 flex flex-wrap items-center gap-x-2.5 gap-y-1 text-[13px] text-text-primary">
+            <span>{{ t('moments.rdvDay') }}</span>
+            <span class="text-gold">·</span>
+            <span>{{ horaire }}</span>
+            <span class="text-gold">·</span>
+            <span class="text-text-secondary">{{ t('moments.free') }}</span>
+          </p>
         </div>
 
-        <div class="shrink-0 md:border-l md:border-white/5 md:pl-12">
-          <ul v-if="prochaines.length" class="space-y-2.5">
-            <li v-for="s in prochaines" :key="s.id ?? s.date" class="flex items-baseline gap-3 text-sm">
-              <span class="min-w-[9.5rem] text-text-primary">{{ jourLong(s.date) }}</span>
-              <span class="text-text-secondary">{{ s.interprete }}</span>
+        <div class="border-t border-white/5 pt-6 md:w-[25rem] md:shrink-0 md:border-l md:border-t-0 md:pl-11 md:pt-0">
+          <div class="mb-1.5 text-[10px] font-bold uppercase tracking-[0.22em] text-text-secondary">
+            {{ t('moments.nextSessions') }}
+          </div>
+          <p v-if="charge && !prochaines.length" class="py-2 text-sm text-text-secondary">
+            {{ t('moments.none') }}
+          </p>
+          <ul v-else class="transition-opacity duration-500" :class="charge ? 'opacity-100' : 'opacity-0'">
+            <li
+              v-for="(s, i) in lignes"
+              :key="s?.id ?? s?.date ?? i"
+              class="grid grid-cols-[8rem_minmax(0,1fr)] items-baseline gap-3 py-2 text-[13px] sm:grid-cols-[9.5rem_minmax(0,1fr)] sm:text-sm"
+            >
+              <span class="text-text-primary">{{ s ? jourLong(s.date) : '—' }}</span>
+              <span v-if="s?.type === 'regulier'" class="text-gold">
+                <span class="mr-2 inline-block h-2 w-2 rounded-full bg-gold align-[1px]" />{{ s.interprete }}
+              </span>
+              <span v-else-if="s" class="text-text-primary">
+                {{ s.interprete }}
+                <span v-if="!s.pourSoi" :class="PASTILLE">{{ t('moments.eleveTag') }}</span>
+              </span>
             </li>
           </ul>
           <NuxtLink
             :to="localePath('/moments-musicaux')"
-            class="mt-5 inline-flex items-center gap-2 text-sm text-gold transition-colors hover:text-text-primary"
+            class="mt-3 inline-flex items-center gap-2 text-sm text-gold transition-colors hover:text-text-primary"
           >
-            {{ t('moments.seeCalendar') }}
+            {{ t('moments.seeProgramme') }}
             <Icon name="heroicons:arrow-right" class="h-4 w-4" />
           </NuxtLink>
         </div>
