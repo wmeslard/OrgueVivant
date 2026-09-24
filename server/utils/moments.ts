@@ -529,10 +529,14 @@ function gabarit(contenu: string): string {
 /** « jeudi 24 septembre 2026 », en français. */
 export function dateLongue(date: string): string {
   const [y, m, d] = date.split('-').map(Number)
+  // « jeudi 1er octobre 2026 » : en français, le premier du mois s'écrit ainsi.
   return new Date(y, m - 1, d).toLocaleDateString('fr-FR', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' })
+    .replace(/^(\S+) 1 /, '$1 1er ')
 }
 
 /** « jeudi 24 septembre 2026, de 13 h 15 à 13 h 45 ». */
 export function quand(date: string, debut: string, fin: string): string {
-  return `${dateLongue(date)}, de ${heureFr(debut)} à ${heureFr(fin)}`
+  // Espaces insécables : « 13 h 15 » ne se coupe pas en fin de ligne.
+  const h = (x: string) => heureFr(x).replaceAll(' ', '\u00A0')
+  return `${dateLongue(date)}, de ${h(debut)} à ${h(fin)}`
 }
