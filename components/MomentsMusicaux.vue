@@ -147,7 +147,7 @@ const pastilleDate = 'min-h-[1.5rem] text-base font-medium text-text-primary tra
             <li
               v-for="(s, i) in lignes"
               :key="s?.id ?? s?.date ?? i"
-              class="grid grid-cols-[8rem_minmax(0,1fr)] items-baseline gap-3 py-2 text-[13px] sm:grid-cols-[9.5rem_minmax(0,1fr)] sm:text-sm"
+              class="grid grid-cols-[7.5rem_minmax(0,1fr)] items-baseline gap-2.5 py-2 text-[13px] sm:grid-cols-[9.5rem_minmax(0,1fr)] sm:gap-3 sm:text-sm"
             >
               <span class="text-text-primary">{{ s ? jourLong(s.date) : '—' }}</span>
               <span v-if="s?.type === 'regulier'" class="text-gold">
