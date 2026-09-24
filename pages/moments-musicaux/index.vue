@@ -1,14 +1,15 @@
 <script setup lang="ts">
 /**
- * Page publique des Moments musicaux : la prochaine séance à la une, puis le
- * calendrier des suivantes, celles de Louis-Paul Courtois (point doré) comme
- * celles des élèves ; sur grand écran, deux mois côte à côte.
+ * Page publique des Moments musicaux : le rendez-vous du jeudi en une ligne,
+ * la prochaine séance à la une, puis les quatre suivantes en cartes (Louis-Paul
+ * Courtois sur fond doré, les élèves avec leur programme). Le reste du
+ * programme se déplie à la demande, sans jamais aligner six mois de jeudis.
  *
  * Les séances sont chargées côté serveur pour être dans le HTML (référencement
  * et données structurées), et la page est régénérée toutes les heures.
  */
 import type { SeancePublique } from '~/utils/moments'
-import { heureFr } from '~/utils/moments'
+import { CRENEAU_REGULIER, finCreneau, heureFr } from '~/utils/moments'
 import { venues } from '~/utils/venues'
 
 const { t, locale } = useI18n()
@@ -17,13 +18,18 @@ const siteUrl = useRuntimeConfig().public.siteUrl
 
 const { data } = await useFetch<{ du: string; seances: SeancePublique[] }>('/api/moments', { query: { mois: 6 } })
 const seances = computed(() => data.value?.seances ?? [])
-/** La prochaine séance, mise à la une ; la liste reprend à la suivante. */
+/** La prochaine séance, mise à la une ; les cartes reprennent à la suivante. */
 const prochaine = computed(() => seances.value[0] ?? null)
+const suivantes = computed(() => seances.value.slice(1, 5))
+/** Le reste du programme, déplié à la demande. */
+const reste = computed(() => seances.value.slice(5))
+const toutVoir = ref(false)
+const horaire = `${heureFr(CRENEAU_REGULIER)} – ${heureFr(finCreneau(CRENEAU_REGULIER))}`
 
-/** Séances groupées par mois, pour aérer une liste qui court sur six mois. */
+/** Séances groupées par mois, pour aérer la suite du programme. */
 const parMois = computed(() => {
   const groupes = new Map<string, SeancePublique[]>()
-  for (const s of seances.value.slice(1)) {
+  for (const s of reste.value) {
     const cle = s.date.slice(0, 7)
     groupes.set(cle, [...(groupes.get(cle) ?? []), s])
   }
@@ -40,6 +46,11 @@ function formater(date: string, options: Intl.DateTimeFormatOptions) {
   return s.charAt(0).toUpperCase() + s.slice(1)
 }
 const jourCourt = (date: string) => formater(date, { weekday: 'short', day: 'numeric' })
+/** « 1er octobre », « 15 octobre ». */
+const jourMois = (date: string) => {
+  const s = formater(date, { day: 'numeric', month: 'long' })
+  return locale.value === 'fr' ? s.replace(/^1 /, '1er ') : s
+}
 
 /** « Jeudi 1er octobre, 13 h 15 », ou « Aujourd'hui à 13 h 15 ». */
 const quandProchaine = computed(() => {
@@ -134,6 +145,14 @@ useSeoMeta({
         <p class="mt-6 text-xl font-light leading-relaxed text-text-secondary xl:whitespace-nowrap">
           {{ t('moments.intro') }}
         </p>
+        <!-- Le rendez-vous, en une ligne -->
+        <p class="mt-5 flex flex-wrap items-baseline gap-x-3 gap-y-1 font-display text-2xl font-light text-text-primary">
+          <span>{{ t('moments.rdvDay') }}</span>
+          <span class="text-gold">·</span>
+          <span>{{ horaire }}</span>
+          <span class="hidden text-gold sm:inline">·</span>
+          <span class="w-full font-sans text-base text-text-secondary sm:w-auto">{{ t('moments.free') }}</span>
+        </p>
       </header>
 
       <!-- Prochaine séance, sur une ligne dès qu'il y a la place -->
@@ -150,15 +169,8 @@ useSeoMeta({
         </span>
       </div>
 
-      <!-- Repères pratiques -->
-      <dl class="mt-10 grid gap-5 border-y border-white/5 py-7 sm:grid-cols-3 sm:gap-8">
-        <div>
-          <dt class="mb-1.5 text-[10px] font-bold uppercase tracking-widest text-text-secondary">{{ t('moments.scheduleLabel') }}</dt>
-          <dd class="flex items-start gap-2 text-sm text-text-primary">
-            <Icon name="heroicons:clock" class="mt-0.5 h-4 w-4 shrink-0 text-gold" />
-            <span>{{ t('moments.schedule') }} · {{ t('moments.free') }}</span>
-          </dd>
-        </div>
+      <!-- Repères pratiques : l'horaire est déjà dans la ligne du rendez-vous -->
+      <dl class="mt-10 grid gap-5 border-y border-white/5 py-6 sm:grid-cols-2 sm:gap-8">
         <div>
           <dt class="mb-1.5 text-[10px] font-bold uppercase tracking-widest text-text-secondary">{{ t('moments.placeLabel') }}</dt>
           <dd class="flex items-start gap-2 text-sm text-text-primary">
@@ -175,13 +187,45 @@ useSeoMeta({
         </div>
       </dl>
 
-      <!-- Calendrier : deux mois côte à côte sur grand écran -->
+      <!-- Les prochains jeudis : quatre cartes, le reste à la demande -->
       <section class="mt-12">
-        <h2 class="mb-6 text-xs font-bold uppercase tracking-[0.3em] text-gold">{{ t('moments.upcomingLabel') }}</h2>
+        <h2 class="mb-6 text-xs font-bold uppercase tracking-[0.3em] text-gold">{{ t('moments.nextThursdays') }}</h2>
 
         <p v-if="!prochaine" class="text-text-secondary">{{ t('moments.none') }}</p>
 
-        <div class="grid gap-x-14 gap-y-10 lg:grid-cols-2">
+        <ul v-if="suivantes.length" class="grid grid-cols-2 gap-3 sm:gap-4 lg:grid-cols-4">
+          <li
+            v-for="s in suivantes"
+            :key="s.id ?? s.date"
+            class="rounded-2xl border p-4 sm:p-5"
+            :class="s.type === 'regulier' ? 'border-gold/35 bg-gold/10' : 'border-white/10 bg-surface'"
+          >
+            <div class="font-display text-2xl font-light text-text-primary">{{ jourMois(s.date) }}</div>
+            <div class="mt-3 text-sm">
+              <span v-if="s.type === 'regulier'" class="text-gold">
+                <span class="mr-2 inline-block h-2 w-2 rounded-full bg-gold align-[1px]" />{{ s.interprete }}
+              </span>
+              <span v-else class="text-text-primary">
+                {{ s.interprete }}
+                <span class="ml-1 rounded-full border border-gold/30 px-2 py-0.5 align-[2px] text-[9px] uppercase tracking-widest text-gold">{{ t('moments.eleveTag') }}</span>
+              </span>
+            </div>
+            <p v-if="s.programme" class="mt-1.5 text-xs font-light leading-relaxed text-text-secondary">{{ s.programme }}</p>
+          </li>
+        </ul>
+
+        <button
+          v-if="reste.length"
+          type="button"
+          class="mt-6 text-sm text-gold underline-offset-4 hover:underline"
+          :aria-expanded="toutVoir"
+          @click="toutVoir = !toutVoir"
+        >
+          {{ toutVoir ? t('moments.seeLess') : t('moments.seeAll') }}
+        </button>
+
+        <!-- Suite du programme : dans la page pour les moteurs de recherche, affichée sur demande -->
+        <div v-show="toutVoir" class="mt-8 grid gap-x-14 gap-y-10 lg:grid-cols-2">
           <div v-for="groupe in parMois" :key="groupe.cle">
             <div class="mb-1 flex items-center gap-4">
               <h3 class="font-display text-xl font-light text-text-primary">{{ groupe.titre }}</h3>
@@ -191,10 +235,9 @@ useSeoMeta({
               <li
                 v-for="s in groupe.liste"
                 :key="s.id ?? s.date"
-                class="py-3.5 text-sm sm:grid sm:grid-cols-[6rem_4.5rem_minmax(0,1fr)] sm:items-baseline sm:gap-x-4"
+                class="py-3.5 text-sm sm:grid sm:grid-cols-[6rem_minmax(0,1fr)] sm:items-baseline sm:gap-x-4"
               >
                 <span class="font-medium text-text-primary">{{ jourCourt(s.date) }}</span>
-                <span class="text-text-secondary"><span class="sm:hidden"> · </span>{{ heureFr(s.debut) }}</span>
                 <div class="mt-1 sm:mt-0">
                   <span v-if="s.type === 'regulier'" class="text-gold">
                     <span class="mr-2 inline-block h-2 w-2 rounded-full bg-gold align-[1px]" />{{ s.interprete }}
