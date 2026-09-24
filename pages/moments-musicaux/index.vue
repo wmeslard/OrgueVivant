@@ -67,6 +67,13 @@ const jourProchaine = computed(() => {
   const jour = formater(prochaine.value.date, { weekday: 'long', day: 'numeric', month: 'long' })
   return locale.value === 'fr' ? jour.replace(/^(\S+) 1 /, '$1 1er ') : jour
 })
+/** « orgue et violon » : les instruments, seulement quand on joue à plusieurs. */
+function instruments(s: SeancePublique): string {
+  if ((s.musiciens?.length ?? 0) < 2) return ''
+  const liste = s.musiciens!.map(m => m.instrument.trim().toLocaleLowerCase('fr')).filter(Boolean)
+  return new Intl.ListFormat(locale.value === 'fr' ? 'fr' : 'en', { type: 'conjunction' }).format(liste)
+}
+
 /** « aujourd'hui », « demain », « dans 7 jours » : compté depuis la date de génération de la page. */
 const dansCombien = computed(() => {
   if (!prochaine.value || !data.value?.du) return ''
@@ -91,7 +98,7 @@ const jsonLd = computed(() => safeJsonLd({
     position: i + 1,
     item: {
       '@type': 'MusicEvent',
-      name: `${t('moments.title')} — ${s.interprete}`,
+      name: `${t('moments.title')} — ${s.interprete.replaceAll('\u00A0', ' ')}`,
       startDate: `${s.date}T${s.debut}:00${dateOffset(s.date)}`,
       endDate: `${s.date}T${s.fin}:00${dateOffset(s.date)}`,
       location: {
@@ -106,7 +113,9 @@ const jsonLd = computed(() => safeJsonLd({
         },
         geo: { '@type': 'GeoCoordinates', latitude: venue.latitude, longitude: venue.longitude }
       },
-      performer: [{ '@type': 'Person', name: s.interprete }],
+      performer: s.musiciens?.length
+        ? s.musiciens.map(m => ({ '@type': 'Person', name: m.nom }))
+        : [{ '@type': 'Person', name: s.interprete }],
       organizer: { '@type': 'Organization', name: 'Orgue Vivant', url: siteUrl },
       isAccessibleForFree: true,
       offers: { '@type': 'Offer', price: 0, priceCurrency: 'EUR', availability: 'https://schema.org/InStock', url: pageUrl },
@@ -191,6 +200,7 @@ useSeoMeta({
               <span v-else class="text-text-primary">
                 {{ prochaine.interprete }}
               </span>
+              <div v-if="instruments(prochaine)" class="mt-0.5 text-xs text-text-secondary">{{ instruments(prochaine) }}</div>
             </div>
             <p v-if="prochaine.programme" class="mt-1.5 text-xs font-light leading-relaxed text-text-secondary">{{ prochaine.programme }}</p>
           </li>
@@ -208,6 +218,7 @@ useSeoMeta({
               <span v-else class="text-text-primary">
                 {{ s.interprete }}
               </span>
+              <div v-if="instruments(s)" class="mt-0.5 text-xs text-text-secondary">{{ instruments(s) }}</div>
             </div>
             <p v-if="s.programme" class="mt-1.5 text-xs font-light leading-relaxed text-text-secondary">{{ s.programme }}</p>
           </li>
@@ -246,6 +257,7 @@ useSeoMeta({
                   <span v-else class="text-text-primary">
                     {{ s.interprete }}
                   </span>
+                  <span v-if="instruments(s)" class="text-text-secondary"> · {{ instruments(s) }}</span>
                   <p v-if="s.programme" class="mt-0.5 font-light text-text-secondary">{{ s.programme }}</p>
                 </div>
               </li>

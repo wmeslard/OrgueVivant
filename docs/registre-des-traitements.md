@@ -89,23 +89,26 @@ Pas de délégué à la protection des données (non requis).
 - **Départ d'un bénévole** : suppression de son compte administrateur.
 - **Nouveau traitement** (formulaire, outil, prestataire) : mise à jour de ce registre et de la politique de confidentialité avant mise en service.
 
-## Moments musicaux : professeurs et élèves
+## Moments musicaux : personnes inscrites et musiciens
 
-**Finalité** — permettre aux professeurs des conservatoires d'inscrire leurs
-élèves aux Moments musicaux, ou à un·e organiste de s'y inscrire lui-même, et
-publier le calendrier des séances sur le site et dans l'agenda.
+**Finalité** — permettre aux personnes qui ont le lien (organistes,
+professeurs) de s'inscrire aux Moments musicaux ou d'y inscrire quelqu'un, seul
+ou avec d'autres musiciens (quatre au plus), et publier le calendrier des
+séances sur le site et dans l'agenda.
 
 **Base légale** — intérêt légitime de l'association (organisation de son
-activité musicale) ; consentement de l'élève, ou de ses parents s'il est
-mineur, pour la publication de son prénom, recueilli par le professeur qui
-l'atteste à l'inscription ; pour une inscription personnelle, accord donné par
-la personne elle-même (ou un parent si elle est mineure).
+activité musicale) ; accord de chaque musicien, ou de ses parents s'il
+est mineur, pour la publication de son prénom et de l'initiale de son nom,
+attesté par la personne qui fait l'inscription ; pour une inscription
+personnelle, accord donné par la personne elle-même (ou un parent si elle est
+mineure).
 
 **Données** — professeur : prénom, nom, email, conservatoire (facultatif),
 date de dernière visite, saisis par lui-même à l'entrée dans l'espace. Séance :
-date, heure, prénom et nom de l'élève, email de l'élève (facultatif, pour la
-confirmation), programme annoncé, professeur qui a inscrit l'élève (ou
-l'association, pour une inscription faite par elle).
+date, heure, prénom, nom et instrument de chaque musicien, email de la personne
+inscrite (facultatif, pour la confirmation, saisi par l'association seulement),
+description (programme), personne qui a fait l'inscription (ou l'association).
+Les musiciens ajoutés n'ont ni email ni autre coordonnée.
 
 **Accès** — l'espace des professeurs s'ouvre avec un lien secret que
 l'association transmet ; il n'y a ni compte ni mot de passe. Un cookie
@@ -115,19 +118,20 @@ entrés avec l'ancien. Le site public ne mentionne pas cet espace.
 
 **Information des personnes** — donnée aux professeurs sur la page d'entrée de
 l'espace (usage des coordonnées, cookie, contact pour exercer ses droits), et
-non dans la politique de confidentialité publique. Les professeurs informent
-leurs élèves, dont ils attestent l'accord à l'inscription.
+non dans la politique de confidentialité publique. La personne qui inscrit
+informe les musiciens, dont elle atteste l'accord à l'inscription.
 
-**Minimisation** — ni les professeurs ni les élèves n'ont de compte. Le nom
-complet et l'adresse de l'élève ne servent qu'à l'organisation : ils ne sont
-visibles que de l'administration et du professeur qui l'a inscrit.
+**Minimisation** — personne n'a de compte. Les noms complets et l'adresse ne
+servent qu'à l'organisation : ils ne sont visibles que de l'administration et
+de la personne qui a fait l'inscription.
 
 **Destinataires** — le bureau de l'association. Hébergement Supabase (Union
 européenne). Envois d'emails par Resend.
 
-**Publication** — seuls la date, l'heure, le prénom, l'initiale du nom et le
-programme apparaissent publiquement (site et agenda ICS). Ni l'email, ni le nom
-complet, ni le professeur qui a inscrit l'élève.
+**Publication** — seuls la date, l'heure, le prénom et l'initiale du nom de
+chaque musicien, les instruments (à plusieurs) et la description apparaissent
+publiquement (site et agenda ICS). Ni l'email, ni le nom complet, ni la
+personne qui a fait l'inscription.
 
 **Conservation** — professeurs : le temps de la collaboration, puis
 suppression sur demande. Séances passées : conservées comme archive de la

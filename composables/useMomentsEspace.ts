@@ -1,4 +1,4 @@
-import type { Horaire } from '~/utils/moments'
+import type { Horaire, Musicien } from '~/utils/moments'
 
 export interface SeanceProf {
   id: string
@@ -9,8 +9,10 @@ export interface SeanceProf {
   eleve_nom: string
   eleve_email: string | null
   programme: string | null
-  /** La personne joue elle-même (pas d'élève). */
+  /** La personne entrée par le lien joue elle-même. */
   pour_soi?: boolean
+  /** Tous les musiciens ; vide pour une séance en solo d'avant le jeu à plusieurs. */
+  musiciens?: Musicien[] | null
   statut: 'reservee' | 'annulee'
 }
 

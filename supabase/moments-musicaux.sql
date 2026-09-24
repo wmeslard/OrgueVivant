@@ -17,7 +17,8 @@
 --
 -- Schéma complet, pour une base neuve : à exécuter dans Supabase → SQL Editor.
 -- La base de production, créée avec une version antérieure, se met à jour avec
--- moments-musicaux-lien.sql, moments-musicaux-regles.sql puis moments-musicaux-soi.sql.
+-- moments-musicaux-lien.sql, moments-musicaux-regles.sql, moments-musicaux-soi.sql puis
+-- moments-musicaux-musiciens.sql.
 
 -- ─────────────────────────────────────────────────────────────────────────────
 -- Le lien partagé
@@ -77,8 +78,11 @@ create table if not exists moments_seances (
   -- Facultatif : si l'élève a une adresse, il reçoit la confirmation.
   eleve_email    text,
   programme      text,
-  -- Vrai quand la personne entrée par le lien joue elle-même (pas d'élève).
+  -- Vrai quand la personne entrée par le lien joue elle-même.
   pour_soi       boolean not null default false,
+  -- Tous les musiciens, la personne inscrite en premier : [{prenom, nom,
+  -- instrument}], quatre au plus. Vide pour une séance en solo d'avant.
+  musiciens      jsonb not null default '[]'::jsonb check (jsonb_typeof(musiciens) = 'array'),
   statut         moments_statut_seance not null default 'reservee',
   annulee_par    text check (annulee_par in ('professeur', 'admin')),
   annulee_at     timestamptz,

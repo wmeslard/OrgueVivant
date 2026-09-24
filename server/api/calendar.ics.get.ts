@@ -98,12 +98,18 @@ export default defineEventHandler(async (event) => {
 
   for (const s of await calendrierPublic(today, plusMois(today, MONTHS_AHEAD))) {
     const day = s.date.replaceAll('-', '')
+    // Les instruments ne sont indiqués qu'à plusieurs : seul, c'est l'orgue.
+    const qui = s.interprete.replaceAll('\u00A0', ' ')
+    const instruments = (s.musiciens?.length ?? 0) > 1
+      ? s.musiciens!.map(m => m.instrument.toLocaleLowerCase('fr')).filter(Boolean).join(', ')
+      : ''
+    const avec = `${qui}${instruments ? ` (${instruments})` : ''}`
     const titre = s.type === 'regulier'
-      ? `Moment musical — ${s.interprete}`
-      : `Moment musical — ${s.interprete}${s.programme ? ` · ${s.programme}` : ''}`
+      ? `Moment musical — ${qui}`
+      : `Moment musical — ${avec}${s.programme ? ` · ${s.programme}` : ''}`
     const description = s.type === 'regulier'
-      ? `Une demi-heure de musique à l'orgue de chœur de l'église Saint-Maurice, par ${s.interprete}.`
-      : `Une demi-heure de musique à l'orgue de chœur de l'église Saint-Maurice, par ${s.interprete}.${s.programme ? `\nProgramme : ${s.programme}` : ''}`
+      ? `Une demi-heure de musique à l'orgue de chœur de l'église Saint-Maurice, par ${qui}.`
+      : `Une demi-heure de musique à l'orgue de chœur de l'église Saint-Maurice, par ${avec}.${s.programme ? `\nProgramme : ${s.programme}` : ''}`
     vevents.push([
       'BEGIN:VEVENT',
       // Les séances inscrites gardent leur identifiant de réservation : une

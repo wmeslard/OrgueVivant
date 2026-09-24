@@ -2,13 +2,14 @@
 /**
  * Espace des personnes entrées par le lien : les prochains jeudis en liste.
  * Un jeudi libre se réserve d'un bouton, qui ouvre un panneau — monté du bas
- * de l'écran sur téléphone — pour jouer soi-même ou inscrire un élève. Ses
- * propres séances se modifient ou s'annulent depuis la même liste.
+ * de l'écran sur téléphone — pour jouer soi-même ou inscrire quelqu'un, seul
+ * ou avec d'autres musiciens. Ses propres séances se modifient ou s'annulent
+ * depuis la même liste.
  */
 import type { SeanceProf } from '~/composables/useMomentsEspace'
 import {
-  HORIZON_MOIS, JOUR_MOMENTS, annulable, creneauxDuJour, heureFr, nomPublic, parseYmd, plusJours, plusMois, ymd,
-  type CreneauJour
+  HORIZON_MOIS, INSTRUMENT_PAR_DEFAUT, JOUR_MOMENTS, MAX_MUSICIENS, annulable, creneauxDuJour, heureFr, lierNoms,
+  musiciensDe, nomsComplets, nomsPublics, parseYmd, plusJours, plusMois, ymd, type CreneauJour, type Musicien
 } from '~/utils/moments'
 
 definePageMeta({ middleware: 'professeur', layout: 'default' })
@@ -65,29 +66,58 @@ const parMois = computed(() => {
 })
 
 // ── Inscription ──────────────────────────────────────────────────────────────
-// Le dernier choix (« je joue » ou « un élève ») est retenu sur ce navigateur.
+// Le dernier choix (« je joue » ou « quelqu'un ») est retenu sur ce navigateur.
 const CLE_CHOIX = 'ov_moments_pour_soi'
 const fiche = ref<{ date: string; heure: string } | null>(null)
-const form = reactive({ pourSoi: false, eleve_prenom: '', eleve_nom: '', eleve_email: '', programme: '', consentement: false, details: false })
+const vide = (instrument = ''): Musicien => ({ prenom: '', nom: '', instrument })
+const form = reactive({
+  pourSoi: false,
+  /** Son propre instrument, en « Je joue moi-même ». */
+  soi: vide(INSTRUMENT_PAR_DEFAUT),
+  /** Le premier musicien, en « J'inscris quelqu'un ». */
+  premier: vide(INSTRUMENT_PAR_DEFAUT),
+  /** Les musiciens ajoutés, communs aux deux modes. */
+  autres: [] as Musicien[],
+  programme: '',
+  consentement: false
+})
 const envoi = ref(false)
 const erreur = ref('')
 
-const apercuSoi = computed(() =>
-  t('momentsEspace.studentNameHint', { nom: nomPublic(espace.value?.professeur.prenom ?? '', espace.value?.professeur.nom ?? '') }))
-const apercuEleve = computed(() => form.eleve_prenom.trim()
-  ? t('momentsEspace.studentNameHint', { nom: nomPublic(form.eleve_prenom, form.eleve_nom) })
-  : t('momentsEspace.studentNameHintEmpty'))
+const moi = computed<Musicien>(() => ({
+  prenom: espace.value?.professeur.prenom ?? '', nom: espace.value?.professeur.nom ?? '', instrument: form.soi.instrument
+}))
+const rempli = (m: Musicien) => !!(m.prenom.trim() || m.nom.trim())
+/** Les musiciens d'un mode, tuiles laissées vides exclues. */
+const musiciensDu = (pourSoi: boolean) => [pourSoi ? moi.value : form.premier, ...form.autres].filter(rempli)
+/** « Le site affichera « Salomé G. & Marie D. ». » */
+const apercu = (pourSoi: boolean) => {
+  const ms = musiciensDu(pourSoi).filter(m => m.prenom.trim())
+  return ms.length ? t('momentsEspace.studentNameHint', { nom: nomsPublics(ms) }) : t('momentsEspace.studentNameHintEmpty')
+}
+/** Le texte de la case d'accord suit le mode et le nombre de musiciens. */
+const accord = (pourSoi: boolean) => pourSoi
+  ? t(form.autres.length ? 'momentsEspace.consentMePlus' : 'momentsEspace.consentMe')
+  : t(form.autres.length ? 'momentsEspace.consentPlural' : 'momentsEspace.consent')
+const libelleBouton = computed(() => {
+  const n = 1 + form.autres.length
+  if (form.pourSoi) return t(n > 1 ? 'momentsEspace.confirmUs' : 'momentsEspace.confirmMe')
+  if (n === 2) return t('momentsEspace.confirmDuo')
+  if (n === 3) return t('momentsEspace.confirmTrio')
+  if (n > 3) return t('momentsEspace.confirmMany', { n })
+  return form.premier.prenom.trim() ? t('momentsEspace.confirmStudent', { prenom: form.premier.prenom.trim() }) : t('momentsEspace.confirm')
+})
 
 /** Classes d'un des deux modes superposés : celui qui n'est pas choisi garde sa place, invisible. */
 const couche = (visible: boolean) => ['col-start-1 row-start-1', visible ? '' : 'invisible']
-/** Valeur affichée à la place d'un champ, en mode « je joue moi-même ». */
-const VALEUR = 'truncate rounded-xl border border-transparent bg-white/5 px-4 py-3 text-base text-text-primary'
 
 function ouvrir(j: Jeudi) {
   if (!j.creneau) return
   let pourSoi = false
   try { pourSoi = localStorage.getItem(CLE_CHOIX) === '1' } catch { /* stockage indisponible */ }
-  Object.assign(form, { pourSoi, eleve_prenom: '', eleve_nom: '', eleve_email: '', programme: '', consentement: false, details: false })
+  Object.assign(form, {
+    pourSoi, soi: vide(INSTRUMENT_PAR_DEFAUT), premier: vide(INSTRUMENT_PAR_DEFAUT), autres: [], programme: '', consentement: false
+  })
   erreur.value = ''
   fiche.value = { date: j.date, heure: j.creneau.debut }
 }
@@ -101,22 +131,26 @@ function choisir(pourSoi: boolean) {
 async function inscrire() {
   if (!fiche.value) return
   erreur.value = ''
-  if (!form.pourSoi && (!form.eleve_prenom.trim() || !form.eleve_nom.trim())) { erreur.value = t('momentsAcces.errorRequired'); return }
-  if (!form.pourSoi && form.eleve_email && !/^\S+@\S+\.\S+$/.test(form.eleve_email)) { erreur.value = t('momentsAcces.errorEmail'); return }
+  const musiciens = musiciensDu(form.pourSoi)
+  const incomplet = (m: Musicien) => !m.prenom.trim() || !m.nom.trim()
+  if ((!form.pourSoi && incomplet(form.premier)) || form.autres.filter(rempli).some(incomplet)) {
+    erreur.value = t('momentsAcces.errorRequired'); return
+  }
   if (!form.consentement) { erreur.value = t('momentsEspace.errorConsent'); return }
   envoi.value = true
   try {
     await $fetch('/api/moments/seances', {
       method: 'POST',
-      body: {
-        date: fiche.value.date, heure_debut: fiche.value.heure, programme: form.programme, pour_soi: form.pourSoi,
-        ...(!form.pourSoi && { eleve_prenom: form.eleve_prenom, eleve_nom: form.eleve_nom, eleve_email: form.eleve_email })
-      }
+      body: { date: fiche.value.date, heure_debut: fiche.value.heure, programme: form.programme, pour_soi: form.pourSoi, musiciens }
     })
     const date = jourLong(fiche.value.date)
     fiche.value = null
     await charger(true)
-    showToast(form.pourSoi ? t('momentsEspace.bookedMe', { date }) : t('momentsEspace.bookedStudent', { nom: form.eleve_prenom.trim(), date }), { type: 'success' })
+    showToast(form.pourSoi
+      ? t('momentsEspace.bookedMe', { date })
+      : musiciens.length > 1
+        ? t('momentsEspace.bookedGroup', { noms: lierNoms(musiciens.map(m => m.prenom.trim())), date })
+        : t('momentsEspace.bookedStudent', { nom: musiciens[0].prenom.trim(), date }), { type: 'success' })
   } catch (e: any) {
     erreur.value = e?.data?.statusMessage || t('momentsAcces.errorGeneric')
     // Le jeudi vient peut-être d'être pris : la liste est rechargée.
@@ -224,7 +258,7 @@ async function logout() {
                 </div>
                 <div class="mt-0.5 text-sm">
                   <template v-if="j.seance">
-                    <span class="text-text-primary">{{ j.seance.eleve_prenom }} {{ j.seance.eleve_nom }}</span>
+                    <span class="text-text-primary">{{ nomsComplets(musiciensDe(j.seance)) }}</span>
                     <span class="text-gold"> · {{ j.seance.pour_soi ? t('momentsEspace.you') : t('momentsEspace.yourStudent') }}</span>
                   </template>
                   <span v-else-if="!j.creneau" class="text-text-secondary">{{ t('momentsEspace.noSession') }}</span>
@@ -275,7 +309,7 @@ async function logout() {
       <h2 class="mb-4 text-[10px] font-bold uppercase tracking-widest text-text-secondary">{{ t('momentsEspace.history') }}</h2>
       <ul class="space-y-1.5 text-sm text-text-secondary">
         <li v-for="s in passees.slice(0, 12)" :key="s.id">
-          {{ jourAnnee(s.date) }} · {{ heureFr(s.heure_debut) }} — {{ s.eleve_prenom }} {{ s.eleve_nom }}
+          {{ jourAnnee(s.date) }} · {{ heureFr(s.heure_debut) }} — {{ nomsComplets(musiciensDe(s)) }}
         </li>
       </ul>
     </section>
@@ -312,59 +346,64 @@ async function logout() {
               Ce qui diffère d'un mode à l'autre est superposé, l'un des deux
               invisible : le panneau garde sa hauteur quand on change de mode.
             -->
-            <div class="mt-6 grid">
-              <div :class="couche(!form.pourSoi)">
-                <label class="label" for="ep">{{ t('momentsEspace.studentFirstName') }}</label>
-                <input id="ep" v-model="form.eleve_prenom" maxlength="80" class="input text-base" autocapitalize="words" autocomplete="off">
-                <label class="label mt-5" for="en">{{ t('momentsEspace.studentLastName') }}</label>
-                <input id="en" v-model="form.eleve_nom" maxlength="80" class="input text-base" autocapitalize="words" autocomplete="off">
-                <p class="mt-2 text-xs text-text-secondary">{{ apercuEleve }}</p>
-              </div>
-              <div :class="couche(form.pourSoi)">
-                <div class="label">{{ t('momentsEspace.yourFirstName') }}</div>
-                <div :class="VALEUR">{{ espace.professeur.prenom }}</div>
-                <div class="label mt-5">{{ t('momentsEspace.yourLastName') }}</div>
-                <div :class="VALEUR">{{ espace.professeur.nom }}</div>
-                <p class="mt-2 text-xs text-text-secondary">
-                  {{ apercuSoi }}
-                  <button type="button" class="text-gold underline-offset-4 hover:underline" @click="ouvrirProfil">{{ t('momentsEspace.editProfile') }}</button>
-                </p>
-              </div>
+            <div class="mt-5 grid">
+              <MomentsTuileMusicien
+                v-model="form.soi"
+                :class="couche(form.pourSoi)"
+                :titre="t('momentsEspace.youTile')"
+                ident="m0s"
+                :fixe="espace.professeur"
+                @profil="ouvrirProfil"
+              />
+              <MomentsTuileMusicien
+                v-model="form.premier"
+                :class="couche(!form.pourSoi)"
+                :titre="t('momentsEspace.musicianN', { n: 1 })"
+                ident="m0"
+              />
             </div>
-
-            <!-- Détails facultatifs, repliés -->
-            <button v-if="!form.details" type="button" class="mt-6 grid text-left text-sm text-gold" @click="form.details = true">
-              <span :class="couche(form.pourSoi)">{{ t('momentsEspace.detailsMe') }}</span>
-              <span :class="couche(!form.pourSoi)">{{ t('momentsEspace.detailsStudent') }}</span>
+            <MomentsTuileMusicien
+              v-for="(m, i) in form.autres"
+              :key="i"
+              v-model="form.autres[i]"
+              class="mt-3"
+              :titre="t('momentsEspace.musicianN', { n: i + 2 })"
+              :ident="`m${i + 1}`"
+              retirable
+              @retirer="form.autres.splice(i, 1)"
+            />
+            <button
+              v-if="form.autres.length < MAX_MUSICIENS - 1"
+              type="button"
+              class="mt-3 text-sm text-gold underline-offset-4 hover:underline"
+              @click="form.autres.push(vide())"
+            >
+              {{ t('momentsEspace.addMusician') }}
             </button>
-            <template v-else>
-              <label class="label mt-6" for="prog">
-                {{ t('momentsEspace.programme') }}
-                <span class="ml-1 font-normal text-text-secondary">({{ t('momentsAcces.optional') }})</span>
-              </label>
-              <textarea id="prog" v-model="form.programme" rows="2" maxlength="600" class="input resize-y text-base" />
-              <div class="mt-5 grid">
-                <div :class="couche(!form.pourSoi)">
-                  <label class="label" for="ee">
-                    {{ t('momentsEspace.studentEmail') }}
-                    <span class="ml-1 font-normal text-text-secondary">({{ t('momentsAcces.optional') }})</span>
-                  </label>
-                  <input id="ee" v-model="form.eleve_email" type="email" inputmode="email" maxlength="254" class="input text-base" autocomplete="off">
-                  <p class="mt-2 text-xs text-text-secondary">{{ t('momentsEspace.studentEmailHint') }}</p>
-                </div>
-                <div :class="couche(form.pourSoi)">
-                  <div class="label">{{ t('momentsEspace.yourEmail') }}</div>
-                  <div :class="VALEUR">{{ espace.professeur.email }}</div>
-                  <p class="mt-2 text-xs text-text-secondary">{{ t('momentsEspace.yourEmailHint') }}</p>
-                </div>
-              </div>
-            </template>
+            <p class="mt-2 grid text-xs text-text-secondary">
+              <span :class="couche(form.pourSoi)">{{ apercu(true) }}</span>
+              <span :class="couche(!form.pourSoi)">{{ apercu(false) }}</span>
+            </p>
+
+            <label class="label mt-6" for="prog">
+              {{ t('momentsEspace.programme') }}
+              <span class="ml-1 font-normal text-text-secondary">({{ t('momentsAcces.optional') }})</span>
+            </label>
+            <textarea
+              id="prog"
+              v-model="form.programme"
+              rows="2"
+              maxlength="600"
+              class="input resize-y text-base"
+              :placeholder="t('momentsEspace.programmePlaceholder')"
+            />
+            <p class="mt-2 text-xs text-text-secondary">{{ t('momentsEspace.programmeHint') }}</p>
 
             <label class="mt-7 flex cursor-pointer items-start gap-3 text-sm leading-relaxed text-text-secondary">
               <input v-model="form.consentement" type="checkbox" class="mt-0.5 h-5 w-5 shrink-0 accent-gold">
               <span class="grid">
-                <span :class="couche(form.pourSoi)">{{ t('momentsEspace.consentMe') }}</span>
-                <span :class="couche(!form.pourSoi)">{{ t('momentsEspace.consent') }}</span>
+                <span :class="couche(form.pourSoi)">{{ accord(true) }}</span>
+                <span :class="couche(!form.pourSoi)">{{ accord(false) }}</span>
               </span>
             </label>
             <p v-if="erreur" class="mt-4 text-sm text-red-400">{{ erreur }}</p>
@@ -380,7 +419,7 @@ async function logout() {
               @click="inscrire"
             >
               <Icon v-if="envoi" name="heroicons:arrow-path" class="h-4 w-4 animate-spin" />
-              {{ form.pourSoi ? t('momentsEspace.confirmMe') : form.eleve_prenom.trim() ? t('momentsEspace.confirmStudent', { prenom: form.eleve_prenom.trim() }) : t('momentsEspace.confirm') }}
+              {{ libelleBouton }}
             </button>
           </div>
         </div>

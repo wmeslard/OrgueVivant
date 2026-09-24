@@ -2,7 +2,7 @@ import { getServiceClient } from '~/server/utils/superAdminClient'
 import {
   aujourdhuiParis, chargerHoraires, chargerSeances, marquerConnexion, requireProfesseur
 } from '~/server/utils/moments'
-import { HORIZON_MOIS, nomPublic, plusMois } from '~/utils/moments'
+import { HORIZON_MOIS, musiciensDe, nomsPublics, plusMois } from '~/utils/moments'
 
 /**
  * Tout ce dont l'espace du professeur a besoin en une requête : les horaires
@@ -30,7 +30,7 @@ export default defineEventHandler(async (event) => {
     pris: seances.map(s => ({
       date: s.date,
       heure_debut: s.heure_debut.slice(0, 5),
-      interprete: nomPublic(s.eleve_prenom, s.eleve_nom),
+      interprete: nomsPublics(musiciensDe(s)),
       mien: s.professeur_id === prof.id
     })),
     mesSeances: miennes.data ?? []

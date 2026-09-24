@@ -7,7 +7,7 @@
  * la personne inscrite, et qui l'a inscrite.
  */
 import type { FicheEleve } from '~/components/MomentsCreneaux.vue'
-import { heureFr, type Horaire } from '~/utils/moments'
+import { heureFr, musiciensDe, nomsComplets, type Horaire, type Musicien } from '~/utils/moments'
 
 definePageMeta({ middleware: 'auth', layout: 'admin' })
 
@@ -21,6 +21,7 @@ interface Professeur {
 interface Seance {
   id: string; date: string; heure_debut: string; heure_fin: string
   eleve_prenom: string; eleve_nom: string; eleve_email: string | null; programme: string | null
+  musiciens?: Musicien[] | null
   statut: 'reservee' | 'annulee'; annulee_par: 'professeur' | 'admin' | null
   /** Null : inscrite par l'association. */
   professeur_id: string | null
@@ -97,7 +98,7 @@ const contexte = computed(() => ({
   delaiJours: 0,
   horaires: data.value?.horaires ?? [],
   pris: seancesAVenir.value.map(s => ({
-    date: s.date, heure_debut: s.heure_debut.slice(0, 5), interprete: `${s.eleve_prenom} ${s.eleve_nom}`
+    date: s.date, heure_debut: s.heure_debut.slice(0, 5), interprete: nomsComplets(musiciensDe(s))
   }))
 }))
 const seanceDu = (date: string, debut: string) =>
@@ -110,7 +111,7 @@ async function inscrit() {
 }
 
 async function annulerSeance(s: Seance) {
-  const motif = prompt(`Annuler la séance de ${s.eleve_prenom} ${s.eleve_nom} du ${jourLong(s.date)} ?\n\nMotif communiqué (facultatif) :`)
+  const motif = prompt(`Annuler la séance de ${nomsComplets(musiciensDe(s))} du ${jourLong(s.date)} ?\n\nMotif communiqué (facultatif) :`)
   if (motif === null) return
   await action(() => $fetch(`/api/admin/moments/seances/${s.id}`, { method: 'DELETE', body: { motif } }), 'Séance annulée.')
 }
@@ -206,7 +207,7 @@ async function supprimerProf(p: Professeur) {
             <div v-if="s" class="rounded-xl border border-white/10 bg-white/[0.04] px-4 py-3 text-sm">
               <div class="flex items-baseline justify-between gap-3">
                 <span class="text-text-secondary">{{ heureFr(creneau.debut) }}</span>
-                <span class="text-right font-medium text-text-primary">{{ s.eleve_prenom }} {{ s.eleve_nom }}</span>
+                <span class="text-right font-medium text-text-primary">{{ nomsComplets(musiciensDe(s), true) }}</span>
               </div>
               <div class="mt-1 text-xs text-text-secondary">
                 {{ inscritPar(s) }}<template v-if="s.eleve_email"> · {{ s.eleve_email }}</template>
@@ -224,7 +225,7 @@ async function supprimerProf(p: Professeur) {
         <h2 class="mb-4 font-display text-xl">Séances passées</h2>
         <ul class="space-y-1.5 text-sm text-ink-500">
           <li v-for="s in seancesPassees.slice(0, 20)" :key="s.id">
-            {{ jourLong(s.date) }} · {{ heureFr(s.heure_debut) }} — {{ s.eleve_prenom }} {{ s.eleve_nom }}
+            {{ jourLong(s.date) }} · {{ heureFr(s.heure_debut) }} — {{ nomsComplets(musiciensDe(s), true) }}
             ({{ inscritPar(s) }})
           </li>
         </ul>

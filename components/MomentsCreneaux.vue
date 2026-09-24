@@ -1,9 +1,8 @@
 <script setup lang="ts">
 /**
- * Calendrier des créneaux et inscription d'un élève : on choisit un jour dans
- * le mois, puis un créneau libre dans la liste du jour, et on remplit la fiche
- * de l'élève. Le même composant sert l'espace des professeurs et
- * l'administration, pour que les deux voient exactement la même chose.
+ * Calendrier des créneaux et inscription par l'association : on choisit un
+ * jour dans le mois, puis le créneau libre, et on remplit la fiche — un à
+ * quatre musiciens, comme dans l'espace d'inscription.
  *
  * Les règles viennent de `utils/moments.ts`, partagées avec l'API : ici elles
  * grisent les jours et composent la liste des créneaux, le serveur restant
@@ -13,13 +12,15 @@
  * (nom complet, professeur, annulation) à la place du seul nom affiché.
  */
 import type { EtatJour } from '~/components/MomentsCalendrier.vue'
-import { creneauxDuJour, heureFr, nomPublic, ymd, type ContexteJour, type CreneauJour } from '~/utils/moments'
+import {
+  creneauxDuJour, heureFr, INSTRUMENT_PAR_DEFAUT, MAX_MUSICIENS, nomsPublics, ymd,
+  type ContexteJour, type CreneauJour, type Musicien
+} from '~/utils/moments'
 
 export interface FicheEleve {
   date: string
   heure_debut: string
-  eleve_prenom: string
-  eleve_nom: string
+  musiciens: Musicien[]
   eleve_email: string
   programme: string
 }
@@ -63,30 +64,33 @@ function jourLong(date: string) {
   return s.charAt(0).toUpperCase() + s.slice(1)
 }
 
-// ── Fiche de l'élève ─────────────────────────────────────────────────────────
+// ── Fiche d'inscription ──────────────────────────────────────────────────────
 const creneauChoisi = ref('')
-const form = reactive({ eleve_prenom: '', eleve_nom: '', eleve_email: '', programme: '', consentement: false })
+const vide = (instrument = ''): Musicien => ({ prenom: '', nom: '', instrument })
+const form = reactive({ musiciens: [vide(INSTRUMENT_PAR_DEFAUT)], eleve_email: '', programme: '', consentement: false })
 const envoi = ref(false)
 const erreur = ref('')
 
-const apercuNom = computed(() =>
-  form.eleve_prenom ? nomPublic(form.eleve_prenom, form.eleve_nom) : '—')
+const rempli = (m: Musicien) => !!(m.prenom.trim() || m.nom.trim())
+const apercuNom = computed(() => nomsPublics(form.musiciens.filter(m => m.prenom.trim())) || '—')
 
 function ouvrir(debut: string) {
   creneauChoisi.value = debut
   erreur.value = ''
-  Object.assign(form, { eleve_prenom: '', eleve_nom: '', eleve_email: '', programme: '', consentement: false })
+  Object.assign(form, { musiciens: [vide(INSTRUMENT_PAR_DEFAUT)], eleve_email: '', programme: '', consentement: false })
 }
 
 async function inscrire() {
   erreur.value = ''
-  if (!form.eleve_prenom.trim() || !form.eleve_nom.trim()) { erreur.value = t('momentsAcces.errorRequired'); return }
+  const musiciens = form.musiciens.filter((m, i) => i === 0 || rempli(m))
+  if (musiciens.some(m => !m.prenom.trim() || !m.nom.trim())) { erreur.value = t('momentsAcces.errorRequired'); return }
   if (form.eleve_email && !/^\S+@\S+\.\S+$/.test(form.eleve_email)) { erreur.value = t('momentsAcces.errorEmail'); return }
   if (!form.consentement) { erreur.value = t('momentsEspace.errorConsent'); return }
   envoi.value = true
   try {
-    const { consentement: _, ...eleve } = form
-    await props.envoyer({ date: jourChoisi.value, heure_debut: creneauChoisi.value, ...eleve })
+    await props.envoyer({
+      date: jourChoisi.value, heure_debut: creneauChoisi.value, musiciens, eleve_email: form.eleve_email, programme: form.programme
+    })
     creneauChoisi.value = ''
     emit('inscrit')
   } catch (e: any) {
@@ -168,16 +172,24 @@ const legende = computed(() => [
               {{ heureFr(creneauChoisi) }} · {{ t('moments.place') }}
             </p>
 
-            <div class="mt-6 grid gap-4 sm:grid-cols-2">
-              <div>
-                <label class="label" for="ep">{{ t('momentsEspace.studentFirstName') }}</label>
-                <input id="ep" v-model="form.eleve_prenom" required maxlength="80" class="input">
-              </div>
-              <div>
-                <label class="label" for="en">{{ t('momentsEspace.studentLastName') }}</label>
-                <input id="en" v-model="form.eleve_nom" required maxlength="80" class="input">
-              </div>
-            </div>
+            <MomentsTuileMusicien
+              v-for="(m, i) in form.musiciens"
+              :key="i"
+              v-model="form.musiciens[i]"
+              :class="i ? 'mt-3' : 'mt-6'"
+              :titre="t('momentsEspace.musicianN', { n: i + 1 })"
+              :ident="`a${i}`"
+              :retirable="i > 0"
+              @retirer="form.musiciens.splice(i, 1)"
+            />
+            <button
+              v-if="form.musiciens.length < MAX_MUSICIENS"
+              type="button"
+              class="mt-3 text-sm text-gold underline-offset-4 hover:underline"
+              @click="form.musiciens.push(vide())"
+            >
+              {{ t('momentsEspace.addMusician') }}
+            </button>
             <p class="mt-1.5 text-xs text-text-secondary">{{ t('momentsEspace.studentNameHint', { nom: apercuNom }) }}</p>
 
             <label class="label mt-5" for="ee">
@@ -196,7 +208,7 @@ const legende = computed(() => [
 
             <label class="mt-5 flex items-start gap-3 text-sm text-text-secondary">
               <input v-model="form.consentement" type="checkbox" class="mt-1 h-4 w-4 shrink-0 accent-gold">
-              <span>{{ t('momentsEspace.consent') }}</span>
+              <span>{{ t(form.musiciens.length > 1 ? 'momentsEspace.consentPlural' : 'momentsEspace.consent') }}</span>
             </label>
 
             <p v-if="erreur" class="mt-3 text-sm text-red-400">{{ erreur }}</p>

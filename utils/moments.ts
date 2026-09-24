@@ -46,15 +46,30 @@ export interface CreneauPris {
   mien?: boolean
 }
 
+/** Un musicien d'une séance : la personne inscrite, puis celles qui jouent avec elle. */
+export interface Musicien {
+  prenom: string
+  nom: string
+  /** Champ libre, « Orgue » proposé d'office pour le premier musicien. */
+  instrument: string
+}
+
+/** Musiciens au plus par séance, la personne inscrite comprise. */
+export const MAX_MUSICIENS = 4
+export const INSTRUMENT_PAR_DEFAUT = 'Orgue'
+
 /** Une séance publiée : Louis-Paul Courtois ou une séance inscrite. */
 export interface SeancePublique {
   date: string
   debut: string
   fin: string
   type: 'regulier' | 'eleve'
+  /** « Salomé G. & Marie D. » */
   interprete: string
+  /** Les musiciens d'une séance inscrite, tels que le site les publie. */
+  musiciens?: { nom: string; instrument: string }[]
   programme?: string | null
-  /** Identifiant de la réservation, pour les séances d'élèves. */
+  /** Identifiant de la réservation, pour les séances inscrites. */
   id?: string
 }
 
@@ -75,11 +90,37 @@ export function jourSemaine(date: string): number {
   return parseYmd(date).getDay()
 }
 
-/** « Camille D. » : ce que le site publie d'un élève. */
+/** « Camille D. » : ce que le site publie d'une personne inscrite. */
 export function nomPublic(prenom: string, nom: string): string {
   const p = prenom.trim()
   const n = nom.trim()
   return n ? `${p} ${n[0].toUpperCase()}.` : p
+}
+
+/**
+ * Les musiciens d'une séance. Celles enregistrées avant le jeu à plusieurs
+ * n'ont que la personne inscrite, sans instrument.
+ */
+export function musiciensDe(s: { eleve_prenom: string; eleve_nom: string; musiciens?: Musicien[] | null }): Musicien[] {
+  return s.musiciens?.length ? s.musiciens : [{ prenom: s.eleve_prenom, nom: s.eleve_nom, instrument: '' }]
+}
+
+/** « A », « A & B », « A, B & C ». */
+export function lierNoms(noms: string[]): string {
+  return noms.length < 2 ? (noms[0] ?? '') : `${noms.slice(0, -1).join(', ')} & ${noms.at(-1)}`
+}
+
+/** « Salomé G. & Marie D. » — l'initiale reste collée au prénom en fin de ligne. */
+export function nomsPublics(musiciens: readonly Musicien[]): string {
+  return lierNoms(musiciens.map(m => nomPublic(m.prenom, m.nom).replace(/ (?=\S+$)/, '\u00A0')))
+}
+
+/** « Salomé Gamot (orgue) & Marie Dupont (violon) », pour l'administration et les emails. */
+export function nomsComplets(musiciens: readonly Musicien[], avecInstruments = false): string {
+  return lierNoms(musiciens.map((m) => {
+    const nom = `${m.prenom} ${m.nom}`.trim()
+    return avecInstruments && m.instrument ? `${nom} (${m.instrument.toLocaleLowerCase('fr')})` : nom
+  }))
 }
 
 /** Date locale décalée de `jours` jours, au format « YYYY-MM-DD ». */

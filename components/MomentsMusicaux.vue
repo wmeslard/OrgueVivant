@@ -39,6 +39,12 @@ const prochaine = computed(() => seances.value[0])
 const lignes = computed<(SeancePublique | null)[]>(() => charge.value ? prochaines.value : [null, null, null])
 const horaire = `${heureFr(CRENEAU_REGULIER)} – ${heureFr(finCreneau(CRENEAU_REGULIER))}`
 
+/** Au-delà de deux musiciens, la ligne reste courte : « Hugo M. et 2 autres ». */
+function qui(s: SeancePublique) {
+  const n = s.musiciens?.length ?? 0
+  return n > 2 ? `${s.musiciens![0].nom.replace(/ (?=\S+$)/, '\u00A0')} ${t('moments.andOthers', { n: n - 1 })}` : s.interprete
+}
+
 function jourLong(date: string) {
   const [y, m, d] = date.split('-').map(Number)
   const s = new Date(y, m - 1, d).toLocaleDateString(locale.value === 'fr' ? 'fr-FR' : 'en-US',
@@ -152,7 +158,7 @@ const pastilleDate = 'min-h-[1.5rem] text-base font-medium text-text-primary tra
                 <span class="mr-2 inline-block h-2 w-2 rounded-full bg-gold align-[1px]" />{{ s.interprete }}
               </span>
               <span v-else-if="s" class="text-text-primary">
-                {{ s.interprete }}
+                {{ qui(s) }}
               </span>
             </li>
           </ul>

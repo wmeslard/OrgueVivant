@@ -1,7 +1,7 @@
 import { getServiceClient } from '~/server/utils/superAdminClient'
 import { revalidatePublicPages } from '~/server/utils/revalidate'
 import { adresseAssociation, envoyerEmail, escapeHtml, quand, requireProfesseur } from '~/server/utils/moments'
-import { annulable, DELAI_ANNULATION_H } from '~/utils/moments'
+import { annulable, DELAI_ANNULATION_H, musiciensDe, nomsComplets } from '~/utils/moments'
 
 /** Le professeur annule une inscription, au plus tard 48 h avant. */
 export default defineEventHandler(async (event) => {
@@ -22,8 +22,8 @@ export default defineEventHandler(async (event) => {
   await Promise.all([
     envoyerEmail({
       to: adresseAssociation(),
-      subject: `[Moments musicaux] Annulation — ${s.eleve_prenom} ${s.eleve_nom}, ${moment.split(',')[0]}`,
-      html: `<p><strong>${escapeHtml(prof.prenom)} ${escapeHtml(prof.nom)}</strong> a annulé l'inscription de ${escapeHtml(s.eleve_prenom)} ${escapeHtml(s.eleve_nom)} du <strong>${escapeHtml(moment)}</strong>. Le créneau est de nouveau libre.</p>`
+      subject: `[Moments musicaux] Annulation — ${nomsComplets(musiciensDe(s))}, ${moment.split(',')[0]}`,
+      html: `<p><strong>${escapeHtml(prof.prenom)} ${escapeHtml(prof.nom)}</strong> a annulé l'inscription de ${escapeHtml(nomsComplets(musiciensDe(s)))} du <strong>${escapeHtml(moment)}</strong>. Le créneau est de nouveau libre.</p>`
     }),
     s.eleve_email && envoyerEmail({
       to: s.eleve_email,

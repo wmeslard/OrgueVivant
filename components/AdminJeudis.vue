@@ -7,14 +7,14 @@
  * prévient les personnes concernées.
  */
 import {
-  CRENEAU_REGULIER, DUREE_MIN, HORIZON_MOIS, JOUR_MOMENTS, ORGANISTE_REGULIER, type Horaire,
-  estTemporaire, finCreneau, minutes, parseYmd, plusJours, plusMois, reglesDuJour, ymd
+  CRENEAU_REGULIER, DUREE_MIN, HORIZON_MOIS, JOUR_MOMENTS, ORGANISTE_REGULIER, type Horaire, type Musicien,
+  estTemporaire, finCreneau, minutes, musiciensDe, nomsComplets, parseYmd, plusJours, plusMois, reglesDuJour, ymd
 } from '~/utils/moments'
 
 type Regle = Horaire & { id: string }
 interface SeanceAdmin {
   id: string; date: string; heure_debut: string; statut: string
-  eleve_prenom: string; eleve_nom: string; pour_soi?: boolean
+  eleve_prenom: string; eleve_nom: string; pour_soi?: boolean; musiciens?: Musicien[] | null
   professeur?: { prenom: string; nom: string } | null
 }
 
@@ -76,7 +76,7 @@ const regleJeudis = (du: string, au: string, motif: string) => ({
 async function bloquer(date: string) {
   const s = seanceDu(date)
   const motif = prompt(`Bloquer le ${fmt(date, { weekday: 'long', day: 'numeric', month: 'long' })} ?`
-    + (s ? `\n\nLa séance de ${s.eleve_prenom} ${s.eleve_nom} sera annulée, les personnes inscrites prévenues.` : '')
+    + (s ? `\n\nLa séance de ${nomsComplets(musiciensDe(s))} sera annulée, les personnes inscrites prévenues.` : '')
     + '\n\nMotif (facultatif) :', '')
   if (motif === null) return
   await envoyer(() => $fetch('/api/admin/moments/horaires', { method: 'POST', body: regleJeudis(date, date, motif) }), 'Jeudi bloqué.')
@@ -149,7 +149,7 @@ async function bloquerPeriode() {
               <span class="ml-2 text-xs text-ink-500">({{ portee(j.blocage) }})</span>
             </span>
             <span v-else-if="j.seance">
-              {{ j.seance.eleve_prenom }} {{ j.seance.eleve_nom }}
+              {{ nomsComplets(musiciensDe(j.seance), true) }}
               <span class="ml-2 text-xs text-ink-500">
                 <template v-if="j.seance.pour_soi">inscription personnelle</template>
                 <template v-else>inscrit·e par {{ j.seance.professeur ? `${j.seance.professeur.prenom} ${j.seance.professeur.nom}` : 'l\'association' }}</template>

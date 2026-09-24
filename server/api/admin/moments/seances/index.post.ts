@@ -2,31 +2,27 @@ import { requireAdmin, getServiceClient } from '~/server/utils/superAdminClient'
 import { revalidatePublicPages } from '~/server/utils/revalidate'
 import {
   adresseAssociation, aujourdhuiParis, chargerHoraires, chargerSeances, envoyerEmail, escapeHtml,
-  MESSAGES_REFUS, paragraphe, quand
+  insererSeance, lireMusiciens, MESSAGES_REFUS, paragraphe, quand
 } from '~/server/utils/moments'
-import { finCreneau, HORIZON_MOIS, plusMois, raisonNonReservable } from '~/utils/moments'
+import { finCreneau, HORIZON_MOIS, nomsComplets, plusMois, raisonNonReservable } from '~/utils/moments'
 
 /**
  * Inscription faite par l'association elle-même (au téléphone, par exemple) :
- * pas de professeur, pas de délai de prévenance, mais les mêmes créneaux. Si
- * l'élève a une adresse, il reçoit la confirmation.
+ * pas de professeur, pas de délai de prévenance, mais les mêmes créneaux et
+ * les mêmes musiciens. Si la personne inscrite a une adresse, elle reçoit la
+ * confirmation.
  */
 export default defineEventHandler(async (event) => {
   await requireAdmin(event)
-  const body = await readBody<{
-    date?: string; heure_debut?: string
-    eleve_prenom?: string; eleve_nom?: string; eleve_email?: string; programme?: string
-  }>(event)
+  const body = await readBody<Record<string, unknown>>(event)
   const date = String(body?.date ?? '')
   const debut = String(body?.heure_debut ?? '')
   if (!/^\d{4}-\d{2}-\d{2}$/.test(date)) throw createError({ statusCode: 400, statusMessage: 'Date invalide' })
   if (!/^\d{2}:\d{2}$/.test(debut)) throw createError({ statusCode: 400, statusMessage: 'Créneau invalide' })
-  const elevePrenom = (body?.eleve_prenom ?? '').trim().slice(0, 80)
-  const eleveNom = (body?.eleve_nom ?? '').trim().slice(0, 80)
-  if (!elevePrenom || !eleveNom) throw createError({ statusCode: 400, statusMessage: 'Prénom et nom requis' })
-  const eleveEmail = (body?.eleve_email ?? '').trim().slice(0, 254)
+  const musiciens = lireMusiciens(body)
+  const eleveEmail = String(body?.eleve_email ?? '').trim().slice(0, 254)
   if (eleveEmail && !/^\S+@\S+\.\S+$/.test(eleveEmail)) throw createError({ statusCode: 400, statusMessage: 'Email invalide' })
-  const programme = (body?.programme ?? '').trim().slice(0, 600)
+  const programme = String(body?.programme ?? '').trim().slice(0, 600)
 
   const client = getServiceClient()
   const aujourdhui = aujourdhuiParis()
@@ -38,10 +34,10 @@ export default defineEventHandler(async (event) => {
   if (raison) throw createError({ statusCode: 409, statusMessage: MESSAGES_REFUS[raison] })
 
   const fin = finCreneau(debut)
-  const { data, error } = await client.from('moments_seances').insert({
+  const { data, error } = await insererSeance(client, {
     date, heure_debut: debut, heure_fin: fin, professeur_id: null,
-    eleve_prenom: elevePrenom, eleve_nom: eleveNom, eleve_email: eleveEmail || null, programme: programme || null
-  }).select().single()
+    eleve_email: eleveEmail || null, programme: programme || null
+  }, musiciens)
   if (error?.code === '23505') throw createError({ statusCode: 409, statusMessage: MESSAGES_REFUS.pris })
   // Colonne professeur_id encore obligatoire : migration pas appliquée.
   if (error?.code === '23502')
@@ -55,8 +51,9 @@ export default defineEventHandler(async (event) => {
       subject: `Votre Moment musical du ${moment.split(',')[0]}`,
       html: `
         <h2 style="font-weight:300;font-size:22px;margin:0 0 16px">À vous de jouer !</h2>
-        <p>Bonjour ${escapeHtml(elevePrenom)},</p>
+        <p>Bonjour ${escapeHtml(musiciens[0].prenom)},</p>
         <p>Vous êtes inscrit·e pour un Moment musical : <strong>${escapeHtml(moment)}</strong>, à l'orgue de chœur de l'église Saint-Maurice de Lille.</p>
+        ${musiciens.length > 1 ? `<p>Musiciens : <strong>${escapeHtml(nomsComplets(musiciens, true))}</strong>.</p>` : ''}
         ${programme ? `<p><strong>Programme annoncé</strong></p>${paragraphe(programme)}` : ''}
         <p>Une demi-heure de musique, en entrée libre : le public entre et sort comme il veut. Pour toute question : ${escapeHtml(adresseAssociation())}.</p>
         <p>À bientôt,<br>l'équipe d'Orgue Vivant</p>`

@@ -1,6 +1,7 @@
 import { requireAdmin, getServiceClient } from '~/server/utils/superAdminClient'
 import { revalidatePublicPages } from '~/server/utils/revalidate'
 import { adresseAssociation, envoyerEmail, escapeHtml, quand } from '~/server/utils/moments'
+import { musiciensDe, nomsComplets } from '~/utils/moments'
 
 /** Annulation d'une séance par l'association ; le professeur et l'élève sont prévenus. */
 export default defineEventHandler(async (event) => {
@@ -20,7 +21,7 @@ export default defineEventHandler(async (event) => {
   const moment = quand(s.date, s.heure_debut.slice(0, 5), s.heure_fin.slice(0, 5))
   const corps = (prenom: string) => `
     <p>Bonjour ${escapeHtml(prenom)},</p>
-    <p>La séance de <strong>${escapeHtml(s.eleve_prenom)} ${escapeHtml(s.eleve_nom)}</strong>, prévue le <strong>${escapeHtml(moment)}</strong>, est annulée par l'association${texte ? ` : ${escapeHtml(texte)}` : ''}.</p>
+    <p>La séance de <strong>${escapeHtml(nomsComplets(musiciensDe(s)))}</strong>, prévue le <strong>${escapeHtml(moment)}</strong>, est annulée par l'association${texte ? ` : ${escapeHtml(texte)}` : ''}.</p>
     <p>Un autre jeudi peut être choisi depuis l'espace d'inscription. Pour toute question : ${escapeHtml(adresseAssociation())}.</p>
     <p>L'équipe d'Orgue Vivant</p>`
   await Promise.all([

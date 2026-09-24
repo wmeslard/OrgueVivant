@@ -6,8 +6,9 @@ import { getServiceClient } from '~/server/utils/superAdminClient'
 import { senderAddress } from '~/server/utils/sender'
 import { revalidatePublicPages } from '~/server/utils/revalidate'
 import {
-  CRENEAU_REGULIER, HORIZON_MOIS, ORGANISTE_REGULIER, type Horaire, type SeancePublique,
-  creneauPossible, finCreneau, heureFr, nomPublic, parseYmd, plusMois, seanceReguliere, ymd
+  CRENEAU_REGULIER, HORIZON_MOIS, MAX_MUSICIENS, ORGANISTE_REGULIER, type Horaire, type Musicien, type SeancePublique,
+  creneauPossible, finCreneau, heureFr, musiciensDe, nomPublic, nomsComplets, nomsPublics, parseYmd, plusMois,
+  seanceReguliere, ymd
 } from '~/utils/moments'
 
 /** Date du jour à Paris (« YYYY-MM-DD ») : les fonctions Vercel tournent en UTC. */
@@ -37,6 +38,8 @@ export interface SeanceRow {
   programme: string | null
   /** Inscription personnelle ; absent tant que la migration n'est pas appliquée. */
   pour_soi?: boolean
+  /** Tous les musiciens, la personne inscrite en premier ; vide pour les séances d'avant le jeu à plusieurs. */
+  musiciens?: Musicien[] | null
   statut: 'reservee' | 'annulee'
   annulee_par: 'professeur' | 'admin' | null
   annulee_at: string | null
@@ -139,6 +142,43 @@ export function champ(v: unknown, max: number): string {
 }
 
 /**
+ * Les musiciens envoyés par le formulaire, vérifiés : de un à quatre, chacun
+ * avec un prénom et un nom. `soi` : la personne entrée par le lien joue, son
+ * nom est celui de sa fiche, jamais celui qu'enverrait le navigateur. L'ancien
+ * format (eleve_prenom, eleve_nom) reste accepté, le temps que les pages
+ * ouvertes avant la mise à jour se rechargent.
+ */
+export function lireMusiciens(body: Record<string, unknown> | null | undefined, soi?: { prenom: string; nom: string }): Musicien[] {
+  const brut: unknown[] = Array.isArray(body?.musiciens)
+    ? body.musiciens
+    : [{ prenom: body?.eleve_prenom, nom: body?.eleve_nom, instrument: '' }]
+  if (!brut.length || brut.length > MAX_MUSICIENS)
+    throw createError({ statusCode: 400, statusMessage: `De 1 à ${MAX_MUSICIENS} musiciens par séance` })
+  return brut.map((m, i) => {
+    const x = (m ?? {}) as Record<string, unknown>
+    const musicien = i === 0 && soi
+      ? { prenom: soi.prenom, nom: soi.nom, instrument: champ(x.instrument, 60) }
+      : { prenom: champ(x.prenom, 80), nom: champ(x.nom, 80), instrument: champ(x.instrument, 60) }
+    if (!musicien.prenom || !musicien.nom) throw createError({ statusCode: 400, statusMessage: 'Prénom et nom requis pour chaque musicien' })
+    return musicien
+  })
+}
+
+/**
+ * Enregistre une séance avec ses musiciens. Tant que la colonne `musiciens`
+ * manque (supabase/moments-musicaux-musiciens.sql pas encore appliqué), une
+ * séance en solo s'enregistre sans elle ; à plusieurs, l'inscription attend.
+ */
+export async function insererSeance(client: SupabaseClient, ligne: Record<string, unknown>, musiciens: Musicien[]) {
+  const base = { ...ligne, eleve_prenom: musiciens[0].prenom, eleve_nom: musiciens[0].nom }
+  const r = await client.from('moments_seances').insert({ ...base, musiciens }).select().single()
+  if (!r.error || !schemaAbsent(r.error) || !String(r.error.message).includes('musiciens')) return r
+  if (musiciens.length > 1)
+    throw createError({ statusCode: 503, statusMessage: 'Jouer à plusieurs n\'est pas encore disponible. Réessayez plus tard.' })
+  return client.from('moments_seances').insert(base).select().single()
+}
+
+/**
  * Coordonnées d'un professeur, corrigées par lui-même ou par l'administration.
  * Son nom suit sur ses séances à venir où il joue lui-même, que le site
  * annonce à ce nom.
@@ -157,12 +197,17 @@ export async function modifierProfesseur(client: SupabaseClient, ancien: Profess
   if (error) throw createError({ statusCode: 500, statusMessage: error.message })
 
   if (prenom === ancien.prenom && nom === ancien.nom) return
-  const { data, error: e } = await client.from('moments_seances')
-    .update({ eleve_prenom: prenom, eleve_nom: nom })
+  const { data, error: e } = await client.from('moments_seances').select('*')
     .eq('professeur_id', ancien.id).eq('pour_soi', true).eq('statut', 'reservee').gte('date', aujourdhuiParis())
-    .select('id')
   // Colonne pour_soi absente : aucune inscription personnelle à renommer.
   if (e && !schemaAbsent(e)) throw createError({ statusCode: 500, statusMessage: e.message })
+  for (const s of (data ?? []) as SeanceRow[]) {
+    const [, ...autres] = s.musiciens ?? []
+    const musiciens = s.musiciens?.length ? [{ ...s.musiciens[0], prenom, nom }, ...autres] : undefined
+    const { error: m } = await client.from('moments_seances')
+      .update({ eleve_prenom: prenom, eleve_nom: nom, ...(musiciens && { musiciens }) }).eq('id', s.id)
+    if (m) throw createError({ statusCode: 500, statusMessage: m.message })
+  }
   if (data?.length) await revalidatePublicPages()
 }
 
@@ -250,13 +295,15 @@ export async function calendrierPublic(du: string, au: string): Promise<SeancePu
     interprete: ORGANISTE_REGULIER
   }))
   for (const s of seances) {
+    const musiciens = musiciensDe(s)
     out.push({
       id: s.id,
       date: s.date,
       debut: s.heure_debut.slice(0, 5),
       fin: s.heure_fin.slice(0, 5),
       type: 'eleve',
-      interprete: nomPublic(s.eleve_prenom, s.eleve_nom),
+      interprete: nomsPublics(musiciens),
+      musiciens: musiciens.map(m => ({ nom: nomPublic(m.prenom, m.nom), instrument: m.instrument })),
       programme: s.programme
     })
   }
@@ -313,7 +360,7 @@ export async function annulerSeancesImpossibles(client: SupabaseClient, motif?: 
     const moment = quand(s.date, s.heure_debut.slice(0, 5), s.heure_fin.slice(0, 5))
     const corps = (prenom: string) => `
       <p>Bonjour ${escapeHtml(prenom)},</p>
-      <p>L'orgue de Saint-Maurice ne sera pas disponible le <strong>${escapeHtml(moment)}</strong>${motif ? ` (${escapeHtml(motif)})` : ''} : la séance de ${escapeHtml(s.eleve_prenom)} ${escapeHtml(s.eleve_nom)} est annulée, nous en sommes désolés.</p>
+      <p>L'orgue de Saint-Maurice ne sera pas disponible le <strong>${escapeHtml(moment)}</strong>${motif ? ` (${escapeHtml(motif)})` : ''} : la séance de ${escapeHtml(nomsComplets(musiciensDe(s)))} est annulée, nous en sommes désolés.</p>
       <p>Pour choisir un autre créneau ou pour toute question : ${escapeHtml(adresseAssociation())}.</p>
       <p>L'équipe d'Orgue Vivant</p>`
     const sujet = `Séance annulée — ${moment.split(',')[0]}`
