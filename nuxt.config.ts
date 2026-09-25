@@ -11,10 +11,10 @@ export default defineNuxtConfig({
     '@nuxtjs/i18n',
     '@nuxtjs/supabase',
     '@nuxtjs/sitemap',
-    '@nuxt/icon',
+    '@nuxt/icon'
     // Mesure d'audience Vercel : sans cookie, servie depuis notre propre
-    // domaine, elle ne requiert donc pas de consentement préalable.
-    '@vercel/analytics/nuxt'
+    // domaine, elle ne requiert donc pas de consentement préalable. Chargée par
+    // plugins/vercel-analytics.client.ts, qui masque la clé du lien partagé.
   ],
 
   css: ['~/assets/css/fonts.css', '~/assets/css/main.css'],
