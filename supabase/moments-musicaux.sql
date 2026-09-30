@@ -20,7 +20,8 @@
 -- Schéma complet, pour une base neuve : à exécuter dans Supabase → SQL Editor.
 -- La base de production, créée avec une version antérieure, se met à jour avec
 -- moments-musicaux-lien.sql, moments-musicaux-regles.sql, moments-musicaux-soi.sql,
--- moments-musicaux-musiciens.sql puis moments-musicaux-affectations.sql.
+-- moments-musicaux-musiciens.sql, moments-musicaux-affectations.sql puis
+-- moments-musicaux-rappels.sql.
 
 -- ─────────────────────────────────────────────────────────────────────────────
 -- Le lien partagé
@@ -85,6 +86,8 @@ create table if not exists moments_seances (
   -- Tous les musiciens, la personne inscrite en premier : [{prenom, nom,
   -- instrument}], quatre au plus. Vide pour une séance en solo d'avant.
   musiciens      jsonb not null default '[]'::jsonb check (jsonb_typeof(musiciens) = 'array'),
+  -- Envoi du rappel de la veille, une seule fois.
+  rappel_at      timestamptz,
   statut         moments_statut_seance not null default 'reservee',
   annulee_par    text check (annulee_par in ('professeur', 'admin')),
   annulee_at     timestamptz,

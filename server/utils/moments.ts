@@ -40,6 +40,8 @@ export interface SeanceRow {
   pour_soi?: boolean
   /** Tous les musiciens, la personne inscrite en premier ; vide pour les séances d'avant le jeu à plusieurs. */
   musiciens?: Musicien[] | null
+  /** Envoi du rappel de la veille ; absent tant que la migration n'est pas appliquée. */
+  rappel_at?: string | null
   statut: 'reservee' | 'annulee'
   annulee_par: 'professeur' | 'admin' | null
   annulee_at: string | null
@@ -371,6 +373,94 @@ export async function desaffecter(client: SupabaseClient, date: string, raison: 
       <p>Pour toute question : ${escapeHtml(adresseAssociation())}.</p>
       <p>L'équipe d'Orgue Vivant</p>`
   })
+}
+
+// ── Rappel la veille ─────────────────────────────────────────────────────────
+
+/**
+ * Les emails de rappel d'une séance. La personne qui l'a inscrite reçoit le
+ * sien, formulé selon qui joue : elle seule, elle avec d'autres, quelqu'un
+ * d'autre, ou plusieurs personnes. Le premier musicien le reçoit aussi s'il a
+ * laissé son adresse (inscription faite par l'association, surtout).
+ */
+export function messagesRappel(s: SeanceRow): { to: string; subject: string; html: string }[] {
+  const musiciens = musiciensDe(s)
+  const [premier, ...autres] = musiciens
+  const et = (xs: string[]) => xs.length < 2 ? (xs[0] ?? '') : `${xs.slice(0, -1).join(', ')} et ${xs.at(-1)}`
+  const nom = (m: Musicien) => `${m.prenom} ${m.nom}`.trim()
+  const avecInstrument = (m: Musicien) => m.instrument ? `${nom(m)} (${m.instrument.toLocaleLowerCase('fr')})` : nom(m)
+  const moment = `demain, <strong>${escapeHtml(quand(s.date, s.heure_debut.slice(0, 5), s.heure_fin.slice(0, 5)))}</strong>, à l'orgue de chœur de l'église Saint-Maurice de Lille`
+  const contact = escapeHtml(adresseAssociation())
+  const corps = (bonjour: string, phrase: string, fin: string) => `
+    <h2 style="font-weight:300;font-size:22px;margin:0 0 16px">À demain !</h2>
+    <p>Bonjour ${escapeHtml(bonjour)},</p>
+    <p>${phrase}</p>
+    ${s.programme ? `<p><strong>Programme annoncé</strong></p>${paragraphe(s.programme)}` : ''}
+    <p>${fin}</p>
+    <p>Bon Moment musical,<br>l'équipe d'Orgue Vivant</p>`
+  const empechement = `Un empêchement ? Prévenez-nous au plus vite à ${contact} : il n'est plus possible d'annuler en ligne.`
+  const jouezAvec = autres.length ? `, avec ${escapeHtml(et(autres.map(avecInstrument)))}` : ''
+  const out: { to: string; subject: string; html: string }[] = []
+
+  const prof = s.professeur
+  if (prof?.email) {
+    if (s.pour_soi) {
+      // Elle joue : seule, ou avec d'autres musiciens.
+      out.push({
+        to: prof.email,
+        subject: 'Rappel : vous jouez demain à Saint-Maurice',
+        html: corps(prof.prenom, `Petit rappel : vous jouez ${moment}${jouezAvec}.`,
+          autres.length ? `Pensez à transmettre ce rappel à ${autres.length > 1 ? 'vos partenaires' : escapeHtml(autres[0].prenom)}. ${empechement}` : empechement)
+      })
+    } else if (musiciens.length === 1) {
+      // Elle a inscrit quelqu'un.
+      out.push({
+        to: prof.email,
+        subject: `Rappel : ${nom(premier)} joue demain à Saint-Maurice`,
+        html: corps(prof.prenom, `Petit rappel : ${escapeHtml(nom(premier))}, que vous avez inscrit·e, joue ${moment}.`,
+          `Pensez à lui transmettre ce rappel. ${empechement}`)
+      })
+    } else {
+      // Elle a inscrit plusieurs personnes.
+      out.push({
+        to: prof.email,
+        subject: `Rappel : ${et(musiciens.map(nom))} jouent demain à Saint-Maurice`,
+        html: corps(prof.prenom, `Petit rappel : ${escapeHtml(et(musiciens.map(avecInstrument)))}, que vous avez inscrits, jouent ${moment}.`,
+          `Pensez à leur transmettre ce rappel. ${empechement}`)
+      })
+    }
+  }
+  if (s.eleve_email && s.eleve_email !== prof?.email) {
+    out.push({
+      to: s.eleve_email,
+      subject: 'Rappel : vous jouez demain à Saint-Maurice',
+      html: corps(premier.prenom, `Petit rappel : vous jouez ${moment}${jouezAvec}.`,
+        `Un empêchement ? Prévenez au plus vite ${prof ? 'la personne qui vous a inscrit·e, ou ' : ''}l'association à ${contact}.`)
+    })
+  }
+  return out
+}
+
+/**
+ * Envoie le rappel des séances du lendemain, une seule fois par séance.
+ * Appelée par la tâche quotidienne. Renvoie le nombre d'emails partis.
+ */
+export async function envoyerRappels(client: SupabaseClient): Promise<number> {
+  const demain = plusJours(aujourdhuiParis(), 1)
+  const { data, error } = await client.from('moments_seances')
+    .select('*, professeur:moments_professeurs(prenom, nom, email)')
+    .eq('date', demain).eq('statut', 'reservee').is('rappel_at', null)
+  if (error && schemaAbsent(error)) { console.warn('[moments] rappels : migration non appliquée'); return 0 }
+  if (error) throw createError({ statusCode: 500, statusMessage: error.message })
+  let envoyes = 0
+  for (const s of (data ?? []) as SeanceRow[]) {
+    const messages = messagesRappel(s)
+    const resultats = await Promise.all(messages.map(m => envoyerEmail(m)))
+    envoyes += resultats.filter(Boolean).length
+    // Marqué même si un envoi échoue : mieux vaut un rappel manqué qu'un rappel en double.
+    await client.from('moments_seances').update({ rappel_at: new Date().toISOString() }).eq('id', s.id)
+  }
+  return envoyes
 }
 
 /**

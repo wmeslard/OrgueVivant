@@ -131,6 +131,10 @@ de la personne qui a fait l'inscription.
 **Destinataires** — le bureau de l'association. Hébergement Supabase (Union
 européenne). Envois d'emails par Resend.
 
+**Emails envoyés** — confirmation à l'inscription, rappel la veille de la
+séance, et avis d'annulation, à la personne qui a fait l'inscription (et à la
+personne inscrite si son adresse est connue).
+
 **Publication** — seuls la date, l'heure, le prénom et l'initiale du nom de
 chaque musicien, les instruments (à plusieurs) et la description apparaissent
 publiquement (site et agenda ICS). Ni l'email, ni le nom complet, ni la
