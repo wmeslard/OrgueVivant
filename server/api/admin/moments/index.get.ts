@@ -7,7 +7,7 @@ import { plusMois } from '~/utils/moments'
 /**
  * Vue d'ensemble de l'onglet Moments musicaux. Contrairement au site public,
  * l'administration voit tout : les noms complets, qui a inscrit, et les
- * jeudis où Louis-Paul Courtois est affecté.
+ * jeudis où Louis-Paul Courtois est affecté, y compris les trois derniers mois.
  */
 export default defineEventHandler(async (event) => {
   await requireAdmin(event)
@@ -18,7 +18,7 @@ export default defineEventHandler(async (event) => {
     chargerSeances(client, plusMois(aujourdhui, -3), plusMois(aujourdhui, 12), 'toutes'),
     chargerHoraires(client),
     cleActuelle(client),
-    chargerAffectations(client, aujourdhui, plusMois(aujourdhui, 12)),
+    chargerAffectations(client, plusMois(aujourdhui, -3), plusMois(aujourdhui, 12)),
     emailOrganiste(client)
   ])
   if (professeurs.error) throw createError({ statusCode: 500, statusMessage: professeurs.error.message })

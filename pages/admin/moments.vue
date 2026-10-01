@@ -1,13 +1,12 @@
 <script setup lang="ts">
 /**
- * Moments musicaux : lien d'accès des professeurs, calendrier des séances,
- * professeurs, et jeudis (13 h 15) avec leurs blocages.
+ * Moments musicaux : le lien d'inscription, les jeudis (séances, Louis-Paul
+ * Courtois, blocages) et les participants entrés par le lien.
  *
  * Contrairement au site public, l'administration voit tout : le nom complet de
  * la personne inscrite, et qui l'a inscrite.
  */
-import type { FicheEleve } from '~/components/MomentsCreneaux.vue'
-import { heureFr, musiciensDe, nomsComplets, type Horaire, type Musicien } from '~/utils/moments'
+import { ORGANISTE_REGULIER, type Horaire, type Musicien } from '~/utils/moments'
 
 definePageMeta({ middleware: 'auth', layout: 'admin' })
 
@@ -27,6 +26,7 @@ interface Seance {
   professeur_id: string | null
   /** La personne entrée par le lien joue elle-même. */
   pour_soi?: boolean
+  rappel_at?: string | null
   professeur?: { prenom: string; nom: string; email: string } | null
 }
 interface Vue {
@@ -41,30 +41,18 @@ interface Vue {
 
 const { data, refresh, pending } = await useFetch<Vue>('/api/admin/moments')
 
-const onglet = ref<'calendrier' | 'professeurs' | 'horaires'>('calendrier')
+const onglet = ref<'jeudis' | 'participants'>('jeudis')
 const busy = ref(false)
 const erreur = ref('')
 
 const seancesAVenir = computed(() =>
   (data.value?.seances ?? []).filter(s => s.statut === 'reservee' && s.date >= (data.value?.aujourdhui ?? ''))
 )
-const seancesPassees = computed(() =>
-  (data.value?.seances ?? [])
-    .filter(s => s.statut === 'reservee' && s.date < (data.value?.aujourdhui ?? ''))
-    .sort((a, b) => b.date.localeCompare(a.date))
-)
-const profsActifs = computed(() => data.value?.professeurs.filter(p => p.actif) ?? [])
+const actifs = computed(() => data.value?.professeurs.filter(p => p.actif) ?? [])
 
-function jourLong(date: string) {
-  const [y, m, d] = date.split('-').map(Number)
-  const s = new Date(y, m - 1, d).toLocaleDateString('fr-FR', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' })
-  return s.charAt(0).toUpperCase() + s.slice(1)
-}
 function quandCourt(d: string | null) {
   return d ? new Date(d).toLocaleDateString('fr-FR', { day: 'numeric', month: 'short', year: 'numeric' }) : 'jamais'
 }
-const inscritPar = (s: Seance) => s.pour_soi ? 'Inscription personnelle'
-  : `Inscrit·e par ${s.professeur ? `${s.professeur.prenom} ${s.professeur.nom}` : 'l\'association'}`
 
 async function action(fn: () => Promise<unknown>, message: string) {
   busy.value = true; erreur.value = ''
@@ -87,42 +75,22 @@ async function copierLien() {
 }
 async function regenererLien() {
   if (data.value?.lienProfesseurs && !confirm(
-    'Régénérer le lien ?\n\nL\'ancien cessera aussitôt de fonctionner, y compris pour les professeurs déjà entrés : '
+    'Régénérer le lien ?\n\nL\'ancien cessera aussitôt de fonctionner, y compris pour les participants déjà entrés : '
     + 'il faudra leur transmettre le nouveau. Les séances inscrites ne changent pas.')) return
   await action(() => $fetch('/api/admin/moments/lien', { method: 'POST' }), 'Nouveau lien créé.')
 }
 
-// ── Calendrier des séances ───────────────────────────────────────────────────
-// Le même calendrier que celui des professeurs, sans délai de prévenance, avec
-// le nom complet des personnes déjà inscrites.
-const contexte = computed(() => ({
-  aujourdhui: data.value?.aujourdhui ?? '',
-  delaiJours: 0,
-  horaires: data.value?.horaires ?? [],
-  pris: seancesAVenir.value.map(s => ({
-    date: s.date, heure_debut: s.heure_debut.slice(0, 5), interprete: nomsComplets(musiciensDe(s))
-  }))
-}))
-const seanceDu = (date: string, debut: string) =>
-  seancesAVenir.value.find(s => s.date === date && s.heure_debut.startsWith(debut))
+// ── Adresse de Louis-Paul Courtois ───────────────────────────────────────────
+const email = ref('')
+watch(() => data.value?.emailOrganiste, v => { email.value = v ?? '' }, { immediate: true })
+const enregistrerEmail = () =>
+  action(() => $fetch('/api/admin/moments/reglages', { method: 'POST', body: { email_organiste: email.value } }), 'Adresse enregistrée.')
 
-const inscrireEleve = (fiche: FicheEleve) => $fetch('/api/admin/moments/seances', { method: 'POST', body: fiche })
-async function inscrit() {
-  await refresh()
-  showToast('Inscription enregistrée.', { type: 'success' })
-}
-
-async function annulerSeance(s: Seance) {
-  const motif = prompt(`Annuler la séance de ${nomsComplets(musiciensDe(s))} du ${jourLong(s.date)} ?\n\nMotif communiqué (facultatif) :`)
-  if (motif === null) return
-  await action(() => $fetch(`/api/admin/moments/seances/${s.id}`, { method: 'DELETE', body: { motif } }), 'Séance annulée.')
-}
-
-// ── Professeurs ──────────────────────────────────────────────────────────────
+// ── Participants ─────────────────────────────────────────────────────────────
 async function basculerProf(p: Professeur) {
   if (p.actif && !confirm(`Désactiver ${p.prenom} ${p.nom} ? Ses séances à venir seront annulées.`)) return
   await action(() => $fetch(`/api/admin/moments/professeurs/${p.id}`, { method: 'PATCH', body: { actif: !p.actif } }),
-    p.actif ? 'Professeur désactivé.' : 'Professeur réactivé.')
+    p.actif ? 'Accès désactivé.' : 'Accès réactivé.')
 }
 function seancesDe(id: string) {
   return (data.value?.seances ?? []).filter(s => s.professeur_id === id && s.statut === 'reservee').length
@@ -148,7 +116,7 @@ async function supprimerProf(p: Professeur) {
   if (!confirm(`Supprimer définitivement ${p.prenom} ${p.nom} ?\n\n`
     + `Sa fiche et toutes ses séances sont effacées${n ? `, dont ${n} à venir, retirée(s) du site sans prévenir les personnes inscrites` : ''}. `
     + 'Avec le lien, cette personne pourra revenir sous une nouvelle fiche : pour lui couper l\'accès, désactivez-la plutôt.')) return
-  await action(() => $fetch(`/api/admin/moments/professeurs/${p.id}`, { method: 'DELETE' }), 'Professeur supprimé.')
+  await action(() => $fetch(`/api/admin/moments/professeurs/${p.id}`, { method: 'DELETE' }), 'Participant supprimé.')
 }
 </script>
 
@@ -158,13 +126,13 @@ async function supprimerProf(p: Professeur) {
 
     <AdminNav />
 
-    <!-- Lien à transmettre aux professeurs -->
+    <!-- Lien à transmettre -->
     <section class="mb-10 rounded-2xl border border-ink-200 p-6 dark:border-ink-800">
-      <h2 class="mb-1 font-display text-xl">Lien pour les professeurs</h2>
+      <h2 class="mb-1 font-display text-xl">Lien d'inscription</h2>
       <p class="mb-4 text-sm text-ink-500">
-        Toute personne qui ouvre ce lien peut s'inscrire ou inscrire quelqu'un : transmettez-le aux organistes et à leurs professeurs, par email
-        ou par message, sans le publier. S'il circule trop largement, régénérez-le — l'ancien cesse aussitôt de
-        fonctionner, et les professeurs devront utiliser le nouveau.
+        Toute personne qui ouvre ce lien peut s'inscrire ou inscrire quelqu'un : transmettez-le aux organistes, aux musiciens
+        et à leurs professeurs, par email ou par message, sans le publier. S'il circule trop largement, régénérez-le —
+        l'ancien cesse aussitôt de fonctionner, et les participants devront utiliser le nouveau.
       </p>
       <div v-if="data?.lienProfesseurs" class="flex flex-wrap items-center gap-3">
         <input :value="data.lienProfesseurs" readonly class="input min-w-[18rem] flex-1 font-mono text-xs" @focus="($event.target as HTMLInputElement).select()">
@@ -180,9 +148,8 @@ async function supprimerProf(p: Professeur) {
     <nav class="mb-8 flex flex-wrap gap-6 border-b border-ink-200 dark:border-ink-800">
       <button
         v-for="o in [
-          { id: 'calendrier', label: `Séances (${seancesAVenir.length})` },
-          { id: 'professeurs', label: `Professeurs (${profsActifs.length})` },
-          { id: 'horaires', label: 'Jeudis et blocages' }
+          { id: 'jeudis', label: `Jeudis (${seancesAVenir.length} inscrit${seancesAVenir.length > 1 ? 's' : ''})` },
+          { id: 'participants', label: `Participants (${actifs.length})` }
         ]"
         :key="o.id"
         class="pb-3 text-sm font-medium transition-colors"
@@ -195,48 +162,35 @@ async function supprimerProf(p: Professeur) {
 
     <p v-if="pending && !data" class="text-sm text-ink-500">Chargement…</p>
 
-    <!-- SÉANCES -->
-    <section v-else-if="onglet === 'calendrier' && data" class="space-y-10">
-      <p class="text-sm text-ink-500">
-        Les Moments musicaux ont lieu un jeudi sur deux, à 13 h 15. Cliquez un jeudi : la séance inscrite s'affiche avec son
-        détail, ou le créneau libre ouvre la fiche d'inscription. L'association n'est pas tenue par le délai
-        d'inscription ; si Louis-Paul Courtois était déjà affecté à ce jeudi, il est prévenu qu'il ne joue plus.
-      </p>
+    <!-- JEUDIS -->
+    <AdminJeudis
+      v-else-if="onglet === 'jeudis' && data"
+      :horaires="data.horaires"
+      :seances="data.seances"
+      :aujourdhui="data.aujourdhui"
+      :affectations="data.affectations"
+      @modifie="refresh()"
+    />
 
-      <MomentsCreneaux association :contexte="contexte" :envoyer="inscrireEleve" @inscrit="inscrit" @echec="refresh()">
-        <template #pris="{ creneau, date }">
-          <template v-for="s in [seanceDu(date, creneau.debut)]" :key="s?.id ?? creneau.debut">
-            <div v-if="s" class="rounded-xl border border-white/10 bg-white/[0.04] px-4 py-3 text-sm">
-              <div class="flex items-baseline justify-between gap-3">
-                <span class="text-text-secondary">{{ heureFr(creneau.debut) }}</span>
-                <span class="text-right font-medium text-text-primary">{{ nomsComplets(musiciensDe(s), true) }}</span>
-              </div>
-              <div class="mt-1 text-xs text-text-secondary">
-                {{ inscritPar(s) }}<template v-if="s.eleve_email"> · {{ s.eleve_email }}</template>
-              </div>
-              <p v-if="s.programme" class="mt-1 text-xs text-text-secondary/80">{{ s.programme }}</p>
-              <button class="mt-2 text-xs text-rose-300 underline-offset-4 hover:underline" :disabled="busy" @click="annulerSeance(s)">
-                Annuler la séance
-              </button>
-            </div>
-          </template>
-        </template>
-      </MomentsCreneaux>
-
-      <div v-if="seancesPassees.length">
-        <h2 class="mb-4 font-display text-xl">Séances passées</h2>
-        <ul class="space-y-1.5 text-sm text-ink-500">
-          <li v-for="s in seancesPassees.slice(0, 20)" :key="s.id">
-            {{ jourLong(s.date) }} · {{ heureFr(s.heure_debut) }} — {{ nomsComplets(musiciensDe(s), true) }}
-            ({{ inscritPar(s) }})
-          </li>
-        </ul>
+    <!-- PARTICIPANTS -->
+    <section v-else-if="data">
+      <!-- Louis-Paul Courtois, à part : il n'entre pas par le lien -->
+      <div class="mb-6 rounded-2xl border border-gold/40 bg-gold/5 p-5">
+        <div class="flex flex-wrap items-baseline gap-x-3">
+          <span class="font-display text-lg">{{ ORGANISTE_REGULIER }}</span>
+          <span class="text-xs font-semibold uppercase tracking-wider text-gold">Organiste par défaut</span>
+        </div>
+        <p class="mt-1 text-sm text-ink-500">
+          Joue les jeudis où personne ne s'est inscrit, et reçoit à cette adresse l'email « à vous de jouer » deux jours
+          avant. Sans adresse, il est affecté quand même, mais pas prévenu.
+        </p>
+        <form class="mt-4 flex flex-wrap items-center gap-3" @submit.prevent="enregistrerEmail">
+          <input v-model="email" type="email" maxlength="254" class="input min-w-[16rem] flex-1" placeholder="adresse@exemple.fr" aria-label="Adresse email de Louis-Paul Courtois">
+          <button class="btn-primary" :disabled="busy">Enregistrer</button>
+        </form>
       </div>
-    </section>
 
-    <!-- PROFESSEURS -->
-    <section v-else-if="onglet === 'professeurs' && data">
-      <p v-if="!data?.professeurs.length" class="text-sm text-ink-500">Aucun professeur pour le moment : ils apparaissent ici dès qu'ils ouvrent le lien.</p>
+      <p v-if="!data.professeurs.length" class="text-sm text-ink-500">Personne pour le moment : les participants apparaissent ici dès qu'ils ouvrent le lien.</p>
       <ul v-else class="space-y-2">
         <li v-for="p in data.professeurs" :key="p.id" class="rounded-xl border border-ink-200 px-4 py-3 text-sm dark:border-ink-800">
           <form v-if="fiche?.id === p.id" class="grid gap-3 py-1 sm:grid-cols-2" @submit.prevent="enregistrerProf">
@@ -284,16 +238,5 @@ async function supprimerProf(p: Professeur) {
         </li>
       </ul>
     </section>
-
-    <!-- JEUDIS ET BLOCAGES -->
-    <AdminJeudis
-      v-else-if="data"
-      :horaires="data.horaires"
-      :seances="data.seances"
-      :aujourdhui="data.aujourdhui"
-      :affectations="data.affectations"
-      :email-organiste="data.emailOrganiste"
-      @modifie="refresh()"
-    />
   </div>
 </template>
