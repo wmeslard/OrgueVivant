@@ -135,32 +135,32 @@ async function save() {
   }
 }
 
-let undoTimer: ReturnType<typeof setTimeout> | null = null
-
+// La suppression part tout de suite au serveur, qui met l'élément à la
+// corbeille : un rechargement de page ne l'annule plus en silence, comme le
+// faisait l'ancien délai de 5 secondes côté navigateur. « Annuler » le restaure.
 async function remove(c: Concert) {
   if (!confirm(t('admin.confirmDelete'))) return
-
-  const snapshot = [...all.value]
-  all.value = all.value.filter(x => x.id !== c.id)
-
+  try {
+    await deleteConcert(c.id)
+  } catch (e: any) {
+    showToast(e?.data?.statusMessage || 'Erreur', { type: 'error' })
+    return
+  }
+  await fetchConcerts()
+  await refreshNuxtData('corbeille-concerts')
   showToast(t('admin.trash.moved'), {
     type: 'info',
-    duration: 5000,
-    undo: () => {
-      if (undoTimer) clearTimeout(undoTimer)
-      all.value = snapshot
+    duration: 6000,
+    undo: async () => {
+      try {
+        await $fetch('/api/admin/corbeille/restaurer', { method: 'POST', body: { type: 'concerts', id: c.id } })
+      } catch (e: any) {
+        showToast(e?.data?.statusMessage || 'Erreur', { type: 'error' })
+      }
+      await fetchConcerts()
+      await refreshNuxtData('corbeille-concerts')
     }
   })
-
-  undoTimer = setTimeout(async () => {
-    try {
-      await deleteConcert(c.id)
-    } catch (e: any) {
-      showToast(e?.data?.statusMessage || 'Erreur', { type: 'error' })
-    }
-    await fetchConcerts()
-    await refreshNuxtData('corbeille-concerts')
-  }, 5000)
 }
 
 </script>
