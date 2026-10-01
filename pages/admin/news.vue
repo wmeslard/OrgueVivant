@@ -74,7 +74,7 @@ async function remove(n: NewsItem) {
   const snapshot = [...all.value]
   all.value = all.value.filter(x => x.id !== n.id)
 
-  showToast(t('admin.deleted'), {
+  showToast(t('admin.trash.moved'), {
     type: 'info',
     duration: 5000,
     undo: () => {
@@ -84,8 +84,13 @@ async function remove(n: NewsItem) {
   })
 
   undoTimer = setTimeout(async () => {
-    await deleteNews(n.id)
+    try {
+      await deleteNews(n.id)
+    } catch (e: any) {
+      showToast(e?.data?.statusMessage || 'Erreur', { type: 'error' })
+    }
     await fetchNews()
+    await refreshNuxtData('corbeille-news')
   }, 5000)
 }
 
@@ -178,6 +183,7 @@ async function remove(n: NewsItem) {
         </tbody>
       </table>
     </div>
+    <AdminCorbeille v-if="!editing" type="news" @restaure="fetchNews()" />
     <AdminToast />
   </div>
 </template>

@@ -82,7 +82,8 @@ export default defineEventHandler(async (event) => {
 
   const vevents: string[] = []
 
-  for (const c of data ?? []) {
+  // La clé service contourne la politique de lecture : la corbeille s'écarte ici.
+  for (const c of (data ?? []).filter(c => !c.deleted_at)) {
     vevents.push([
       'BEGIN:VEVENT',
       `UID:${c.id}@orgue-vivant`,

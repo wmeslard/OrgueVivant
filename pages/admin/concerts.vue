@@ -143,7 +143,7 @@ async function remove(c: Concert) {
   const snapshot = [...all.value]
   all.value = all.value.filter(x => x.id !== c.id)
 
-  showToast(t('admin.deleted'), {
+  showToast(t('admin.trash.moved'), {
     type: 'info',
     duration: 5000,
     undo: () => {
@@ -153,8 +153,13 @@ async function remove(c: Concert) {
   })
 
   undoTimer = setTimeout(async () => {
-    await deleteConcert(c.id)
+    try {
+      await deleteConcert(c.id)
+    } catch (e: any) {
+      showToast(e?.data?.statusMessage || 'Erreur', { type: 'error' })
+    }
     await fetchConcerts()
+    await refreshNuxtData('corbeille-concerts')
   }, 5000)
 }
 
@@ -312,6 +317,7 @@ async function remove(c: Concert) {
         </tbody>
       </table>
     </div>
+    <AdminCorbeille v-if="!editing" type="concerts" @restaure="fetchConcerts()" />
     <AdminToast />
   </div>
 </template>

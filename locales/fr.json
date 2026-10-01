@@ -267,8 +267,20 @@
     "cancel": "Annuler",
     "search": "Rechercher…",
     "logout": "Déconnexion",
-    "confirmDelete": "Supprimer ce concert ?",
-    "confirmDeleteNews": "Supprimer cette actualité ?",
+    "confirmDelete": "Supprimer ce concert ?\n\nIl quitte le site et reste 30 jours dans la corbeille, en bas de cette page, d'où on peut le restaurer.",
+    "confirmDeleteNews": "Supprimer cette actualité ?\n\nElle quitte le site et reste 30 jours dans la corbeille, en bas de cette page, d'où on peut la restaurer.",
+    "trash": {
+      "title": "Corbeille",
+      "moved": "Placé dans la corbeille",
+      "hint": "Ce qui est supprimé reste ici {n} jours, invisible sur le site, puis est effacé définitivement.",
+      "empty": "La corbeille est vide.",
+      "deletedOn": "Supprimé le {date}",
+      "by": "par {who}",
+      "purgeOn": "effacé définitivement le {date}",
+      "restore": "Restaurer",
+      "restored": "Restauré : de retour sur le site.",
+      "notInstalled": "La corbeille n'est pas encore installée : exécutez supabase/corbeille.sql dans Supabase."
+    },
     "optional": "facultatif",
     "fields": {
       "title": "Titre",
