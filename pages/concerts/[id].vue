@@ -49,6 +49,18 @@ async function copyLink() {
 }
 
 const title = computed(() => localized(concert.value?.title, concert.value?.title_en, locale.value))
+/**
+ * Le PDF du programme, téléchargé sous un nom lisible
+ * (programme-guitare-et-orgue-2026-10-17.pdf) plutôt que sous son identifiant
+ * de stockage : Supabase nomme le fichier d'après `?download=`.
+ */
+const programmeUrl = computed(() => {
+  const url = concert.value?.programme_url
+  if (!url) return null
+  const slug = title.value.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase()
+    .replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '')
+  return `${url}?download=${encodeURIComponent(`programme-${slug}-${concert.value!.date}.pdf`)}`
+})
 const description = computed(() =>
   localized(concert.value?.description, concert.value?.description_en, locale.value))
 
@@ -189,6 +201,16 @@ if (concert.value) {
           <div v-if="concert.duration">
             <dt class="text-[10px] uppercase tracking-widest text-text-secondary mb-1.5 font-bold">{{ t('modal.duration') }}</dt>
             <dd class="text-text-primary text-sm">{{ concert.duration }}</dd>
+          </div>
+          <div v-if="programmeUrl">
+            <dt class="text-[10px] uppercase tracking-widest text-text-secondary mb-1.5 font-bold">{{ t('modal.programme') }}</dt>
+            <dd class="text-text-primary flex items-center gap-2 text-sm">
+              <Icon name="heroicons:document-arrow-down" class="w-4 h-4 text-gold shrink-0" />
+              <a
+                :href="programmeUrl"
+                class="underline underline-offset-4 decoration-gold/40 hover:text-gold transition-colors duration-200"
+              >{{ t('modal.programmeDownload') }}</a>
+            </dd>
           </div>
         </dl>
 

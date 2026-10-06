@@ -67,7 +67,8 @@ function snapshot(c?: Partial<Concert> | null) {
 function newOne() { editing.value = blank(); snapshot(editing.value) }
 function edit(c: Concert) { editing.value = { ...c }; snapshot(c) }
 function duplicate(c: Concert) {
-  const { id, created_at, ...rest } = c
+  // Le programme est propre à chaque date : la copie ne le reprend pas.
+  const { id, created_at, programme_url, ...rest } = c
   editing.value = { ...rest }
   // Une copie porte le même texte : ses traductions restent valables.
   snapshot(rest)
@@ -218,6 +219,13 @@ async function remove(c: Concert) {
           <ImageUpload
             :model-value="editing.image_url || null"
             @update:model-value="editing.image_url = $event"
+          />
+        </div>
+        <div class="md:col-span-2">
+          <label class="label">{{ t('admin.fields.programme') }}</label>
+          <ProgrammeUpload
+            :model-value="editing.programme_url || null"
+            @update:model-value="editing.programme_url = $event"
           />
         </div>
         <div class="md:col-span-2">

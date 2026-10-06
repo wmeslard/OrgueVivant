@@ -19,6 +19,7 @@ export default defineEventHandler(async (event) => {
   const { id: _id, created_at, ...body } = await readBody(event)
   assertHttpUrl(body.external_link, 'external_link')
   assertHttpUrl(body.image_url, 'image_url')
+  assertHttpUrl(body.programme_url, 'programme_url')
 
   const client = getServiceClient()
   const { error } = await client.from('concerts').update(body).eq('id', id)

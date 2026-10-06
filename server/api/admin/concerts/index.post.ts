@@ -20,6 +20,7 @@ export default defineEventHandler(async (event) => {
   if (!body.location) throw createError({ statusCode: 400, statusMessage: 'Lieu requis' })
   assertHttpUrl(body.external_link, 'external_link')
   assertHttpUrl(body.image_url, 'image_url')
+  assertHttpUrl(body.programme_url, 'programme_url')
 
   const client = getServiceClient()
   const { data, error } = await client.from('concerts').insert(body).select().single()

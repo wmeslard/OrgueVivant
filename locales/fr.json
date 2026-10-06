@@ -113,6 +113,8 @@
     "appleHelp": "Votre navigateur n'a pas pu ouvrir votre application Calendrier. Copiez cette adresse, puis dans Apple Calendrier : Fichier → Nouvel abonnement. Dans Outlook : Ajouter un calendrier → S'abonner à partir du Web."
   },
   "modal": {
+    "programme": "Programme",
+    "programmeDownload": "Télécharger le PDF",
     "close": "Fermer",
     "location": "Lieu",
     "artists": "Artistes",
@@ -283,6 +285,7 @@
     },
     "optional": "facultatif",
     "fields": {
+      "programme": "Programme (PDF)",
       "title": "Titre",
       "date": "Date",
       "time": "Heure",

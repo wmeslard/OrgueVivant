@@ -113,6 +113,8 @@
     "appleHelp": "Your browser could not open your Calendar app. Copy this address, then in Apple Calendar: File → New Calendar Subscription. In Outlook: Add calendar → Subscribe from web."
   },
   "modal": {
+    "programme": "Programme",
+    "programmeDownload": "Download the PDF",
     "close": "Close",
     "location": "Venue",
     "artists": "Artists",
@@ -283,6 +285,7 @@
     },
     "optional": "optional",
     "fields": {
+      "programme": "Programme (PDF)",
       "title": "Title",
       "date": "Date",
       "time": "Time",

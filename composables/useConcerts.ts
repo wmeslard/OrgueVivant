@@ -18,6 +18,8 @@ export interface Concert {
   description: string
   description_en?: string
   image_url: string
+  /** PDF du programme, s'il a été déposé dans l'admin. */
+  programme_url?: string | null
   duration: string
   price_type: 'free' | 'paid'
   external_link: string
