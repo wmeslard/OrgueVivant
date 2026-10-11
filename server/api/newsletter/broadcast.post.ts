@@ -47,7 +47,10 @@ export default defineEventHandler(async (event) => {
     const html = type === 'concert'
       ? concertHtml(data as Concert, unsubUrl, siteUrl)
       : newsHtml(data as NewsItem, unsubUrl, siteUrl)
-    return { from, to: sub.email, subject, html }
+    // Bouton « Se désabonner » de Gmail, Apple Mail… : la messagerie poste
+    // à cette adresse (RFC 8058, voir unsubscribe.post.ts).
+    const headers = { 'List-Unsubscribe': `<${unsubUrl}>`, 'List-Unsubscribe-Post': 'List-Unsubscribe=One-Click' }
+    return { from, to: sub.email, subject, html, headers }
   })
 
   // Resend plafonne chaque envoi groupé à 100 destinataires : au-delà, l'appel
