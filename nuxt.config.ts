@@ -1,4 +1,13 @@
 // https://nuxt.com/docs/api/configuration/nuxt-config
+
+// CSP : le navigateur ne parle qu'au projet Supabase du site, pas à n'importe
+// quel projet *.supabase.co (une injection de script ne pourrait pas y
+// exfiltrer de données). Sans SUPABASE_URL au build, on garde le joker.
+const supabaseOrigin = process.env.SUPABASE_URL ? new URL(process.env.SUPABASE_URL).origin : ''
+const supabaseConnect = supabaseOrigin
+  ? `${supabaseOrigin} ${supabaseOrigin.replace(/^https:/, 'wss:')}`
+  : 'https://*.supabase.co wss://*.supabase.co'
+
 export default defineNuxtConfig({
   devtools: { enabled: true },
 
@@ -195,6 +204,7 @@ export default defineNuxtConfig({
     '/en/privacy':  { prerender: true },
     // Admin : toujours SSR, jamais mis en cache
     '/admin/**': { ssr: true, robots: false, headers: { 'Cache-Control': 'no-store' } },
+    '/en/admin/**': { ssr: true, robots: false, headers: { 'Cache-Control': 'no-store' } },
     // Moments musicaux : la page publique est mise en cache comme les autres
     // listes ; l'espace des professeurs et sa page d'entrée, jamais (contenu
     // personnel), et hors index. La page d'entrée porte la clé du lien dans
@@ -218,7 +228,7 @@ export default defineNuxtConfig({
         'Referrer-Policy': 'strict-origin-when-cross-origin',
         'Permissions-Policy': 'camera=(), microphone=(), geolocation=()',
         'Strict-Transport-Security': 'max-age=31536000; includeSubDomains; preload',
-        'Content-Security-Policy': "default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob: https:; font-src 'self' data:; connect-src 'self' https://*.supabase.co wss://*.supabase.co; frame-src 'self'; frame-ancestors 'self'; object-src 'none'; base-uri 'self'",
+        'Content-Security-Policy': `default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob: https:; font-src 'self' data:; connect-src 'self' ${supabaseConnect}; frame-src 'self'; frame-ancestors 'self'; object-src 'none'; base-uri 'self'; form-action 'self'`,
         'Cross-Origin-Opener-Policy': 'same-origin'
       }
     }
