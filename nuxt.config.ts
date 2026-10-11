@@ -163,7 +163,7 @@ export default defineNuxtConfig({
           // entre les deux et cassait l'hydratation ; l'admin et le
           // recadrage d'images restent chargés à la demande.
           manualChunks(id) {
-            if (id.includes('cropperjs') || /[\/](pages|layouts)[\/]admin|[\/]components[\/](Admin|Image)/.test(id)) return
+            if (id.includes('cropperjs') || /[/](pages|layouts)[/]admin|[/]components[/](Admin|Image)/.test(id)) return
             if (id.includes('nuxt/dist/app/entry')) return
             return 'app'
           }
