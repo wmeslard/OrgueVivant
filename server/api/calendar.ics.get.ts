@@ -23,7 +23,9 @@ function parseDurationMinutes(d?: string) {
 }
 
 function escapeIcs(str: string) {
-  return (str || '').replace(/\\/g, '\\\\').replace(/;/g, '\\;').replace(/,/g, '\\,').replace(/\n/g, '\\n')
+  // \r compris : seul, il ouvrirait une ligne (et un champ) de plus dans
+  // l'agenda des abonnés.
+  return (str || '').replace(/\\/g, '\\\\').replace(/;/g, '\\;').replace(/,/g, '\\,').replace(/\r\n|\r|\n/g, '\\n')
 }
 
 /**
