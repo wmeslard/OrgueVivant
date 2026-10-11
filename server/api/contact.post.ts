@@ -1,6 +1,7 @@
 import { Resend } from 'resend'
 import { senderAddress } from '~/server/utils/sender'
 import { verifyFormToken } from '~/server/utils/formToken'
+import { reserverEnvoi } from '~/server/utils/envois'
 
 // Limite par adresse IP, en mémoire : chaque instance Vercel a la sienne, c'est
 // un filet de sécurité, pas une garantie. Le jeton signé, lui, tient partout.
@@ -52,6 +53,12 @@ export default defineEventHandler(async (event) => {
 
   if (message.length > 5000)
     throw createError({ statusCode: 400, statusMessage: 'Message trop long' })
+
+  // Plafond du jour, commun à toutes les instances (server/utils/envois.ts) :
+  // un envoi massif depuis plusieurs adresses IP ne peut pas épuiser le quota
+  // d'emails du site.
+  if (await reserverEnvoi('contact') === 'quota')
+    throw createError({ statusCode: 429, statusMessage: 'Le formulaire a reçu trop de messages aujourd\'hui. Écrivez-nous directement à contact@orguevivant.fr.' })
 
   const config = useRuntimeConfig()
 

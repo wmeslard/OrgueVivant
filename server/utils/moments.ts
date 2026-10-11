@@ -5,6 +5,7 @@ import type { SupabaseClient } from '@supabase/supabase-js'
 import { getServiceClient } from '~/server/utils/superAdminClient'
 import { senderAddress } from '~/server/utils/sender'
 import { revalidatePublicPages } from '~/server/utils/revalidate'
+import { reserverEnvoi } from '~/server/utils/envois'
 import {
   CRENEAU_REGULIER, HORIZON_MOIS, MAX_MUSICIENS, ORGANISTE_REGULIER, type Horaire, type Musicien, type SeancePublique,
   JOURS_AVANT_AFFECTATION, creneauPossible, finCreneau, heureFr, momentPrevu, musiciensDe, nomPublic,
@@ -152,9 +153,14 @@ function signerLien(prof: FicheLien, cle: string, expire: number): string {
 
 /** Envoie le lien de connexion à l'adresse de la fiche ; faux si Resend a refusé l'envoi. */
 export async function envoyerLienConnexion(prof: FicheLien & { prenom: string; email: string }, cle: string): Promise<boolean> {
-  // Un email par minute et par fiche, au plus (limite propre à chaque instance).
+  // Un lien par minute et par fiche, et un plafond par jour, comptés en base
+  // pour toutes les instances (server/utils/envois.ts). Tant que la migration
+  // manque, la limite d'une minute reste tenue en mémoire.
   const maintenant = Date.now()
-  if (maintenant - (derniersEnvois.get(prof.id) ?? 0) < 60_000)
+  const reservation = await reserverEnvoi('lien_moments', `lien:${prof.id}`, 60)
+  if (reservation === 'quota')
+    throw createError({ statusCode: 429, statusMessage: 'Trop de demandes de connexion aujourd\'hui. Réessayez demain, ou écrivez-nous.' })
+  if (reservation === 'delai' || (reservation === null && maintenant - (derniersEnvois.get(prof.id) ?? 0) < 60_000))
     throw createError({ statusCode: 429, statusMessage: 'Un lien vient d\'être envoyé à cette adresse. Patientez une minute avant d\'en demander un autre.' })
   derniersEnvois.set(prof.id, maintenant)
 

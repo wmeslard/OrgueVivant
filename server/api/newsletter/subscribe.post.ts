@@ -3,6 +3,7 @@ import { senderAddress } from '~/server/utils/sender'
 import { getServiceClient } from '~/server/utils/superAdminClient'
 import { verifyFormToken } from '~/server/utils/formToken'
 import { confirmHtml } from '~/server/utils/newsletterTemplates'
+import { reserverEnvoi } from '~/server/utils/envois'
 
 const hits = new Map<string, { count: number; reset: number }>()
 const WINDOW_MS = 3_600_000 // 1 hour
@@ -49,15 +50,26 @@ export default defineEventHandler(async (event) => {
   if (existing?.confirmed_at) return { ok: true }
 
   let confirmToken = existing?.unsubscribe_token
+  let subscriberId = existing?.id
   if (!existing) {
     const { data: inserted, error } = await client
       .from('newsletter_subscribers')
       .insert({ email: address })
-      .select('unsubscribe_token')
+      .select('id, unsubscribe_token')
       .single()
     if (error || !inserted) throw createError({ statusCode: 500, statusMessage: 'Erreur lors de l\'inscription' })
     confirmToken = inserted.unsubscribe_token
+    subscriberId = inserted.id
   }
+
+  // Une confirmation par abonné toutes les quinze minutes, et un plafond par
+  // jour, comptés en base (server/utils/envois.ts) : personne ne peut inonder
+  // la boîte d'un tiers. Une demande trop rapprochée reçoit la même réponse,
+  // sans nouvel email, ce qui ne révèle toujours rien de l'adresse.
+  const reservation = await reserverEnvoi('confirmation_newsletter', `newsletter:${subscriberId}`, 900)
+  if (reservation === 'delai') return { ok: true }
+  if (reservation === 'quota')
+    throw createError({ statusCode: 429, statusMessage: 'Les inscriptions sont momentanément suspendues. Réessayez demain.' })
 
   // Le lien de confirmation porte le jeton propre à l'abonné, déjà utilisé
   // pour la désinscription : non devinable, et connu de la seule boîte mail.
