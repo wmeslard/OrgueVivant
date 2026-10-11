@@ -1,4 +1,7 @@
 // https://nuxt.com/docs/api/configuration/nuxt-config
+import { createHash } from 'node:crypto'
+import { readFile } from 'node:fs/promises'
+import { join } from 'node:path'
 
 // CSP : le navigateur ne parle qu'au projet Supabase du site, pas à n'importe
 // quel projet *.supabase.co (une injection de script ne pourrait pas y
@@ -231,6 +234,38 @@ export default defineNuxtConfig({
         'Content-Security-Policy': `default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob: https:; font-src 'self' data:; connect-src 'self' ${supabaseConnect}; frame-src 'self'; frame-ancestors 'self'; object-src 'none'; base-uri 'self'; form-action 'self'`,
         'Cross-Origin-Opener-Policy': 'same-origin'
       }
+    }
+  },
+
+  hooks: {
+    // CSP sans 'unsafe-inline' dans script-src. Le seul script inline
+    // exécutable des pages est la configuration que Nuxt y écrit
+    // (window.__NUXT__.config) : identique sur toutes les pages d'un build,
+    // elle change à chaque build (buildId). Son empreinte est relevée sur les
+    // pages pré-rendues, avant la compilation du serveur : l'en-tête statique
+    // de Vercel et celui des fonctions reçoivent la même valeur. En
+    // développement, sans pré-rendu, la politique reste permissive.
+    'nitro:init'(nitro) {
+      nitro.hooks.hook('prerender:done', async ({ prerenderedRoutes }) => {
+        const pages = prerenderedRoutes.filter(r => r.fileName?.endsWith('.html'))
+        const empreintes = new Set<string>()
+        for (const { fileName } of pages) {
+          const html = await readFile(join(nitro.options.output.publicDir, fileName!), 'utf8')
+          for (const [, attributs, code] of html.matchAll(/<script([^>]*)>([\s\S]*?)<\/script>/g)) {
+            if (/\bsrc=|type="application\/(ld\+)?json"/.test(attributs)) continue
+            empreintes.add(`'sha256-${createHash('sha256').update(code).digest('base64')}'`)
+          }
+        }
+        // Mieux vaut un build en échec qu'une CSP qui bloquerait le JavaScript.
+        if (!pages.length || empreintes.size !== 1)
+          throw new Error(`[csp] ${pages.length} page(s) pré-rendue(s), ${empreintes.size} script(s) inline distinct(s) au lieu d'un : voir le hook nitro:init de nuxt.config.ts`)
+        for (const regles of [nitro.options.routeRules, nitro.options.runtimeConfig.nitro?.routeRules]) {
+          const entetes = regles?.['/**']?.headers
+          if (entetes?.['Content-Security-Policy'])
+            entetes['Content-Security-Policy'] = entetes['Content-Security-Policy']
+              .replace(`script-src 'self' 'unsafe-inline'`, `script-src 'self' ${[...empreintes][0]}`)
+        }
+      })
     }
   },
 
