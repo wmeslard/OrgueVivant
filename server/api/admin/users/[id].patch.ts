@@ -14,8 +14,10 @@ export default defineEventHandler(async (event) => {
   const { data: existing } = await client.auth.admin.getUserById(id)
   const currentMeta = (existing?.user?.app_metadata as Record<string, unknown>) ?? {}
 
+  // `null` et non `undefined` : Supabase fusionne app_metadata clé par clé et
+  // n'efface que les clés à null ; une clé absente garderait l'ancien rôle.
   const { error } = await client.auth.admin.updateUserById(id, {
-    app_metadata: { ...currentMeta, role: role ?? undefined }
+    app_metadata: { ...currentMeta, role }
   })
   if (error) throw createError({ statusCode: 500, statusMessage: error.message })
 
