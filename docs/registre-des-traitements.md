@@ -1,9 +1,9 @@
 # Registre des activités de traitement
 
 **Association ORGUE VIVANT** — 19 Parvis Saint-Maurice, 59800 Lille — RNA W595047126
-Document interne établi en application de l'article 30 du RGPD. Dernière mise à jour : 15 septembre 2026.
+Document interne établi en application de l'article 30 du RGPD. Dernière mise à jour : 11 octobre 2026.
 
-Responsable du traitement : l'association, représentée par son directeur de la publication, William Meslard.
+Responsable du traitement : l'association, représentée par Salomé Gamot, également directrice de la publication.
 Contact pour toute question relative aux données : contact@orguevivant.fr.
 Pas de délégué à la protection des données (non requis).
 
@@ -21,7 +21,7 @@ Pas de délégué à la protection des données (non requis).
 | **Sous-traitants** | Supabase Inc. (base de données, Londres, Royaume-Uni) ; Resend Inc. (envoi des emails, États-Unis) ; Vercel Inc. (hébergement, États-Unis). |
 | **Transferts hors UE** | Royaume-Uni : décision d'adéquation. États-Unis : clauses contractuelles types intégrées aux DPA. |
 | **Durée de conservation** | Jusqu'à la désinscription (suppression immédiate). Inscription non confirmée : effacée après 30 jours (tâche automatique). |
-| **Mesures de sécurité** | Accès à la table réservé au serveur ; chiffrement des échanges ; lien de désinscription dans chaque envoi ; protection du formulaire contre les robots. |
+| **Mesures de sécurité** | Accès à la table réservé au serveur ; chiffrement des échanges ; lien de désinscription dans chaque envoi et désinscription en un clic depuis la messagerie ; protection du formulaire contre les robots. |
 
 ## 2. Formulaire de contact
 
@@ -32,9 +32,9 @@ Pas de délégué à la protection des données (non requis).
 | **Personnes concernées** | Toute personne utilisant le formulaire. |
 | **Données** | Nom ; adresse électronique ; contenu du message. |
 | **Destinataires** | Les bénévoles ayant accès à la boîte contact@orguevivant.fr. |
-| **Sous-traitants** | Resend Inc. (acheminement, États-Unis) ; Vercel Inc. (traitement de la requête) ; OVH SAS (messagerie de réception, France). |
+| **Sous-traitants** | Resend Inc. (acheminement, États-Unis ; une copie du message reste dans son journal d'envoi) ; Vercel Inc. (traitement de la requête) ; OVH SAS (messagerie de réception, France). |
 | **Transferts hors UE** | États-Unis : clauses contractuelles types intégrées aux DPA. |
-| **Durée de conservation** | Un an après le dernier échange, dans la messagerie (suppression manuelle ou règle d'archivage). |
+| **Durée de conservation** | Un an après le dernier échange, dans la messagerie (suppression manuelle ou règle d'archivage). Copie dans le journal de Resend : durée de rétention du prestataire (**à vérifier** dans Resend). |
 | **Mesures de sécurité** | Le message n'est pas stocké par le site, seulement transmis ; protection du formulaire contre les robots ; limite de débit. |
 
 ## 3. Comptes des administrateurs du site
@@ -78,9 +78,10 @@ Pas de délégué à la protection des données (non requis).
 | Prestataire | Rôle | Localisation | DPA |
 |---|---|---|---|
 | Vercel Inc. | Hébergement, fonctions serveur, mesure d'audience | États-Unis (exécution des fonctions : Paris) | vercel.com/legal/dpa |
-| Supabase Inc. | Base de données, authentification, stockage des images | Londres, Royaume-Uni | supabase.com/legal/dpa |
-| Resend Inc. | Envoi des emails | États-Unis | resend.com/legal/dpa |
+| Supabase Inc. | Base de données, authentification, stockage des images et des programmes | Londres, Royaume-Uni (société américaine : clauses contractuelles types du DPA) | supabase.com/legal/dpa (**à vérifier** : DPA accepté pour l'organisation) |
+| Resend Inc. | Envoi des emails ; garde une copie des envois dans son journal | États-Unis | resend.com/legal/dpa |
 | OVH SAS | Nom de domaine, messagerie de réception | France | inclus aux conditions OVH |
+| Translated S.r.l. (MyMemory) | Traduction automatique en anglais des textes des concerts et des actualités, dont noms et biographies d'artistes | Italie | **à vérifier** (conditions d'utilisation de MyMemory) |
 
 ## Procédures
 
@@ -114,26 +115,33 @@ l'administration), pour le prévenir des jeudis qu'il assure, et la date de cet
 avis.
 
 **Accès** — l'espace des professeurs s'ouvre avec un lien secret que
-l'association transmet ; il n'y a ni compte ni mot de passe. Un cookie
-strictement nécessaire (`ov_moments`, un an) retient l'accès sur le navigateur.
-Régénérer le lien depuis l'administration coupe l'accès de tous les navigateurs
-entrés avec l'ancien. Le site public ne mentionne pas cet espace.
+l'association transmet ; il n'y a ni compte ni mot de passe. Une nouvelle fiche
+s'ouvre aussitôt ; une fiche existante ne s'ouvre, depuis un nouveau
+navigateur, que par un lien de connexion à usage unique, valable 15 minutes,
+envoyé à son adresse. Un cookie strictement nécessaire (`ov_moments`, un an)
+retient l'accès sur le navigateur. Régénérer le lien depuis l'administration
+coupe l'accès de tous les navigateurs entrés avec l'ancien. La politique de
+confidentialité publique décrit le traitement, sans détailler l'accès à cet
+espace.
 
 **Information des personnes** — donnée aux professeurs sur la page d'entrée de
-l'espace (usage des coordonnées, cookie, contact pour exercer ses droits), et
-non dans la politique de confidentialité publique. La personne qui inscrit
+l'espace (usage des coordonnées, cookie, contact pour exercer ses droits), qui
+renvoie à la politique de confidentialité. Celle-ci présente le traitement
+(articles 13 et 14) : c'est la seule information accessible aux musiciens
+inscrits par un tiers, qui n'ont pas de coordonnées. La personne qui inscrit
 informe les musiciens, dont elle atteste l'accord à l'inscription.
 
 **Minimisation** — personne n'a de compte. Les noms complets et l'adresse ne
 servent qu'à l'organisation : ils ne sont visibles que de l'administration et
 de la personne qui a fait l'inscription.
 
-**Destinataires** — le bureau de l'association. Hébergement Supabase (Union
-européenne). Envois d'emails par Resend.
+**Destinataires** — le bureau de l'association. Hébergement Supabase (Londres,
+Royaume-Uni). Envois d'emails par Resend.
 
 **Emails envoyés** — confirmation à l'inscription, rappel la veille de la
 séance, et avis d'annulation, à la personne qui a fait l'inscription (et à la
-personne inscrite si son adresse est connue).
+personne inscrite si son adresse est connue). Lien de connexion à l'espace, à
+l'adresse d'une fiche existante qui s'ouvre depuis un nouveau navigateur.
 
 **Publication** — seuls la date, l'heure, le prénom et l'initiale du nom de
 chaque musicien, les instruments (à plusieurs) et la description apparaissent

@@ -131,8 +131,12 @@ async function ouvrir() {
             {{ t('momentsAcces.submit') }}
           </button>
 
-          <!-- Information RGPD : donnée ici plutôt que dans la politique publique, qui ne mentionne pas l'espace -->
-          <p class="text-xs leading-relaxed text-text-secondary">{{ t('momentsAcces.privacy') }}</p>
+          <!-- Information RGPD au moment de la collecte ; le détail est dans la politique publique -->
+          <i18n-t keypath="momentsAcces.privacy" tag="p" class="text-xs leading-relaxed text-text-secondary">
+            <template #link>
+              <NuxtLink :to="localePath('/privacy')" class="underline underline-offset-2 hover:text-gold">{{ t('privacy.linkLabel') }}</NuxtLink>
+            </template>
+          </i18n-t>
         </form>
       </template>
 
