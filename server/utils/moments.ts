@@ -90,12 +90,12 @@ export function memeCle(a: string, b: string): boolean {
  * Signature du cookie, par HMAC avec une clé dérivée de la clé de service
  * Supabase (même principe que server/utils/formToken.ts). La clé du lien
  * entre dans la signature : c'est ce qui rend les cookies caducs quand elle
- * change.
+ * change. `usage` sépare les clés du cookie et du lien de connexion.
  */
-function signer(professeurId: string, cle: string): string {
+function signer(professeurId: string, cle: string, usage = 'moments-professeur'): string {
   const source = useRuntimeConfig().supabaseServiceRoleKey as string | undefined
   if (!source) throw createError({ statusCode: 500, statusMessage: 'Clé de signature absente' })
-  const secret = createHmac('sha256', source).update('orgue-vivant:moments-professeur').digest()
+  const secret = createHmac('sha256', source).update(`orgue-vivant:${usage}`).digest()
   return createHmac('sha256', secret).update(`${professeurId}:${cle}`).digest('base64url')
 }
 
@@ -131,6 +131,70 @@ export async function requireProfesseur(event: H3Event): Promise<Professeur> {
   if (!prof) throw createError({ statusCode: 401, statusMessage: 'Ouvrez le lien transmis par l\'association.' })
   if (prof === 'desactive') throw createError({ statusCode: 403, statusMessage: 'Accès désactivé' })
   return prof
+}
+
+// ── Lien de connexion par email ──────────────────────────────────────────────
+//
+// Taper une adresse ne prouve pas qu'on la possède : quiconque a le lien de
+// l'association pourrait saisir celle d'un collègue. Une fiche existante ne
+// s'ouvre donc que par un lien envoyé à son adresse. Il sert une fois : sa
+// signature porte la date de dernière connexion, qui change dès qu'il ouvre
+// l'espace (ou que le professeur entre ailleurs). Aucune table de jetons.
+
+const LIEN_DUREE_MS = 15 * 60_000
+const derniersEnvois = new Map<string, number>()
+
+type FicheLien = { id: string; derniere_connexion_at: string | null }
+
+function signerLien(prof: FicheLien, cle: string, expire: number): string {
+  return signer(`${prof.id}:${prof.derniere_connexion_at ?? ''}:${expire}`, cle, 'moments-lien')
+}
+
+/** Envoie le lien de connexion à l'adresse de la fiche ; faux si Resend a refusé l'envoi. */
+export async function envoyerLienConnexion(prof: FicheLien & { prenom: string; email: string }, cle: string): Promise<boolean> {
+  // Un email par minute et par fiche, au plus (limite propre à chaque instance).
+  const maintenant = Date.now()
+  if (maintenant - (derniersEnvois.get(prof.id) ?? 0) < 60_000)
+    throw createError({ statusCode: 429, statusMessage: 'Un lien vient d\'être envoyé à cette adresse. Patientez une minute avant d\'en demander un autre.' })
+  derniersEnvois.set(prof.id, maintenant)
+
+  const expire = maintenant + LIEN_DUREE_MS
+  const jeton = `${prof.id}.${expire.toString(36)}.${signerLien(prof, cle, expire)}`
+  const siteUrl = (useRuntimeConfig().public.siteUrl as string).replace(/\/$/, '')
+  const url = `${siteUrl}/moments-musicaux/acces?jeton=${jeton}`
+  if (import.meta.dev) console.info('[moments] lien de connexion :', url)
+
+  const envoye = await envoyerEmail({
+    to: prof.email,
+    subject: 'Votre lien de connexion — Moments musicaux',
+    html: `
+      <p>Bonjour ${escapeHtml(prof.prenom)},</p>
+      <p>Pour ouvrir votre espace d'inscription aux Moments musicaux, suivez ce lien dans les 15 minutes :</p>
+      <p><a href="${url}" style="color:#a58b52;font-weight:600">Ouvrir mon espace</a></p>
+      <p>Il ne sert qu'une fois. Vous n'avez rien demandé ? Ignorez ce message : sans ce lien, personne n'entre dans votre espace.</p>`
+  })
+  if (!envoye) derniersEnvois.delete(prof.id)
+  return envoye
+}
+
+/** Ouvre l'accès par le lien reçu, s'il est authentique, pas expiré, et n'a pas encore servi. */
+export async function entrerParLien(event: H3Event, jeton: unknown) {
+  const invalide = () => createError({ statusCode: 400, statusMessage: 'Ce lien de connexion a expiré ou a déjà servi. Rouvrez le lien de l\'association pour en recevoir un nouveau.' })
+  const [id, expire36, sig] = typeof jeton === 'string' ? jeton.split('.') : []
+  const expire = parseInt(expire36 ?? '', 36)
+  if (!id || !sig || !/^[0-9a-f-]{36}$/.test(id) || !(expire > Date.now())) throw invalide()
+
+  const client = getServiceClient()
+  const [cle, { data: prof }] = await Promise.all([
+    cleActuelle(client),
+    client.from('moments_professeurs').select('id, actif, derniere_connexion_at').eq('id', id).maybeSingle()
+  ])
+  if (!cle || !prof || !memeCle(sig, signerLien(prof, cle, expire))) throw invalide()
+  if (!prof.actif) throw createError({ statusCode: 403, statusMessage: 'Accès désactivé' })
+
+  ouvrirAcces(event, prof.id, cle)
+  // Nouvelle date de connexion : le lien qui vient de servir ne vaut plus rien.
+  await marquerConnexion(client, prof.id)
 }
 
 /** Trace de passage, relevée à l'ouverture de l'espace : l'administration voit qui se sert de l'outil. */

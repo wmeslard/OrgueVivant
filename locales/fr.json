@@ -390,7 +390,7 @@
     "firstName": "Prénom",
     "lastName": "Nom",
     "email": "Email",
-    "emailHint": "Pour la confirmation de chaque inscription. Sur un autre appareil, la même adresse retrouve vos inscriptions.",
+    "emailHint": "Pour la confirmation de chaque inscription. Sur un autre appareil, un lien envoyé à cette adresse vous redonne accès à vos inscriptions.",
     "school": "Conservatoire ou école de musique",
     "optional": "facultatif",
     "submit": "Continuer",
@@ -402,6 +402,11 @@
     "contact": "Nous écrire",
     "errorRequired": "Merci de remplir les champs obligatoires.",
     "errorEmail": "Email invalide.",
-    "errorGeneric": "Une erreur est survenue. Merci de réessayer."
+    "errorGeneric": "Une erreur est survenue. Merci de réessayer.",
+    "sentTitle": "Vérifiez votre boîte mail",
+    "sentText": "Cette adresse est déjà enregistrée. Pour vérifier qu'elle est bien la vôtre, nous venons d'envoyer un lien de connexion à {email}. Il est valable 15 minutes, ne sert qu'une fois et s'ouvre sur l'appareil de votre choix.",
+    "signInTitle": "Ouvrir votre espace",
+    "signInText": "Vous avez reçu ce lien par email. Cliquez ci-dessous pour ouvrir l'espace d'inscription : ce navigateur s'en souviendra ensuite.",
+    "signInButton": "Ouvrir mon espace"
   }
 }

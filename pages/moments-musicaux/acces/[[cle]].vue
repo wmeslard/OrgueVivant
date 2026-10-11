@@ -3,9 +3,11 @@
  * Entrée de l'espace des professeurs, par le lien que l'association leur
  * transmet : …/moments-musicaux/acces/<clé>.
  *
- * Le lien suffit — ni compte, ni validation. Le professeur se présente une
- * fois, et ce navigateur s'en souvient. Sans clé, ou avec une clé qui n'est
- * plus en vigueur, la page explique comment obtenir le lien.
+ * Ni compte ni mot de passe. Le professeur se présente une fois, et ce
+ * navigateur s'en souvient. Si son adresse a déjà une fiche, il reçoit à
+ * cette adresse un lien de connexion (…/acces?jeton=…) : la même page
+ * l'accueille et ouvre l'espace d'un clic. Sans clé, ou avec une clé qui
+ * n'est plus en vigueur, la page explique comment obtenir le lien.
  */
 definePageMeta({ layout: 'default' })
 
@@ -16,6 +18,7 @@ const { espace } = useMomentsEspace()
 
 const cle = computed(() => typeof route.params.cle === 'string' ? route.params.cle : '')
 const desactive = computed(() => route.query.desactive === '1')
+const jeton = computed(() => typeof route.query.jeton === 'string' ? route.query.jeton : '')
 
 const { data: etat } = await useAsyncData(`moments-acces-${cle.value}`, () =>
   cle.value
@@ -34,6 +37,8 @@ useHead({
 const form = reactive({ prenom: '', nom: '', email: '', conservatoire: '' })
 const envoi = ref(false)
 const erreur = ref('')
+/** Adresse à laquelle le lien de connexion vient de partir. */
+const lienEnvoye = ref('')
 
 async function entrer() {
   erreur.value = ''
@@ -41,11 +46,26 @@ async function entrer() {
   if (!/^\S+@\S+\.\S+$/.test(form.email.trim())) { erreur.value = t('momentsAcces.errorEmail'); return }
   envoi.value = true
   try {
-    await $fetch('/api/moments/acces', { method: 'POST', body: { cle: cle.value, ...form } })
+    const r = await $fetch<{ lienEnvoye?: boolean }>('/api/moments/acces', { method: 'POST', body: { cle: cle.value, ...form } })
+    if (r.lienEnvoye) { lienEnvoye.value = form.email.trim(); return }
     espace.value = null
     await navigateTo(localePath('/moments-musicaux/espace'), { replace: true })
   } catch (e: any) {
     erreur.value = e?.data?.statusMessage || t('momentsAcces.errorGeneric')
+  } finally { envoi.value = false }
+}
+
+async function ouvrir() {
+  erreur.value = ''
+  envoi.value = true
+  try {
+    await $fetch('/api/moments/connexion', { method: 'POST', body: { jeton: jeton.value } })
+    espace.value = null
+    await navigateTo(localePath('/moments-musicaux/espace'), { replace: true })
+  } catch (e: any) {
+    if ((e?.statusCode ?? e?.response?.status) === 403)
+      await navigateTo({ path: localePath('/moments-musicaux/acces'), query: { desactive: '1' } }, { replace: true })
+    else erreur.value = e?.data?.statusMessage || t('momentsAcces.errorGeneric')
   } finally { envoi.value = false }
 }
 </script>
@@ -58,8 +78,25 @@ async function entrer() {
         <span class="text-xs font-bold uppercase tracking-[0.4em] text-gold">{{ t('moments.eyebrow') }}</span>
       </div>
 
+      <!-- Lien de connexion reçu par email -->
+      <template v-if="jeton && !desactive">
+        <h1 class="heading-section text-text-primary">{{ t('momentsAcces.signInTitle') }}</h1>
+        <p class="mt-5 text-lg font-light leading-relaxed text-text-secondary">{{ t('momentsAcces.signInText') }}</p>
+        <p v-if="erreur" class="mt-6 text-sm text-red-400">{{ erreur }}</p>
+        <button type="button" class="btn-premium-primary mt-10" :disabled="envoi" @click="ouvrir">
+          <Icon v-if="envoi" name="heroicons:arrow-path" class="h-4 w-4 animate-spin" />
+          {{ t('momentsAcces.signInButton') }}
+        </button>
+      </template>
+
+      <!-- Adresse déjà connue : le lien de connexion est parti -->
+      <template v-else-if="lienEnvoye">
+        <h1 class="heading-section text-text-primary">{{ t('momentsAcces.sentTitle') }}</h1>
+        <p class="mt-5 text-lg font-light leading-relaxed text-text-secondary">{{ t('momentsAcces.sentText', { email: lienEnvoye }) }}</p>
+      </template>
+
       <!-- Lien valide : le professeur se présente -->
-      <template v-if="etat?.valide && !desactive">
+      <template v-else-if="etat?.valide && !desactive">
         <h1 class="heading-section text-text-primary">{{ t('momentsAcces.title') }}</h1>
         <p class="mt-5 text-lg font-light leading-relaxed text-text-secondary">{{ t('momentsAcces.intro') }}</p>
 

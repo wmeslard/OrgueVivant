@@ -390,7 +390,7 @@
     "firstName": "First name",
     "lastName": "Last name",
     "email": "Email",
-    "emailHint": "For the confirmation of each sign-up. On another device, the same address brings back your sign-ups.",
+    "emailHint": "For the confirmation of each sign-up. On another device, a link sent to this address gives you back access to your sign-ups.",
     "school": "Conservatoire or music school",
     "optional": "optional",
     "submit": "Continue",
@@ -402,6 +402,11 @@
     "contact": "Write to us",
     "errorRequired": "Please fill in the required fields.",
     "errorEmail": "Invalid email.",
-    "errorGeneric": "Something went wrong. Please try again."
+    "errorGeneric": "Something went wrong. Please try again.",
+    "sentTitle": "Check your inbox",
+    "sentText": "This address is already registered. To confirm it is yours, we have just sent a sign-in link to {email}. It is valid for 15 minutes, works only once and opens on any device.",
+    "signInTitle": "Open your space",
+    "signInText": "You received this link by email. Click below to open the sign-up space: this browser will then remember you.",
+    "signInButton": "Open my space"
   }
 }
