@@ -16,6 +16,14 @@ jobs:
           # qui exige Node >= 22 et provoquait un avertissement EBADENGINE.
           node-version: 22
           cache: npm
+      # Toutes les dépendances viennent du registre public : une adresse vers
+      # un registre privé (celui d'un employeur, par exemple) fait échouer la CI.
+      - name: Registre npm public uniquement
+        run: |
+          if grep -nE '"resolved": "https?://' package-lock.json | grep -v '"resolved": "https://registry.npmjs.org/'; then
+            echo "::error file=package-lock.json::Adresse hors de registry.npmjs.org dans package-lock.json"
+            exit 1
+          fi
       - run: npm ci
       - run: npm run lint --if-present
       - run: npm run build
