@@ -16,7 +16,11 @@ const { t, locale } = useI18n()
 const localePath = useLocalePath()
 const siteUrl = useRuntimeConfig().public.siteUrl
 
-const { data } = await useFetch<{ du: string; seances: SeancePublique[] }>('/api/moments', { query: { mois: 6 } })
+const { data, error } = await useFetch<{ du: string; seances: SeancePublique[] }>('/api/moments', { query: { mois: 6 } })
+// Comme pour les concerts : en rendu serveur, une erreur ne doit pas donner une
+// page vide que Vercel garderait en cache.
+if (import.meta.server && error.value)
+  throw createError({ statusCode: 503, statusMessage: 'Service momentanément indisponible' })
 const seances = computed(() => data.value?.seances ?? [])
 /** La prochaine séance, à la une ; les cartes reprennent à la suivante. */
 const prochaine = computed(() => seances.value[0] ?? null)

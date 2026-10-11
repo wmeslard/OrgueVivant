@@ -27,8 +27,12 @@ export function useNews() {
       all.value = ((data as NewsItem[]) ?? []).sort(
         (a, b) => b.published_at.slice(0, 10).localeCompare(a.published_at.slice(0, 10))
       )
-    } catch {
+    } catch (e) {
       all.value = []
+      // Rendu serveur : une liste vide passerait pour un succès et Vercel la
+      // garderait en cache (ISR) jusqu'à une heure. Un 503 lui fait garder la
+      // version précédente et réessayer trente secondes plus tard.
+      if (import.meta.server) throw createError({ statusCode: 503, statusMessage: 'Service momentanément indisponible', cause: e })
     } finally {
       pending.value = false
     }

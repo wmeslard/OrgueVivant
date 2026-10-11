@@ -21,7 +21,9 @@ const icon = computed(() => ({
   invalide: 'heroicons:exclamation-triangle'
 })[state.value])
 
-await callOnce('concerts', fetchConcerts)
+// Les concerts ne sont qu'un complément : pendant une panne de la base, le
+// message de confirmation s'affiche sans eux plutôt qu'en page d'erreur.
+await callOnce('concerts', () => fetchConcerts().catch(() => {}))
 const next = computed(() => upcoming.value.slice(0, 3))
 
 function day(date: string) { return new Date(`${date}T12:00`).getDate() }

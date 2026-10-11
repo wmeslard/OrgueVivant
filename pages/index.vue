@@ -24,8 +24,10 @@ function onNextCardClick(e: MouseEvent) {
   navigateTo(nextConcertPath.value)
 }
 
-await callOnce('concerts', fetchConcerts)
-await callOnce('news-home', fetchNews)
+// L'accueil n'est jamais mis en cache : pendant une panne de la base, il
+// s'affiche sans ses listes plutôt qu'en page d'erreur.
+await callOnce('concerts', () => fetchConcerts().catch(() => {}))
+await callOnce('news-home', () => fetchNews().catch(() => {}))
 
 const preview = computed(() => upcoming.value.slice(1, 4))
 
