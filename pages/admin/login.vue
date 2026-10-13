@@ -38,7 +38,7 @@ async function login() {
   }
   const role = (data.user?.app_metadata as Record<string, unknown>)?.role
   if (role !== 'admin' && role !== 'super_admin') {
-    await supabase.auth.signOut()
+    await supabase.auth.signOut({ scope: 'local' })
     loading.value = false
     error.value = 'Accès non autorisé. Contactez l\'administrateur.'
     return

@@ -34,7 +34,9 @@ async function doSignOut(reason = 'timeout') {
   localStorage.removeItem(KEY_ACTIVITY)
   localStorage.removeItem(KEY_SESSION)
   channel?.postMessage({ type: 'signout', reason })
-  supabase.auth.signOut().catch(() => {})
+  // Portée locale : la portée par défaut (globale) fermait aussi les sessions
+  // ouvertes sur les autres appareils, dont les appels serveur tombaient en 401.
+  supabase.auth.signOut({ scope: 'local' }).catch(() => {})
   await router.push(`/admin/login?reason=${reason}`)
 }
 

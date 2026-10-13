@@ -15,7 +15,7 @@ const isSuperAdmin = computed(() =>
 )
 
 async function logout() {
-  await supabase.auth.signOut()
+  await supabase.auth.signOut({ scope: 'local' })
   await navigateTo('/admin/login')
 }
 </script>
