@@ -6,6 +6,10 @@
  * mosaïque, sert de fond le temps que la grande image arrive : l'image garde
  * ses proportions (largeur et hauteur automatiques), sinon ce fond débordait
  * de part et d'autre de la photo.
+ *
+ * Zoom : un clic (ou un toucher) sur la photo l'agrandit à l'endroit visé, un
+ * second clic la rétrécit ; la loupe de l'en-tête fait de même, au centre.
+ * Agrandie, la photo suit la souris, ou se déplace au doigt.
  */
 import type { PhotoPublique } from '~/composables/usePhotos'
 import { lienTelechargement, nomFichierPhoto } from '~/utils/nomPhoto'
@@ -27,9 +31,65 @@ function aller(sens: -1 | 1) {
 }
 const fermer = () => emit('update:modelValue', null)
 
+// ── Zoom ─────────────────────────────────────────────────────────────────────
+const image = ref<HTMLImageElement>()
+const zoom = ref(false)
+const facteur = ref(2)
+const origine = reactive({ x: 50, y: 50 })
+const borne = (v: number) => Math.min(100, Math.max(0, v))
+let appui: { x: number; y: number; ox: number; oy: number; bouge: boolean } | null = null
+
+/** Agrandit au point visé (en % de la photo), ou rétrécit. */
+function basculerZoom(x = 50, y = 50) {
+  if (zoom.value) { zoom.value = false; return }
+  const img = image.value
+  // Au moins ×2, jusqu'à la définition réelle de la photo, sans dépasser ×4.
+  facteur.value = img ? Math.min(4, Math.max(2, img.naturalWidth / img.clientWidth)) : 2
+  Object.assign(origine, { x: borne(x), y: borne(y) })
+  zoom.value = true
+}
+/**
+ * Point visé, en % de la photo telle qu'elle est posée, sans l'agrandissement :
+ * le repère reste fixe pendant que la photo agrandie suit la souris.
+ */
+function pointVise(e: PointerEvent) {
+  const img = image.value!
+  const cadre = (img.offsetParent as HTMLElement).getBoundingClientRect()
+  return {
+    x: borne((e.clientX - cadre.left - img.offsetLeft) / img.offsetWidth * 100),
+    y: borne((e.clientY - cadre.top - img.offsetTop) / img.offsetHeight * 100)
+  }
+}
+function pointe(e: PointerEvent) {
+  appui = { x: e.clientX, y: e.clientY, ox: origine.x, oy: origine.y, bouge: false }
+}
+function glisse(e: PointerEvent) {
+  const img = image.value
+  if (!zoom.value || !img) return
+  if (e.pointerType === 'mouse') {
+    // La souris explore la photo agrandie : bord gauche de la photo sous la
+    // souris quand elle est à gauche, bord droit quand elle est à droite.
+    Object.assign(origine, pointVise(e))
+    return
+  }
+  if (!appui) return
+  const dx = e.clientX - appui.x, dy = e.clientY - appui.y
+  if (Math.hypot(dx, dy) > 6) appui.bouge = true
+  // Au doigt, la photo suit le glissé.
+  origine.x = borne(appui.ox - dx / ((facteur.value - 1) * img.clientWidth) * 100)
+  origine.y = borne(appui.oy - dy / ((facteur.value - 1) * img.clientHeight) * 100)
+}
+const annule = () => { appui = null }
+function lache(e: PointerEvent) {
+  const img = image.value
+  const tape = appui && !appui.bouge && Math.hypot(e.clientX - appui.x, e.clientY - appui.y) <= 6
+  appui = null
+  if (tape && img) { const p = pointVise(e); basculerZoom(p.x, p.y) }
+}
+
 function surTouche(e: KeyboardEvent) {
   if (props.modelValue === null) return
-  if (e.key === 'Escape') fermer()
+  if (e.key === 'Escape') { if (zoom.value) zoom.value = false; else fermer() }
   else if (e.key === 'ArrowLeft') aller(-1)
   else if (e.key === 'ArrowRight') aller(1)
 }
@@ -38,7 +98,8 @@ function surTouche(e: KeyboardEvent) {
 let depart: { x: number; y: number } | null = null
 function debut(e: TouchEvent) { depart = { x: e.touches[0].clientX, y: e.touches[0].clientY } }
 function fin(e: TouchEvent) {
-  if (!depart) return
+  // Agrandie, le doigt déplace la photo au lieu de changer de photo.
+  if (!depart || zoom.value) { depart = null; return }
   const dx = e.changedTouches[0].clientX - depart.x
   const dy = e.changedTouches[0].clientY - depart.y
   depart = null
@@ -47,6 +108,7 @@ function fin(e: TouchEvent) {
 
 // Les voisines sont chargées d'avance : passer d'une photo à l'autre est immédiat.
 watch(() => props.modelValue, async (i, avant) => {
+  zoom.value = false
   if (i === null) {
     document.body.style.overflow = ''
     deactivate()
@@ -87,24 +149,47 @@ onBeforeUnmount(() => {
         <span class="min-w-0 truncate text-text-secondary">
           {{ titre }}<span class="ml-3 tabular-nums text-white/40">{{ (modelValue ?? 0) + 1 }} / {{ photos.length }}</span>
         </span>
-        <button
-          class="flex h-10 w-10 shrink-0 items-center justify-center rounded-full border border-white/20 text-text-primary transition-colors hover:bg-white/10"
-          :aria-label="t('photos.close')"
-          @click="fermer"
-        >
-          <Icon name="heroicons:x-mark" class="h-5 w-5" />
-        </button>
+        <div class="flex shrink-0 gap-2">
+          <button
+            class="flex h-10 w-10 items-center justify-center rounded-full border border-white/20 transition-colors hover:bg-white/10"
+            :class="zoom ? 'border-gold/60 text-gold' : 'text-text-primary'"
+            :aria-label="zoom ? t('photos.zoomOut') : t('photos.zoomIn')"
+            :aria-pressed="zoom"
+            @click="basculerZoom()"
+          >
+            <Icon :name="zoom ? 'heroicons:magnifying-glass-minus' : 'heroicons:magnifying-glass-plus'" class="h-5 w-5" />
+          </button>
+          <button
+            class="flex h-10 w-10 items-center justify-center rounded-full border border-white/20 text-text-primary transition-colors hover:bg-white/10"
+            :aria-label="t('photos.close')"
+            @click="fermer"
+          >
+            <Icon name="heroicons:x-mark" class="h-5 w-5" />
+          </button>
+        </div>
       </div>
 
-      <div class="relative flex min-h-0 flex-1 items-center justify-center px-2 md:px-24" @click.self="fermer">
+      <div class="relative flex min-h-0 flex-1 items-center justify-center overflow-hidden px-2 md:px-24" @click.self="fermer">
         <img
           :key="photo.id"
+          ref="image"
           :src="photo.url"
           :alt="photo.legende || titre"
           :width="photo.largeur || undefined"
           :height="photo.hauteur || undefined"
-          class="h-auto max-h-full w-auto max-w-full rounded-md bg-cover bg-center"
-          :style="{ backgroundImage: `url(${photo.url_vignette})` }"
+          draggable="false"
+          class="h-auto max-h-full w-auto max-w-full select-none rounded-md bg-cover bg-center transition-transform duration-300 ease-out"
+          :class="zoom ? 'cursor-zoom-out' : 'cursor-zoom-in'"
+          :style="{
+            backgroundImage: `url(${photo.url_vignette})`,
+            transform: zoom ? `scale(${facteur})` : 'none',
+            transformOrigin: `${origine.x}% ${origine.y}%`,
+            touchAction: 'none'
+          }"
+          @pointerdown="pointe"
+          @pointermove="glisse"
+          @pointerup="lache"
+          @pointercancel="annule"
         >
         <button
           v-if="photos.length > 1"

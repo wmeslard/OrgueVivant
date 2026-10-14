@@ -434,10 +434,12 @@
     "close": "Close",
     "previous": "Previous photo",
     "next": "Next photo",
-    "swipe": "Swipe to move between photos",
+    "swipe": "Tap to zoom · swipe to change photo",
     "downloadPhoto": "Download photo",
     "downloadAlbum": "Download the album",
     "zipping": "Preparing… {n} / {total}",
-    "zipError": "The album download failed. Please try again."
+    "zipError": "The album download failed. Please try again.",
+    "zoomIn": "Zoom in",
+    "zoomOut": "Zoom out"
   }
 }
