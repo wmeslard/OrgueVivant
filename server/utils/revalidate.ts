@@ -30,9 +30,15 @@ export async function revalidatePublicPages(paths: readonly string[] = PUBLIC_IS
   // (_payload.json) et mises en cache par Vercel sous leur adresse complète,
   // identifiant du build compris. Ne purger que la page laissait ces données
   // vieilles d'une heure au plus : le HTML était à jour, l'affichage non.
+  // Nuxt 3.21.11 demande `_payload.json?_b=<build>` ; les versions d'avant,
+  // `_payload.json?<build>`. Les deux sont purgées : une mise à jour de Nuxt qui
+  // change encore la forme ne laisse pas l'une des deux périmée en silence.
   const buildId = (config.app as { buildId?: string }).buildId
-  const urls = paths.flatMap(path =>
-    buildId ? [path, `${path === '/' ? '' : path}/_payload.json?${buildId}`] : [path])
+  const urls = paths.flatMap((path) => {
+    if (!buildId) return [path]
+    const payload = `${path === '/' ? '' : path}/_payload.json`
+    return [path, `${payload}?_b=${buildId}`, `${payload}?${buildId}`]
+  })
 
   await Promise.allSettled(
     urls.map(async (path) => {
