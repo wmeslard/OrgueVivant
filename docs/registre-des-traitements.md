@@ -110,9 +110,9 @@ date, heure, prénom, nom et instrument de chaque musicien, email de la personne
 inscrite (facultatif, pour la confirmation, saisi par l'association seulement),
 description (programme), personne qui a fait l'inscription (ou l'association).
 Les musiciens ajoutés n'ont ni email ni autre coordonnée. Jusqu'en octobre
-2026, un organiste jouait les séances sans inscrit : son adresse email et les
-dates où il a été prévenu restent en base (`moments_reglages`,
-`moments_affectations`), sans plus servir, jusqu'à leur effacement.
+2026, un organiste jouait les séances sans inscrit ; son adresse email a été
+effacée, seules restent les dates où il a été prévenu
+(`moments_affectations`), sans plus servir.
 
 **Accès** — l'espace des professeurs s'ouvre avec un lien secret que
 l'association transmet ; il n'y a ni compte ni mot de passe. Une nouvelle fiche
