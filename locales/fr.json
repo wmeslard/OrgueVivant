@@ -334,7 +334,7 @@
   "momentsEspace": {
     "dashboardTitle": "Mes inscriptions",
     "logout": "Déconnexion",
-    "chooseDateHint": "Un jeudi sur deux, de 13 h 15 à 13 h 45. Deux jours avant, si personne n'est inscrit, Louis-Paul Courtois joue et les inscriptions ferment.",
+    "chooseDateHint": "Un jeudi sur deux, de 13 h 15 à 13 h 45. Inscriptions ouvertes jusqu'à la veille.",
     "studentNameHint": "Le site affichera « {nom} ».",
     "studentEmail": "Email de la personne",
     "studentEmailHint": "Facultatif : la personne recevra la confirmation par email.",

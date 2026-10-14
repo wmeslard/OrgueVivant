@@ -24,8 +24,6 @@ export interface EspaceProfesseur {
   horaires: Horaire[]
   /** Créneaux déjà pris, tous professeurs confondus. */
   pris: { date: string; heure_debut: string; interprete: string; mien: boolean }[]
-  /** Jeudis où Louis-Paul Courtois joue, faute d'inscrit. */
-  affectes?: string[]
   mesSeances: SeanceProf[]
 }
 

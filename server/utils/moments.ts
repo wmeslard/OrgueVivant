@@ -7,8 +7,8 @@ import { senderAddress } from '~/server/utils/sender'
 import { revalidatePublicPages } from '~/server/utils/revalidate'
 import { reserverEnvoi } from '~/server/utils/envois'
 import {
-  CRENEAU_REGULIER, HORIZON_MOIS, MAX_MUSICIENS, ORGANISTE_REGULIER, type Horaire, type Musicien, type SeancePublique,
-  JOURS_AVANT_AFFECTATION, creneauPossible, finCreneau, heureFr, momentPrevu, musiciensDe, nomPublic,
+  CRENEAU_REGULIER, HORIZON_MOIS, MAX_MUSICIENS, type Horaire, type Musicien, type SeancePublique,
+  creneauPossible, finCreneau, heureFr, momentPrevu, musiciensDe, nomPublic,
   nomsComplets, nomsPublics, parseYmd, plusJours, plusMois, ymd
 } from '~/utils/moments'
 
@@ -300,7 +300,6 @@ function schemaAbsent(error: { code?: string } | null): boolean {
 export const MESSAGES_REFUS: Record<string, string> = {
   passe: 'Cette date est passée.',
   trop_tot: 'Les inscriptions sont closes pour ce jeudi.',
-  affecte: 'Personne ne s\'était inscrit : Louis-Paul Courtois joue ce jeudi-là, les inscriptions sont closes.',
   trop_loin: `Les inscriptions sont ouvertes sur ${HORIZON_MOIS} mois.`,
   hors_creneau: 'Les Moments musicaux ont lieu un jeudi sur deux, à 13 h 15.',
   ferme: 'L\'orgue n\'est pas disponible ce jeudi-là.',
@@ -344,105 +343,6 @@ export function jeudisDeMoment(du: string, au: string, horaires: readonly Horair
     cursor.setDate(cursor.getDate() + 1)
   }
   return out
-}
-
-// ── Louis-Paul Courtois, quand personne n'est inscrit ────────────────────────
-//
-// Deux jours avant la séance, si personne ne s'est inscrit, Louis-Paul
-// Courtois y est affecté (table moments_affectations) et prévenu par email ; son
-// nom n'est publié qu'à partir de là. Son adresse est en base
-// (moments_reglages), réglable depuis l'administration, et non dans le code.
-
-export interface Affectation { date: string; notifie_at: string | null }
-
-/** Les affectations entre deux dates ; aucune tant que la migration manque. */
-export async function chargerAffectations(client: SupabaseClient, du: string, au: string): Promise<Affectation[]> {
-  const { data, error } = await client.from('moments_affectations').select('date, notifie_at').gte('date', du).lte('date', au)
-  if (error && schemaAbsent(error)) return []
-  if (error) throw createError({ statusCode: 500, statusMessage: error.message })
-  return (data ?? []) as Affectation[]
-}
-
-/** L'adresse de Louis-Paul Courtois, ou null si elle n'est pas encore renseignée. */
-export async function emailOrganiste(client: SupabaseClient): Promise<string | null> {
-  const { data, error } = await client.from('moments_reglages').select('email_organiste').eq('id', 1).maybeSingle()
-  if (error && schemaAbsent(error)) return null
-  if (error) throw createError({ statusCode: 500, statusMessage: error.message })
-  return (data?.email_organiste as string | null | undefined) || null
-}
-
-/**
- * Affecte Louis-Paul Courtois aux séances sans inscrit des deux prochains
- * jours — ce qui ferme leurs inscriptions — et le prévient une seule fois par
- * séance. Appelée chaque jour par la tâche planifiée, et après une
- * annulation. Renvoie le nombre d'emails envoyés.
- */
-export async function affecterOrganiste(client: SupabaseClient): Promise<number> {
-  const aujourdhui = aujourdhuiParis()
-  const du = plusJours(aujourdhui, 1)
-  const au = plusJours(aujourdhui, JOURS_AVANT_AFFECTATION)
-  const [horaires, seances] = await Promise.all([chargerHoraires(client), chargerSeances(client, du, au)])
-  const inscrits = new Set(seances.map(s => s.date))
-  const dates = jeudisDeMoment(du, au, horaires).filter(d => !inscrits.has(d))
-  if (!dates.length) return 0
-
-  const { data: nouvelles, error } = await client.from('moments_affectations')
-    .upsert(dates.map(date => ({ date })), { onConflict: 'date', ignoreDuplicates: true }).select('date')
-  if (error && schemaAbsent(error)) { console.warn('[moments] affectations : migration non appliquée'); return 0 }
-  if (error) throw createError({ statusCode: 500, statusMessage: error.message })
-  // Quelqu'un s'est inscrit pendant ce temps : ce jeudi n'est pas pour lui.
-  const inscritsEntreTemps = (await chargerSeances(client, du, au)).map(s => s.date).filter(d => dates.includes(d))
-  if (inscritsEntreTemps.length) {
-    await client.from('moments_affectations').delete().in('date', inscritsEntreTemps).is('notifie_at', null)
-    dates.splice(0, dates.length, ...dates.filter(d => !inscritsEntreTemps.includes(d)))
-  }
-
-  const aPrevenir = (await chargerAffectations(client, du, au)).filter(a => dates.includes(a.date) && !a.notifie_at)
-  const email = await emailOrganiste(client)
-  if (!email && aPrevenir.length) console.warn('[moments] adresse de Louis-Paul Courtois non renseignée : email non envoyé')
-  let envoyes = 0
-  for (const a of email ? aPrevenir : []) {
-    const moment = quand(a.date, CRENEAU_REGULIER, finCreneau(CRENEAU_REGULIER))
-    const ok = await envoyerEmail({
-      to: email!,
-      subject: `Moment musical du ${moment.split(',')[0]} : à vous de jouer`,
-      html: `
-        <h2 style="font-weight:300;font-size:22px;margin:0 0 16px">À vous de jouer</h2>
-        <p>Bonjour Louis-Paul,</p>
-        <p>Personne ne s'est inscrit pour le Moment musical du <strong>${escapeHtml(moment)}</strong>, à l'orgue de chœur de l'église Saint-Maurice : c'est donc vous qui jouerez.</p>
-        <p>Pour toute question : ${escapeHtml(adresseAssociation())}.</p>
-        <p>Merci, et à bientôt,<br>l'équipe d'Orgue Vivant</p>`
-    })
-    if (!ok) continue
-    await client.from('moments_affectations').update({ notifie_at: new Date().toISOString() }).eq('date', a.date)
-    envoyes++
-  }
-  // Son nom apparaît sur le site dès qu'il est affecté.
-  if (nouvelles?.length) await revalidatePublicPages()
-  return envoyes
-}
-
-/**
- * Louis-Paul Courtois n'est plus affecté à cette date : quelqu'un s'y est
- * finalement inscrit, ou la séance est bloquée. S'il avait été prévenu, il
- * l'est de nouveau.
- */
-export async function desaffecter(client: SupabaseClient, date: string, raison: string) {
-  const { data, error } = await client.from('moments_affectations').delete().eq('date', date).select('notifie_at')
-  if (error && schemaAbsent(error)) return
-  if (error) throw createError({ statusCode: 500, statusMessage: error.message })
-  const email = data?.[0]?.notifie_at ? await emailOrganiste(client) : null
-  if (!email) return
-  const moment = quand(date, CRENEAU_REGULIER, finCreneau(CRENEAU_REGULIER))
-  await envoyerEmail({
-    to: email,
-    subject: `Moment musical du ${moment.split(',')[0]} : vous ne jouez plus`,
-    html: `
-      <p>Bonjour Louis-Paul,</p>
-      <p>Changement pour le Moment musical du <strong>${escapeHtml(moment)}</strong> : ${escapeHtml(raison)}. Vous n'avez donc pas à jouer ce jour-là.</p>
-      <p>Pour toute question : ${escapeHtml(adresseAssociation())}.</p>
-      <p>L'équipe d'Orgue Vivant</p>`
-  })
 }
 
 // ── Rappel la veille ─────────────────────────────────────────────────────────
@@ -535,25 +435,18 @@ export async function envoyerRappels(client: SupabaseClient): Promise<number> {
 
 /**
  * Le calendrier tel que le site le publie : chaque jeudi de Moment musical, la
- * séance inscrite ; à défaut Louis-Paul Courtois une fois affecté, sinon une
- * séance « à venir », sans nom. Rien n'en sort de plus que le prénom et
- * l'initiale des musiciens — ni leur nom complet, ni qui les a inscrits.
+ * séance inscrite, sinon une séance « à venir », sans nom, tant qu'on peut
+ * encore s'y inscrire (jusqu'à la veille). Rien n'en sort de plus que le
+ * prénom et l'initiale des musiciens — ni leur nom complet, ni qui les a inscrits.
  */
 export async function calendrierPublic(du: string, au: string): Promise<SeancePublique[]> {
   const client = getServiceClient()
-  const [horaires, seances, affectations] = await Promise.all([
-    chargerHoraires(client), chargerSeances(client, du, au), chargerAffectations(client, du, au)
-  ])
+  const [horaires, seances] = await Promise.all([chargerHoraires(client), chargerSeances(client, du, au)])
   const inscrits = new Set(seances.map(s => s.date))
-  const affectees = new Set(affectations.map(a => a.date))
-  const out: SeancePublique[] = jeudisDeMoment(du, au, horaires).filter(date => !inscrits.has(date)).map(date => ({
-    date,
-    debut: CRENEAU_REGULIER,
-    fin: finCreneau(CRENEAU_REGULIER),
-    ...(affectees.has(date)
-      ? { type: 'regulier' as const, interprete: ORGANISTE_REGULIER }
-      : { type: 'a_venir' as const, interprete: '' })
-  }))
+  const aujourdhui = aujourdhuiParis()
+  const out: SeancePublique[] = jeudisDeMoment(du, au, horaires)
+    .filter(date => !inscrits.has(date) && date > aujourdhui)
+    .map(date => ({ date, debut: CRENEAU_REGULIER, fin: finCreneau(CRENEAU_REGULIER), type: 'a_venir' as const, interprete: '' }))
   for (const s of seances) {
     const musiciens = musiciensDe(s)
     out.push({
@@ -609,10 +502,6 @@ export async function annulerSeancesImpossibles(client: SupabaseClient, motif?: 
   const [horaires, seances] = await Promise.all([
     chargerHoraires(client), chargerSeances(client, aujourdhui, plusMois(aujourdhui, HORIZON_MOIS + 1))
   ])
-  // Louis-Paul Courtois, s'il était affecté à un jeudi désormais bloqué, est prévenu.
-  for (const a of await chargerAffectations(client, aujourdhui, plusMois(aujourdhui, HORIZON_MOIS + 1))) {
-    if (!momentPrevu(a.date, horaires)) await desaffecter(client, a.date, `la séance est annulée${motif ? ` (${motif})` : ''}`)
-  }
   const annulees = seances.filter(s => !creneauPossible(s.date, s.heure_debut, horaires))
   if (!annulees.length) return 0
   const { error } = await client.from('moments_seances')

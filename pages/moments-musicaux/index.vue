@@ -199,10 +199,7 @@ useSeoMeta({
             </div>
             <div class="mt-2 font-display text-3xl font-light text-text-primary">{{ jourProchaine }}</div>
             <div class="mt-2 text-sm">
-              <span v-if="prochaine.type === 'regulier'" class="text-gold">
-                <span class="mr-2 inline-block h-2 w-2 rounded-full bg-gold align-[1px]" />{{ prochaine.interprete }}
-              </span>
-              <span v-else-if="prochaine.type === 'a_venir'" class="text-text-secondary">{{ t('moments.toCome') }}</span>
+              <span v-if="prochaine.type === 'a_venir'" class="text-text-secondary">{{ t('moments.toCome') }}</span>
               <span v-else class="text-text-primary">
                 {{ prochaine.interprete }}
               </span>
@@ -218,10 +215,7 @@ useSeoMeta({
           >
             <div class="font-display text-2xl font-light text-text-primary">{{ jourMois(s.date) }}</div>
             <div class="mt-3 text-sm">
-              <span v-if="s.type === 'regulier'" class="text-gold">
-                <span class="mr-2 inline-block h-2 w-2 rounded-full bg-gold align-[1px]" />{{ s.interprete }}
-              </span>
-              <span v-else-if="s.type === 'a_venir'" class="text-text-secondary">{{ t('moments.toCome') }}</span>
+              <span v-if="s.type === 'a_venir'" class="text-text-secondary">{{ t('moments.toCome') }}</span>
               <span v-else class="text-text-primary">
                 {{ s.interprete }}
               </span>
@@ -258,10 +252,7 @@ useSeoMeta({
               >
                 <span class="font-medium text-text-primary">{{ jourCourt(s.date) }}</span>
                 <div class="mt-1 sm:mt-0">
-                  <span v-if="s.type === 'regulier'" class="text-gold">
-                    <span class="mr-2 inline-block h-2 w-2 rounded-full bg-gold align-[1px]" />{{ s.interprete }}
-                  </span>
-                  <span v-else-if="s.type === 'a_venir'" class="text-text-secondary">{{ t('moments.toCome') }}</span>
+                  <span v-if="s.type === 'a_venir'" class="text-text-secondary">{{ t('moments.toCome') }}</span>
                   <span v-else class="text-text-primary">
                     {{ s.interprete }}
                   </span>
