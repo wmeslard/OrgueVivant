@@ -44,42 +44,38 @@ let appui: { x: number; y: number; ox: number; oy: number; bouge: boolean } | nu
 
 /**
  * Original chargé pour la photo affichée : agrandie, elle passe à sa pleine
- * définition dès qu'il est arrivé. Un format que le navigateur ne sait pas
- * afficher (HEIC hors Safari) garde la copie d'affichage.
+ * définition dès qu'il est arrivé et décodé. Un format que le navigateur ne sait
+ * pas afficher (HEIC hors Safari) garde la copie d'affichage.
  */
 const originalPret = ref<string | null>(null)
-let largeurOriginale = 0
 const source = computed(() => {
   const p = photo.value
   return p && zoom.value && p.url_originale && originalPret.value === p.url_originale ? p.url_originale : p?.url
 })
-const ajuster = (largeurReelle: number) => {
-  const img = image.value
-  // Au moins ×2, jusqu'à la définition réelle de la photo, sans dépasser ×4.
-  facteur.value = img ? Math.min(4, Math.max(2, largeurReelle / img.clientWidth)) : 2
-}
 
-/** Agrandit au point visé (en % de la photo), ou rétrécit. */
+/**
+ * Agrandit au point visé (en % de la photo), ou rétrécit. L'agrandissement est
+ * fixé au clic et ne change plus : quand l'original arrive, la photo devient
+ * seulement plus nette, sans second mouvement. ×3 s'il y a un original ;
+ * sinon de ×2 jusqu'à la définition de la copie, ×4 au plus.
+ */
 function basculerZoom(x = 50, y = 50) {
   if (zoom.value) { zoom.value = false; return }
   const img = image.value
-  ajuster(img?.naturalWidth ?? 0)
+  const p = photo.value
+  facteur.value = p?.url_originale ? 3 : (img ? Math.min(4, Math.max(2, img.naturalWidth / img.clientWidth)) : 2)
   Object.assign(origine, { x: borne(x), y: borne(y) })
   zoom.value = true
-  const p = photo.value
   if (p?.url_originale && originalPret.value !== p.url_originale) {
+    const url = p.url_originale
     const hd = new Image()
-    hd.onload = () => {
-      if (photo.value?.url_originale !== hd.src) return
-      originalPret.value = hd.src
-      largeurOriginale = hd.naturalWidth
-      if (zoom.value) ajuster(largeurOriginale)
-    }
-    hd.src = p.url_originale
-  } else if (p?.url_originale) {
-    ajuster(largeurOriginale)
+    hd.src = url
+    hd.decode()
+      .then(() => { if (photo.value?.url_originale === url) originalPret.value = url })
+      .catch(() => { /* format illisible ici : la copie reste */ })
   }
 }
+
 /**
  * Point visé, en % de la photo telle qu'elle est posée, sans l'agrandissement :
  * le repère reste fixe pendant que la photo agrandie suit la souris.
