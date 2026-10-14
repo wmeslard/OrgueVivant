@@ -434,6 +434,10 @@
     "close": "Fermer",
     "previous": "Photo précédente",
     "next": "Photo suivante",
-    "swipe": "Glissez pour passer d'une photo à l'autre"
+    "swipe": "Glissez pour passer d'une photo à l'autre",
+    "downloadPhoto": "Télécharger la photo",
+    "downloadAlbum": "Télécharger l'album",
+    "zipping": "Préparation… {n} / {total}",
+    "zipError": "Le téléchargement de l'album a échoué. Réessayez."
   }
 }

@@ -8,6 +8,7 @@
  * de part et d'autre de la photo.
  */
 import type { PhotoPublique } from '~/composables/usePhotos'
+import { lienTelechargement, nomFichierPhoto } from '~/utils/nomPhoto'
 
 const props = defineProps<{ photos: PhotoPublique[]; modelValue: number | null; titre: string }>()
 const emit = defineEmits<{ (e: 'update:modelValue', v: number | null): void }>()
@@ -16,6 +17,9 @@ const { t } = useI18n()
 const boite = ref<HTMLElement>()
 const { activate, deactivate } = useFocusTrap(boite)
 const photo = computed(() => props.modelValue === null ? null : props.photos[props.modelValue] ?? null)
+const telechargement = computed(() => photo.value
+  ? lienTelechargement(photo.value.url, nomFichierPhoto(props.titre, props.modelValue ?? 0, photo.value.url))
+  : '')
 
 function aller(sens: -1 | 1) {
   if (props.modelValue === null || !props.photos.length) return
@@ -77,9 +81,12 @@ onBeforeUnmount(() => {
       @touchstart.passive="debut"
       @touchend="fin"
     >
+      <!-- Haut et bas se répondent : texte à gauche, action à droite, mêmes
+           marges que les flèches. -->
       <div class="flex items-center justify-between gap-4 px-4 py-4 text-sm md:px-8">
-        <span class="min-w-0 truncate text-text-secondary">{{ titre }}</span>
-        <span class="shrink-0 tabular-nums text-text-secondary">{{ (modelValue ?? 0) + 1 }} / {{ photos.length }}</span>
+        <span class="min-w-0 truncate text-text-secondary">
+          {{ titre }}<span class="ml-3 tabular-nums text-white/40">{{ (modelValue ?? 0) + 1 }} / {{ photos.length }}</span>
+        </span>
         <button
           class="flex h-10 w-10 shrink-0 items-center justify-center rounded-full border border-white/20 text-text-primary transition-colors hover:bg-white/10"
           :aria-label="t('photos.close')"
@@ -117,10 +124,18 @@ onBeforeUnmount(() => {
         </button>
       </div>
 
-      <p class="min-h-[3.5rem] px-6 py-4 text-center text-sm text-text-secondary">
-        {{ photo.legende }}
-        <span v-if="photos.length > 1" class="mt-1 block text-xs text-white/35 md:hidden">{{ t('photos.swipe') }}</span>
-      </p>
+      <div class="flex flex-col gap-3 px-4 pb-5 pt-4 md:flex-row md:items-center md:justify-between md:gap-6 md:px-8 md:pb-4">
+        <p class="min-w-0 text-center text-sm text-text-secondary md:text-left">
+          {{ photo.legende }}
+          <span v-if="photos.length > 1" class="block text-xs text-white/35 md:hidden">{{ t('photos.swipe') }}</span>
+        </p>
+        <a
+          :href="telechargement"
+          class="inline-flex h-11 shrink-0 items-center justify-center gap-2 rounded-full border border-white/20 px-5 text-sm font-medium text-text-primary transition-colors hover:bg-white/10"
+        >
+          <Icon name="heroicons:arrow-down-tray" class="h-4 w-4 text-gold" />{{ t('photos.downloadPhoto') }}
+        </a>
+      </div>
     </div>
   </Teleport>
 </template>

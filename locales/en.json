@@ -434,6 +434,10 @@
     "close": "Close",
     "previous": "Previous photo",
     "next": "Next photo",
-    "swipe": "Swipe to move between photos"
+    "swipe": "Swipe to move between photos",
+    "downloadPhoto": "Download photo",
+    "downloadAlbum": "Download the album",
+    "zipping": "Preparing… {n} / {total}",
+    "zipError": "The album download failed. Please try again."
   }
 }
