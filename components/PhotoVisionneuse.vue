@@ -3,7 +3,9 @@
  * Visionneuse plein écran d'un album : flèches, clavier (← → Échap), glissé du
  * doigt sur téléphone, légende et compteur. `modelValue` est l'index de la
  * photo ouverte, null quand elle est fermée. La vignette, déjà chargée par la
- * mosaïque, sert de fond le temps que la grande image arrive.
+ * mosaïque, sert de fond le temps que la grande image arrive : l'image garde
+ * ses proportions (largeur et hauteur automatiques), sinon ce fond débordait
+ * de part et d'autre de la photo.
  */
 import type { PhotoPublique } from '~/composables/usePhotos'
 
@@ -94,7 +96,7 @@ onBeforeUnmount(() => {
           :alt="photo.legende || titre"
           :width="photo.largeur || undefined"
           :height="photo.hauteur || undefined"
-          class="max-h-full max-w-full rounded-md bg-cover bg-center object-contain"
+          class="h-auto max-h-full w-auto max-w-full rounded-md bg-cover bg-center"
           :style="{ backgroundImage: `url(${photo.url_vignette})` }"
         >
         <button

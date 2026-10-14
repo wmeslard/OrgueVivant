@@ -34,7 +34,6 @@ useSeoMeta({
         <span class="text-xs uppercase tracking-[0.4em] text-gold font-bold">{{ t('photos.eyebrow') }}</span>
       </div>
       <h1 class="heading-section text-text-primary">{{ t('photos.title') }}</h1>
-      <p class="mt-6 max-w-2xl text-lg text-text-secondary font-light leading-relaxed">{{ t('photos.subtitle') }}</p>
     </header>
 
     <p v-if="!liste.length" class="card-premium p-16 text-center text-text-secondary font-light italic">
