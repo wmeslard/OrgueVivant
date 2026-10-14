@@ -21,6 +21,12 @@ export default defineEventHandler(async (event) => {
   const { data: album, error: e } = await client.from('photo_albums').select('id').eq('id', id).maybeSingle()
   if (e) throw erreurPhotos(e)
   if (!album) throw createError({ statusCode: 404, statusMessage: 'Album introuvable' })
+  // Vérifié avant tout envoi : sans la colonne, la photo ne pourrait pas être
+  // enregistrée et ses fichiers resteraient orphelins dans le stockage.
+  if (extOriginal) {
+    const { error: c } = await client.from('photos').select('chemin_original').limit(1)
+    if (c) throw createError({ statusCode: 503, statusMessage: 'Exécutez supabase/photos-originaux.sql dans Supabase avant d\'envoyer des photos.' })
+  }
 
   const base = `${id}/${randomUUID()}`
   const chemins = { chemin: `${base}.${ext}`, chemin_vignette: `${base}-vignette.${ext}`, chemin_original: extOriginal ? `${base}-original.${extOriginal}` : null }

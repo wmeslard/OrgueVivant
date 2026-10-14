@@ -43,9 +43,13 @@ export default defineEventHandler(async (event) => {
     ordre: (derniere?.ordre ?? -1) + 1,
     ...(original && { chemin_original: original })
   }).select().single()
-  if (error?.code === 'PGRST204' && /chemin_original/.test(error.message))
-    throw createError({ statusCode: 503, statusMessage: 'Exécutez supabase/photos-originaux.sql dans Supabase pour garder les originaux.' })
-  if (error) throw erreurPhotos(error)
+  if (error) {
+    // Photo non enregistrée : ses fichiers ne doivent pas rester dans le stockage.
+    await client.storage.from(ESPACE_PHOTOS).remove([chemin, vignette, original].filter(Boolean) as string[])
+    if (error.code === 'PGRST204' && /chemin_original/.test(error.message))
+      throw createError({ statusCode: 503, statusMessage: 'Exécutez supabase/photos-originaux.sql dans Supabase avant d\'envoyer des photos.' })
+    throw erreurPhotos(error)
+  }
   if (!album.couverture_id) await client.from('photo_albums').update({ couverture_id: data.id }).eq('id', id)
   // Un album déjà publié change sur le site (nombre de photos, couverture).
   if (album.publie) await revalidatePublicPages(PHOTOS_ISR_PATHS)
