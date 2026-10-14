@@ -44,7 +44,7 @@ let appui: { x: number; y: number; ox: number; oy: number; bouge: boolean } | nu
 
 /**
  * Original chargé pour la photo affichée : agrandie, elle passe à sa pleine
- * définition dès qu'il est arrivé et décodé. Un format que le navigateur ne sait
+ * définition dès qu'il est arrivé. Un format que le navigateur ne sait
  * pas afficher (HEIC hors Safari) garde la copie d'affichage.
  */
 const originalPret = ref<string | null>(null)
@@ -69,10 +69,11 @@ function basculerZoom(x = 50, y = 50) {
   if (p?.url_originale && originalPret.value !== p.url_originale) {
     const url = p.url_originale
     const hd = new Image()
+    // `load` plutôt que decode() : certains navigateurs ne résolvent jamais
+    // decode() pour une image hors du document. Une erreur (format illisible
+    // ici) laisse la copie.
+    hd.onload = () => { if (photo.value?.url_originale === url) originalPret.value = url }
     hd.src = url
-    hd.decode()
-      .then(() => { if (photo.value?.url_originale === url) originalPret.value = url })
-      .catch(() => { /* format illisible ici : la copie reste */ })
   }
 }
 
