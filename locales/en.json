@@ -335,7 +335,7 @@
   "momentsEspace": {
     "dashboardTitle": "My sign-ups",
     "logout": "Sign out",
-    "chooseDateHint": "Every other Thursday, 1:15 to 1:45 pm. Sign-ups stay open until the day before.",
+    "chooseDateHint": "Every other Thursday, 1:15 to 1:45 pm. Two days before, if nobody has signed up, Louis-Paul Courtois plays and sign-ups close.",
     "studentNameHint": "The site will show “{nom}”.",
     "studentEmail": "Their email",
     "studentEmailHint": "Optional: they will receive the confirmation by email.",

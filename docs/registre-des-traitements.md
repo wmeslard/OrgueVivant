@@ -109,10 +109,10 @@ date de dernière visite, saisis par lui-même à l'entrée dans l'espace. Séan
 date, heure, prénom, nom et instrument de chaque musicien, email de la personne
 inscrite (facultatif, pour la confirmation, saisi par l'association seulement),
 description (programme), personne qui a fait l'inscription (ou l'association).
-Les musiciens ajoutés n'ont ni email ni autre coordonnée. Jusqu'en octobre
-2026, un organiste jouait les séances sans inscrit ; son adresse email a été
-effacée, seules restent les dates où il a été prévenu
-(`moments_affectations`), sans plus servir.
+Les musiciens ajoutés n'ont ni email ni autre coordonnée. Louis-Paul Courtois,
+organiste des séances sans inscrit : son adresse email (réglée dans
+l'administration), pour le prévenir des jeudis qu'il assure, et la date de cet
+avis.
 
 **Accès** — l'espace des professeurs s'ouvre avec un lien secret que
 l'association transmet ; il n'y a ni compte ni mot de passe. Une nouvelle fiche

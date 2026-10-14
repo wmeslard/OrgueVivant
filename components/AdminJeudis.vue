@@ -2,13 +2,13 @@
 /**
  * L'onglet « Jeudis » de l'administration : chaque jeudi de Moment musical
  * (un sur deux) sur l'horizon d'inscription, une ligne avec son état — qui
- * joue, libre, bloqué — et ses actions : inscrire,
+ * joue, Louis-Paul Courtois affecté, libre, bloqué — et ses actions : inscrire,
  * annuler la séance, bloquer, débloquer. Un résumé chiffré sert de filtre ; les
  * séances passées se déplient au-dessus. Bloquer un jeudi où quelqu'un est
  * inscrit annule sa séance : le serveur prévient les personnes concernées.
  */
 import {
-  CRENEAU_REGULIER, DUREE_MIN, HORIZON_MOIS, JOUR_MOMENTS,
+  CRENEAU_REGULIER, DUREE_MIN, HORIZON_MOIS, JOUR_MOMENTS, JOURS_AVANT_AFFECTATION, ORGANISTE_REGULIER,
   type Horaire, type Musicien, estJeudiMoment, estTemporaire, finCreneau, minutes, musiciensDe, nomsComplets,
   parseYmd, plusJours, plusMois, reglesDuJour, ymd
 } from '~/utils/moments'
@@ -20,16 +20,17 @@ interface SeanceAdmin {
   pour_soi?: boolean; musiciens?: Musicien[] | null; rappel_at?: string | null
   professeur?: { prenom: string; nom: string } | null
 }
-type Etat = 'inscrit' | 'libre' | 'bloque'
+type Etat = 'inscrit' | 'lp' | 'libre' | 'bloque'
 interface Jeudi {
   date: string; etat: Etat
-  blocage?: Regle; seance?: SeanceAdmin
+  blocage?: Regle; seance?: SeanceAdmin; affectation?: { notifie_at: string | null }
 }
 
 const props = defineProps<{
   horaires: Regle[]
   seances: SeanceAdmin[]
   aujourdhui: string
+  affectations: { date: string; notifie_at: string | null }[]
 }>()
 const emit = defineEmits<{ (e: 'modifie'): void }>()
 const { show: showToast } = useToast()
@@ -52,8 +53,9 @@ const seanceDu = (date: string) => props.seances.find(s => s.statut === 'reserve
 function jeudi(date: string): Jeudi {
   const blocage = blocageDu(date)
   const seance = seanceDu(date)
-  const etat: Etat = blocage ? 'bloque' : seance ? 'inscrit' : 'libre'
-  return { date, etat, blocage, seance }
+  const affectation = props.affectations.find(a => a.date === date)
+  const etat: Etat = blocage ? 'bloque' : seance ? 'inscrit' : affectation ? 'lp' : 'libre'
+  return { date, etat, blocage, seance, affectation }
 }
 
 /** Le premier jeudi de Moment musical à partir d'une date. */
@@ -72,8 +74,11 @@ const jeudis = computed<Jeudi[]>(() => {
 })
 /** Les trois derniers mois (le serveur n'en charge pas plus) : les jours où quelqu'un a joué. */
 const passes = computed<Jeudi[]>(() => {
-  const dates = new Set(props.seances.filter(s => s.statut === 'reservee' && s.date < props.aujourdhui).map(s => s.date))
-  return [...dates].sort().map(jeudi).filter(j => j.etat === 'inscrit')
+  const dates = new Set([
+    ...props.seances.filter(s => s.statut === 'reservee').map(s => s.date),
+    ...props.affectations.map(a => a.date)
+  ].filter(d => d < props.aujourdhui))
+  return [...dates].sort().map(jeudi).filter(j => j.etat === 'inscrit' || j.etat === 'lp')
 })
 
 // ── Résumé et filtre ─────────────────────────────────────────────────────────
@@ -84,6 +89,7 @@ const filtres = computed(() => [
   { etat: null, label: `${jeudis.value.length} jeudis` },
   { etat: 'inscrit' as const, label: `${compte('inscrit')} inscrit${compte('inscrit') > 1 ? 's' : ''}` },
   { etat: 'libre' as const, label: `${compte('libre')} libre${compte('libre') > 1 ? 's' : ''}` },
+  { etat: 'lp' as const, label: `${compte('lp')} Louis-Paul` },
   { etat: 'bloque' as const, label: `${compte('bloque')} bloqué${compte('bloque') > 1 ? 's' : ''}` }
 ])
 
@@ -107,21 +113,26 @@ function portee(h: Regle): string {
 function titre(j: Jeudi) {
   if (j.etat === 'bloque') return `Bloqué${j.blocage?.motif ? ` — ${j.blocage.motif}` : ''}`
   if (j.etat === 'inscrit') return nomsComplets(musiciensDe(j.seance!), true)
+  if (j.etat === 'lp') return ORGANISTE_REGULIER
   return 'Libre'
 }
 function detail(j: Jeudi, passe = false) {
   if (j.etat === 'bloque') return portee(j.blocage!)
+  if (j.etat === 'lp') {
+    if (passe) return 'Personne ne s\'était inscrit'
+    return j.affectation?.notifie_at
+      ? `Personne ne s'était inscrit · prévenu le ${fmt(j.affectation.notifie_at.slice(0, 10), { weekday: 'long', day: 'numeric', month: 'long' }).toLowerCase()}`
+      : 'Affecté, pas encore prévenu (adresse manquante ?)'
+  }
   if (j.etat === 'libre')
-    return j.date > props.aujourdhui
-      ? `Inscriptions par le lien jusqu'au ${fmt(plusJours(j.date, -1), { weekday: 'long', day: 'numeric', month: 'long' }).toLowerCase()}`
-      : 'Personne d\'inscrit : pas de séance'
+    return `Sinon ${ORGANISTE_REGULIER}, prévenu le ${fmt(plusJours(j.date, -JOURS_AVANT_AFFECTATION), { weekday: 'long', day: 'numeric', month: 'long' }).toLowerCase()}`
   const s = j.seance!
   const qui = s.pour_soi ? 'Inscription personnelle'
     : `Inscrit·e par ${s.professeur ? `${s.professeur.prenom} ${s.professeur.nom}` : 'l\'association'}`
   return [qui, s.eleve_email, s.programme, !passe && s.rappel_at ? 'rappel envoyé' : ''].filter(Boolean).join(' · ')
 }
 const COULEUR: Record<Etat, string> = {
-  inscrit: 'text-ink-900 dark:text-ink-100', libre: 'text-ink-500', bloque: 'text-rose-300'
+  inscrit: 'text-ink-900 dark:text-ink-100', lp: 'text-gold', libre: 'text-ink-500', bloque: 'text-rose-300'
 }
 
 // ── Actions ──────────────────────────────────────────────────────────────────
@@ -197,8 +208,8 @@ const LIEN_ROUGE = 'px-2 py-1.5 text-xs text-rose-400 transition hover:text-rose
       <button :class="BOUTON" @click="periodeOuverte = !periodeOuverte">Bloquer une période</button>
     </div>
     <p class="mt-1 max-w-3xl text-sm text-ink-500">
-      Un jeudi sur deux, de 13 h 15 à 13 h 45. Les inscriptions par le lien restent ouvertes jusqu'à la veille ;
-      un jeudi sans inscrit n'a pas de séance.
+      Un jeudi sur deux, de 13 h 15 à 13 h 45. Deux jours avant, si personne ne s'est inscrit, {{ ORGANISTE_REGULIER }}
+      est affecté à la séance et prévenu par email ; les inscriptions ferment à ce moment-là.
     </p>
 
     <!-- Bloquer une période -->
@@ -278,7 +289,7 @@ const LIEN_ROUGE = 'px-2 py-1.5 text-xs text-rose-400 transition hover:text-rose
           <span class="font-medium">{{ jourCourt(j.date) }}</span>
           <span class="flex min-w-0 flex-wrap items-baseline gap-x-3 gap-y-0.5">
             <span :class="COULEUR[j.etat]">
-              {{ titre(j) }}
+              <span v-if="j.etat === 'lp'" class="mr-1.5 inline-block h-1.5 w-1.5 rounded-full bg-gold align-middle" />{{ titre(j) }}
             </span>
             <span v-if="j.date === aujourdhui" class="rounded-full border border-gold/40 px-2 text-[10px] font-semibold uppercase tracking-wider text-gold">Aujourd'hui</span>
             <span class="text-xs text-ink-500">{{ detail(j) }}</span>
@@ -289,6 +300,7 @@ const LIEN_ROUGE = 'px-2 py-1.5 text-xs text-rose-400 transition hover:text-rose
             </template>
             <template v-else>
               <button v-if="j.etat === 'inscrit'" :class="LIEN_ROUGE" :disabled="busy" @click="annulerSeance(j.seance!)">Annuler la séance</button>
+              <button v-else-if="j.etat === 'lp'" :class="BOUTON" :disabled="busy" @click="aInscrire = j.date">Inscrire quelqu'un</button>
               <button v-else :class="BOUTON_OR" :disabled="busy" @click="aInscrire = j.date">Inscrire</button>
               <button :class="LIEN" :disabled="busy" @click="bloquer(j)">Bloquer</button>
             </template>

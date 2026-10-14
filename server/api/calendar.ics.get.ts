@@ -64,8 +64,8 @@ const LIEUX = {
 } as const
 
 // ── Moments musicaux ─────────────────────────────────────────────────────────
-// Un jeudi sur deux : la séance inscrite, ou « à venir » tant qu'on peut s'y
-// inscrire, telles que le site les publie : voir server/utils/moments.ts.
+// Un jeudi sur deux : la séance inscrite par le lien, Louis-Paul Courtois une fois affecté, ou « à venir »,
+// telles que le site les publie : voir server/utils/moments.ts.
 const MONTHS_AHEAD = 12
 
 export default defineEventHandler(async (event) => {
@@ -109,15 +109,19 @@ export default defineEventHandler(async (event) => {
     const avec = `${qui}${instruments ? ` (${instruments})` : ''}`
     // Personne encore : ni nom ni programme, l'événement se complète ensuite.
     const titre = s.type === 'a_venir' ? 'Moment musical'
-      : `Moment musical — ${avec}${s.programme ? ` · ${s.programme}` : ''}`
+      : s.type === 'regulier' ? `Moment musical — ${qui}`
+        : `Moment musical — ${avec}${s.programme ? ` · ${s.programme}` : ''}`
     const description = s.type === 'a_venir'
       ? 'Une demi-heure de musique à l\'orgue de chœur de l\'église Saint-Maurice. Programme à venir.'
-      : `Une demi-heure de musique à l'orgue de chœur de l'église Saint-Maurice, par ${avec}.${s.programme ? `\nProgramme : ${s.programme}` : ''}`
+      : s.type === 'regulier'
+        ? `Une demi-heure de musique à l'orgue de chœur de l'église Saint-Maurice, par ${qui}.`
+        : `Une demi-heure de musique à l'orgue de chœur de l'église Saint-Maurice, par ${avec}.${s.programme ? `\nProgramme : ${s.programme}` : ''}`
     vevents.push([
       'BEGIN:VEVENT',
       // Les séances inscrites gardent leur identifiant de réservation : une
       // annulation retire l'événement, une nouvelle réservation en crée un autre.
-      // Sans inscrit, l'événement « à venir » disparaît le jour même.
+      // Sans inscrit, l'événement du jour reste le même, « à venir » puis
+      // Louis-Paul Courtois.
       `UID:${s.id ? `moment-${s.id}` : `moment-${day}`}@orgue-vivant`,
       `DTSTAMP:${stamp}`,
       `DTSTART:${day}T${s.debut.replace(':', '')}00`,

@@ -3,7 +3,8 @@
  * Fiche d'inscription de l'association, ouverte depuis un jeudi de l'onglet
  * « Jeudis » : un à quatre musiciens, l'email facultatif de la personne
  * inscrite (confirmation et rappel) et la description. L'association n'est pas
- * tenue par le délai d'inscription.
+ * tenue par le délai d'inscription ; si Louis-Paul Courtois était affecté à ce
+ * jeudi, le serveur le prévient qu'il ne joue plus.
  */
 import {
   CRENEAU_REGULIER, INSTRUMENT_PAR_DEFAUT, MAX_MUSICIENS, heureFr, nomsPublics, parseYmd, type Musicien

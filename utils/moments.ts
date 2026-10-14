@@ -3,13 +3,15 @@
  * professeurs, l'admin, le flux ICS et l'API. Sans dépendance à Nuxt.
  *
  * Les Moments musicaux ont lieu un jeudi sur deux, de 13 h 15 à 13 h 45, à
- * l'orgue de chœur de Saint-Maurice. Les inscriptions restent ouvertes
- * jusqu'à la veille ; un jeudi où personne ne s'est inscrit n'a pas de séance.
- * Un blocage — par défaut ou temporaire — qui tombe sur ce créneau supprime
- * la séance.
+ * l'orgue de chœur de Saint-Maurice. Deux jours avant, si personne ne s'est
+ * inscrit, Louis-Paul Courtois est affecté à la séance et prévenu par email
+ * (voir affecterOrganiste, côté serveur) ; les inscriptions restent ouvertes
+ * jusque-là. Son nom n'est publié qu'une fois affecté. Un blocage — par défaut ou temporaire —
+ * qui tombe sur ce créneau supprime la séance.
  */
 
 export const DUREE_MIN = 30
+export const ORGANISTE_REGULIER = 'Louis-Paul Courtois'
 /** Le créneau des Moments musicaux, le jeudi. */
 export const CRENEAU_REGULIER = '13:15'
 
@@ -17,6 +19,11 @@ export const CRENEAU_REGULIER = '13:15'
 export const HORIZON_MOIS = 6
 /** Délai minimal, en heures, pour annuler avant le début de la séance. */
 export const DELAI_ANNULATION_H = 48
+/**
+ * Deux jours avant (le mardi pour le jeudi), la séance sans inscrit revient à
+ * Louis-Paul Courtois ; les inscriptions ferment à ce moment-là, pas avant.
+ */
+export const JOURS_AVANT_AFFECTATION = 2
 /** Un jeudi de Moment musical : il fixe l'alternance, un jeudi sur deux. */
 export const JEUDI_DE_REFERENCE = '2026-10-01'
 
@@ -59,13 +66,16 @@ export interface Musicien {
 export const MAX_MUSICIENS = 4
 export const INSTRUMENT_PAR_DEFAUT = 'Orgue'
 
-/** Une séance publiée : inscrite, ou encore à pourvoir. */
+/** Une séance publiée : Louis-Paul Courtois ou une séance inscrite. */
 export interface SeancePublique {
   date: string
   debut: string
   fin: string
-  /** `eleve` : une séance inscrite ; `a_venir` : personne encore, aucun nom publié. */
-  type: 'eleve' | 'a_venir'
+  /**
+   * `regulier` : Louis-Paul Courtois, affecté faute d'inscrit ; `eleve` : une
+   * séance inscrite ; `a_venir` : personne encore, aucun nom publié.
+   */
+  type: 'regulier' | 'eleve' | 'a_venir'
   /** « Salomé G. & Marie D. » ; vide pour une séance à venir. */
   interprete: string
   /** Les musiciens d'une séance inscrite, tels que le site les publie. */
@@ -233,6 +243,8 @@ export interface ContexteJour {
   delaiJours?: number
   horaires: readonly Horaire[]
   pris: readonly CreneauPris[]
+  /** Jeudis déjà revenus à Louis-Paul Courtois : les inscriptions y sont closes. */
+  affectes?: readonly string[]
 }
 
 /**
@@ -248,8 +260,8 @@ export function creneauxDuJour(date: string, ctx: ContexteJour): CreneauJour[] {
   const fin = finCreneau(debut)
   const pris = ctx.pris.find(p => p.date === date && p.heure_debut.slice(0, 5) === debut)
   if (pris) return [{ debut, fin, etat: 'pris', interprete: pris.interprete, mien: pris.mien }]
-  // Fermé le jour même.
-  const ferme = date < plusJours(ctx.aujourdhui, ctx.delaiJours ?? 1)
+  // Fermé une fois Louis-Paul Courtois affecté, et le jour même.
+  const ferme = !!ctx.affectes?.includes(date) || date < plusJours(ctx.aujourdhui, ctx.delaiJours ?? 1)
   return [{ debut, fin, etat: ferme ? 'passe' : 'libre' }]
 }
 
@@ -263,7 +275,7 @@ export function creneauPossible(date: string, debut: string, horaires: readonly 
     .some(c => c.debut === debut.slice(0, 5) && c.etat === 'libre')
 }
 
-export type RaisonRefus = 'passe' | 'trop_tot' | 'trop_loin' | 'hors_creneau' | 'ferme' | 'pris'
+export type RaisonRefus = 'passe' | 'trop_tot' | 'trop_loin' | 'hors_creneau' | 'ferme' | 'pris' | 'affecte'
 
 /**
  * Pourquoi un créneau n'est pas inscriptible — ou `null` s'il l'est.
@@ -278,6 +290,7 @@ export function raisonNonReservable(date: string, debut: string, ctx: ContexteJo
   const creneau = creneauxDuJour(date, ctx)[0]
   if (!creneau) return 'hors_creneau'
   if (creneau.etat === 'pris') return 'pris'
+  if (ctx.affectes?.includes(date)) return 'affecte'
   if (creneau.etat === 'passe') return 'trop_tot'
   return null
 }

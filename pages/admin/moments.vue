@@ -1,12 +1,12 @@
 <script setup lang="ts">
 /**
- * Moments musicaux : le lien d'inscription, les jeudis (séances, blocages) et
- * les participants entrés par le lien.
+ * Moments musicaux : le lien d'inscription, les jeudis (séances, Louis-Paul
+ * Courtois, blocages) et les participants entrés par le lien.
  *
  * Contrairement au site public, l'administration voit tout : le nom complet de
  * la personne inscrite, et qui l'a inscrite.
  */
-import type { Horaire, Musicien } from '~/utils/moments'
+import { ORGANISTE_REGULIER, type Horaire, type Musicien } from '~/utils/moments'
 
 definePageMeta({ middleware: 'auth', layout: 'admin' })
 
@@ -34,6 +34,8 @@ interface Vue {
   professeurs: Professeur[]
   seances: Seance[]
   horaires: (Horaire & { id: string })[]
+  affectations: { date: string; notifie_at: string | null }[]
+  emailOrganiste: string | null
   lienProfesseurs: string | null
 }
 
@@ -77,6 +79,12 @@ async function regenererLien() {
     + 'il faudra leur transmettre le nouveau. Les séances inscrites ne changent pas.')) return
   await action(() => $fetch('/api/admin/moments/lien', { method: 'POST' }), 'Nouveau lien créé.')
 }
+
+// ── Adresse de Louis-Paul Courtois ───────────────────────────────────────────
+const email = ref('')
+watch(() => data.value?.emailOrganiste, v => { email.value = v ?? '' }, { immediate: true })
+const enregistrerEmail = () =>
+  action(() => $fetch('/api/admin/moments/reglages', { method: 'POST', body: { email_organiste: email.value } }), 'Adresse enregistrée.')
 
 // ── Participants ─────────────────────────────────────────────────────────────
 async function basculerProf(p: Professeur) {
@@ -160,11 +168,28 @@ async function supprimerProf(p: Professeur) {
       :horaires="data.horaires"
       :seances="data.seances"
       :aujourdhui="data.aujourdhui"
+      :affectations="data.affectations"
       @modifie="refresh()"
     />
 
     <!-- PARTICIPANTS -->
     <section v-else-if="data">
+      <!-- Louis-Paul Courtois, à part : il n'entre pas par le lien -->
+      <div class="mb-6 rounded-2xl border border-gold/40 bg-gold/5 p-5">
+        <div class="flex flex-wrap items-baseline gap-x-3">
+          <span class="font-display text-lg">{{ ORGANISTE_REGULIER }}</span>
+          <span class="text-xs font-semibold uppercase tracking-wider text-gold">Organiste par défaut</span>
+        </div>
+        <p class="mt-1 text-sm text-ink-500">
+          Joue les jeudis où personne ne s'est inscrit, et reçoit à cette adresse l'email « à vous de jouer » deux jours
+          avant. Sans adresse, il est affecté quand même, mais pas prévenu.
+        </p>
+        <form class="mt-4 flex flex-wrap items-center gap-3" @submit.prevent="enregistrerEmail">
+          <input v-model="email" type="email" maxlength="254" class="input min-w-[16rem] flex-1" placeholder="adresse@exemple.fr" aria-label="Adresse email de Louis-Paul Courtois">
+          <button class="btn-primary" :disabled="busy">Enregistrer</button>
+        </form>
+      </div>
+
       <p v-if="!data.professeurs.length" class="text-sm text-ink-500">Personne pour le moment : les participants apparaissent ici dès qu'ils ouvrent le lien.</p>
       <ul v-else class="space-y-2">
         <li v-for="p in data.professeurs" :key="p.id" class="rounded-xl border border-ink-200 px-4 py-3 text-sm dark:border-ink-800">

@@ -1,6 +1,6 @@
 import { getServiceClient } from '~/server/utils/superAdminClient'
 import { revalidatePublicPages } from '~/server/utils/revalidate'
-import { adresseAssociation, envoyerEmail, escapeHtml, quand, requireProfesseur } from '~/server/utils/moments'
+import { adresseAssociation, affecterOrganiste, envoyerEmail, escapeHtml, quand, requireProfesseur } from '~/server/utils/moments'
 import { annulable, DELAI_ANNULATION_H, musiciensDe, nomsComplets } from '~/utils/moments'
 
 /** Le professeur annule une inscription, au plus tard 48 h avant. */
@@ -32,5 +32,7 @@ export default defineEventHandler(async (event) => {
     }),
     revalidatePublicPages()
   ])
+  // Annulée à moins de trois jours : Louis-Paul Courtois reprend la séance.
+  await affecterOrganiste(client)
   return { ok: true }
 })

@@ -8,7 +8,7 @@
  */
 import type { SeanceProf } from '~/composables/useMomentsEspace'
 import {
-  HORIZON_MOIS, INSTRUMENT_PAR_DEFAUT, JOUR_MOMENTS, MAX_MUSICIENS, annulable, creneauxDuJour,
+  HORIZON_MOIS, INSTRUMENT_PAR_DEFAUT, JOUR_MOMENTS, MAX_MUSICIENS, ORGANISTE_REGULIER, annulable, creneauxDuJour,
   estJeudiMoment, heureFr, lierNoms,
   musiciensDe, nomsComplets, nomsPublics, parseYmd, plusJours, plusMois, ymd, type CreneauJour, type Musicien
 } from '~/utils/moments'
@@ -42,7 +42,7 @@ interface Jeudi { date: string; creneau?: CreneauJour; seance?: SeanceProf }
 const jeudis = computed<Jeudi[]>(() => {
   const e = espace.value
   if (!e) return []
-  const contexte = { aujourdhui: e.aujourdhui, horaires: e.horaires, pris: e.pris }
+  const contexte = { aujourdhui: e.aujourdhui, horaires: e.horaires, pris: e.pris, affectes: e.affectes }
   // Un jeudi sur deux : le premier jeudi de Moment musical, puis de deux semaines en deux semaines.
   const d = parseYmd(e.aujourdhui)
   d.setDate(d.getDate() + ((JOUR_MOMENTS - d.getDay() + 7) % 7))
@@ -266,6 +266,7 @@ async function logout() {
                   </template>
                   <span v-else-if="!j.creneau" class="text-text-secondary">{{ t('momentsEspace.noSession') }}</span>
                   <span v-else-if="j.creneau.etat === 'pris'" class="text-text-secondary">{{ j.creneau.interprete }}</span>
+                  <span v-else-if="espace?.affectes?.includes(j.date)" class="text-gold/80">{{ ORGANISTE_REGULIER }}</span>
                   <span v-else-if="j.creneau.etat === 'passe'" class="text-text-secondary">{{ t('momentsEspace.tooLate') }}</span>
                   <span v-else class="text-text-secondary">{{ t('momentsEspace.free') }}</span>
                 </div>

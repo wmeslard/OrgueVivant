@@ -154,7 +154,10 @@ const pastilleDate = 'min-h-[1.5rem] text-base font-medium text-text-primary tra
               class="grid grid-cols-[7.5rem_minmax(0,1fr)] items-baseline gap-2.5 py-2 text-[13px] sm:grid-cols-[9.5rem_minmax(0,1fr)] sm:gap-3 sm:text-sm"
             >
               <span class="text-text-primary">{{ s ? jourLong(s.date) : '—' }}</span>
-              <span v-if="s?.type === 'a_venir'" class="text-text-secondary">{{ t('moments.toCome') }}</span>
+              <span v-if="s?.type === 'regulier'" class="text-gold">
+                <span class="mr-2 inline-block h-2 w-2 rounded-full bg-gold align-[1px]" />{{ s.interprete }}
+              </span>
+              <span v-else-if="s?.type === 'a_venir'" class="text-text-secondary">{{ t('moments.toCome') }}</span>
               <span v-else-if="s" class="text-text-primary">
                 {{ qui(s) }}
               </span>
