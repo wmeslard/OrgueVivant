@@ -2,6 +2,7 @@
 import type { Concert } from '~/composables/useConcerts'
 import { artistList, artistNames } from '~/utils/artists'
 import { concertPlaceholder } from '~/utils/placeholders'
+import { idYoutube } from '~/utils/youtube'
 import type { NewsItem } from '~/composables/useNews'
 
 const { t, locale } = useI18n()
@@ -10,6 +11,8 @@ const { latest, fetchNews } = useNews()
 const { downloadIcs } = useIcs()
 
 const nextConcert = computed(() => upcoming.value[0] || null)
+/** Le prochain concert qui a un teaser : sa bulle s'affiche en bas à droite. */
+const teaserConcert = computed(() => upcoming.value.find(c => idYoutube(c.teaser_url)) ?? null)
 
 // Carte du prochain concert : le lieu renvoie vers la carte, tout le reste
 // vers la fiche du concert.
@@ -388,5 +391,6 @@ function needsMore(n: NewsItem) {
     </section>
 
 <LazyNewsModal :news="selectedNews" @close="selectedNews = null" />
+    <TeaserBulle :concert="teaserConcert" />
   </div>
 </template>

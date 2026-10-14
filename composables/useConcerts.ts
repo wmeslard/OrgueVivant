@@ -20,6 +20,8 @@ export interface Concert {
   image_url: string
   /** PDF du programme, s'il a été déposé dans l'admin. */
   programme_url?: string | null
+  /** Lien YouTube du teaser : bulle « Teaser » sur l'accueil et la page Concerts. */
+  teaser_url?: string | null
   duration: string
   price_type: 'free' | 'paid'
   external_link: string

@@ -1,5 +1,6 @@
 import { requireAdmin, getServiceClient } from '~/server/utils/superAdminClient'
 import { revalidatePublicPages } from '~/server/utils/revalidate'
+import { TEASER_A_INSTALLER, colonneTeaserAbsente, normaliserTeaser } from '~/server/utils/teaser'
 
 /** Les liens saisis dans l'admin ne peuvent être que http(s) : un `javascript:` stocké s'exécuterait chez les visiteurs. */
 function assertHttpUrl(value: unknown, field: string) {
@@ -20,9 +21,16 @@ export default defineEventHandler(async (event) => {
   assertHttpUrl(body.external_link, 'external_link')
   assertHttpUrl(body.image_url, 'image_url')
   assertHttpUrl(body.programme_url, 'programme_url')
+  normaliserTeaser(body)
 
   const client = getServiceClient()
-  const { error } = await client.from('concerts').update(body).eq('id', id)
+  let { error } = await client.from('concerts').update(body).eq('id', id)
+  // Colonne du teaser pas encore créée : sans teaser, le concert s'enregistre quand même.
+  if (colonneTeaserAbsente(error)) {
+    if (body.teaser_url) throw createError({ statusCode: 503, statusMessage: TEASER_A_INSTALLER })
+    delete body.teaser_url
+    ;({ error } = await client.from('concerts').update(body).eq('id', id))
+  }
   if (error) throw createError({ statusCode: 500, statusMessage: error.message })
   await revalidatePublicPages()
   return { ok: true }

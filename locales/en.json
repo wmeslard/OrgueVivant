@@ -236,7 +236,7 @@
     "retentionTitle": "Retention periods",
     "retention": "– Contact form messages: one year from the last exchange\n– Newsletter: until unsubscription; an unconfirmed subscription is deleted after thirty days\n– Musical Moments: teachers' records kept for the duration of the collaboration, then deleted on request; sessions kept as an archive of the programme\n– Copies of emails in Resend's sending log: the limited retention period of that log set by the provider\n– Audience measurement: aggregated data, no individual identifier\n– Technical logs: a few days",
     "cookiesTitle": "Cookies",
-    "cookies": "The Site only places cookies strictly necessary for its operation, exempt from consent under Article 82 of the French Data Protection Act:\n\n– i18n_redirected: stores the chosen language (duration: one year)\n– ov_moments: keeps access to the space reserved for Musical Moments teachers (duration: one year)\n– sb-…-auth-token: session of the Site's administrators (duration: eight hours)\n\nNo advertising, audience-measurement or tracking cookie is used, so no consent banner is displayed.",
+    "cookies": "The Site only places cookies strictly necessary for its operation, exempt from consent under Article 82 of the French Data Protection Act:\n\n– i18n_redirected: stores the chosen language (duration: one year)\n– ov_moments: keeps access to the space reserved for Musical Moments teachers (duration: one year)\n– sb-…-auth-token: session of the Site's administrators (duration: eight hours)\n\nVideos: a concert's teaser is hosted by YouTube (Google Ireland Limited). Nothing is sent to YouTube until you open the video by clicking the “Teaser” bubble. Once opened, it plays in privacy-enhanced mode (youtube-nocookie.com); YouTube may then collect browsing data and use your browser's storage, under its own privacy policy.\n\nNo advertising, audience-measurement or tracking cookie is used, so no consent banner is displayed.",
     "securityTitle": "Security",
     "security": "The association implements appropriate technical and organisational measures to ensure the security and confidentiality of data: encryption of communications (HTTPS), restricted access to the database, protection of forms against automated submissions, and reliance on providers offering sufficient guarantees.",
     "rightsTitle": "Rights of data subjects",
@@ -245,7 +245,7 @@
     "changes": "The association reserves the right to amend this policy to reflect changes to the Site or to the applicable regulations. The applicable version is the one published on the Site; its update date appears below.",
     "title": "Privacy policy",
     "linkLabel": "privacy policy",
-    "updated": "Last updated: 11 October 2026.",
+    "updated": "Last updated: 15 October 2026.",
     "seoDesc": "Orgue Vivant's privacy policy: data collected, purposes, retention periods and how to exercise your rights."
   },
   "admin": {
@@ -308,7 +308,9 @@
       "artistBio": "Biography",
       "addArtist": "Add an artist",
       "noArtist": "No artist yet.",
-      "artistsHelp": "One artist per entry. Those with a photo or a biography get their own tile on the concert page; the others only appear in the list."
+      "artistsHelp": "One artist per entry. Those with a photo or a biography get their own tile on the concert page; the others only appear in the list.",
+      "teaser": "Teaser (YouTube link)",
+      "teaserHelp": "Link to a YouTube Short or video. Until the concert day, a “Teaser” bubble shows on the home and Concerts pages; the video only loads when clicked."
     },
     "newsletter": "Newsletter",
     "newsletterCompose": "Compose a mailing",
@@ -409,5 +411,13 @@
     "signInTitle": "Open your space",
     "signInText": "You received this link by email. Click below to open the sign-up space: this browser will then remember you.",
     "signInButton": "Open my space"
+  },
+  "teaser": {
+    "label": "Teaser",
+    "watch": "Watch the teaser: {titre}",
+    "hide": "Hide the teaser",
+    "close": "Close",
+    "seeConcert": "See the concert",
+    "via": "Played via YouTube"
   }
 }

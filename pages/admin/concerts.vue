@@ -215,6 +215,14 @@ async function remove(c: Concert) {
           <input v-model="editing.external_link" type="url" class="input">
         </div>
         <div class="md:col-span-2">
+          <label class="label" for="teaser-url">
+            {{ t('admin.fields.teaser') }}
+            <span class="ml-1 text-ink-400 font-normal">({{ t('admin.optional') }})</span>
+          </label>
+          <input id="teaser-url" v-model="editing.teaser_url" type="url" class="input" placeholder="https://youtube.com/shorts/…">
+          <p class="mt-1.5 text-xs text-ink-500">{{ t('admin.fields.teaserHelp') }}</p>
+        </div>
+        <div class="md:col-span-2">
           <label class="label">{{ t('admin.fields.imageUrl') }}</label>
           <ImageUpload
             :model-value="editing.image_url || null"

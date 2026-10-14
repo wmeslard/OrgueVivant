@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import type { Concert } from '~/composables/useConcerts'
+import { idYoutube } from '~/utils/youtube'
 import { concertPlaceholder } from '~/utils/placeholders'
 import { artistNames } from '~/utils/artists'
 import { metaDescription, musicEventJsonLd } from '~/utils/event'
@@ -7,6 +8,8 @@ import { metaDescription, musicEventJsonLd } from '~/utils/event'
 const { t, locale } = useI18n()
 const { upcoming, past, pending, fetchConcerts } = useConcerts()
 await callOnce('concerts', fetchConcerts)
+/** Le prochain concert qui a un teaser : sa bulle s'affiche en bas à droite. */
+const teaserConcert = computed(() => upcoming.value.find(c => idYoutube(c.teaser_url)) ?? null)
 
 const tab = ref<'upcoming' | 'past'>('upcoming')
 
@@ -192,5 +195,6 @@ useSeoMeta({
       <CalendarSubscribe />
     </div>
 
+    <TeaserBulle :concert="teaserConcert" />
   </div>
 </template>

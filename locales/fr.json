@@ -236,7 +236,7 @@
     "retentionTitle": "Durées de conservation",
     "retention": "– Messages du formulaire de contact : un an à compter du dernier échange\n– Lettre d'information : jusqu'à la désinscription ; une inscription non confirmée est supprimée à l'issue d'un délai de trente jours\n– Moments musicaux : fiches des professeurs conservées le temps de la collaboration, puis supprimées sur demande ; séances conservées comme archive de la programmation\n– Copies des courriers électroniques dans le journal d'envoi de Resend : durée limitée de conservation de ce journal par le prestataire\n– Mesure d'audience : données agrégées, sans identifiant individuel\n– Journaux techniques : quelques jours",
     "cookiesTitle": "Cookies",
-    "cookies": "Le Site ne dépose que des cookies strictement nécessaires à son fonctionnement, exemptés de consentement en application de l'article 82 de la loi Informatique et Libertés :\n\n– i18n_redirected : mémorisation de la langue choisie (durée : un an)\n– ov_moments : maintien de l'accès à l'espace réservé aux professeurs des Moments musicaux (durée : un an)\n– sb-…-auth-token : session des administrateurs du Site (durée : huit heures)\n\nAucun cookie publicitaire, de mesure d'audience ou de suivi n'est utilisé. Aucun bandeau de consentement n'est donc affiché.",
+    "cookies": "Le Site ne dépose que des cookies strictement nécessaires à son fonctionnement, exemptés de consentement en application de l'article 82 de la loi Informatique et Libertés :\n\n– i18n_redirected : mémorisation de la langue choisie (durée : un an)\n– ov_moments : maintien de l'accès à l'espace réservé aux professeurs des Moments musicaux (durée : un an)\n– sb-…-auth-token : session des administrateurs du Site (durée : huit heures)\n\nVidéos : le teaser d'un concert est hébergé par YouTube (Google Ireland Limited). Rien n'est transmis à YouTube tant que vous n'ouvrez pas la vidéo en cliquant sur la bulle « Teaser ». À l'ouverture, elle est lue en mode « confidentialité renforcée » (youtube-nocookie.com) ; YouTube peut alors recueillir des données de navigation et utiliser le stockage de votre navigateur, selon sa propre politique de confidentialité.\n\nAucun cookie publicitaire, de mesure d'audience ou de suivi n'est utilisé. Aucun bandeau de consentement n'est donc affiché.",
     "securityTitle": "Sécurité",
     "security": "L'association met en œuvre des mesures techniques et organisationnelles appropriées afin de garantir la sécurité et la confidentialité des données : chiffrement des échanges (HTTPS), restriction des accès à la base de données, protection des formulaires contre les envois automatisés, et recours à des prestataires présentant des garanties suffisantes.",
     "rightsTitle": "Droits des personnes concernées",
@@ -245,7 +245,7 @@
     "changes": "L'association se réserve le droit de modifier la présente politique afin de l'adapter à l'évolution du Site ou de la réglementation. La version applicable est celle publiée sur le Site ; sa date de mise à jour figure ci-dessous.",
     "title": "Politique de confidentialité",
     "linkLabel": "politique de confidentialité",
-    "updated": "Dernière mise à jour : 11 octobre 2026.",
+    "updated": "Dernière mise à jour : 15 octobre 2026.",
     "seoDesc": "Politique de confidentialité d'Orgue Vivant : données collectées, finalités, durées de conservation et exercice de vos droits."
   },
   "admin": {
@@ -308,7 +308,9 @@
       "artistBio": "Présentation",
       "addArtist": "Ajouter un artiste",
       "noArtist": "Aucun artiste pour l’instant.",
-      "artistsHelp": "Un artiste par entrée. Ceux qui ont une photo ou une présentation obtiennent leur propre tuile dans la fiche du concert ; les autres apparaissent seulement dans la liste."
+      "artistsHelp": "Un artiste par entrée. Ceux qui ont une photo ou une présentation obtiennent leur propre tuile dans la fiche du concert ; les autres apparaissent seulement dans la liste.",
+      "teaser": "Teaser (lien YouTube)",
+      "teaserHelp": "Lien d'un Short ou d'une vidéo YouTube. Jusqu'au jour du concert, une bulle « Teaser » s'affiche sur l'accueil et la page Concerts ; la vidéo ne se charge que si l'on clique dessus."
     },
     "newsletter": "Newsletter",
     "newsletterCompose": "Composer un envoi",
@@ -409,5 +411,13 @@
     "signInTitle": "Ouvrir votre espace",
     "signInText": "Vous avez reçu ce lien par email. Cliquez ci-dessous pour ouvrir l'espace d'inscription : ce navigateur s'en souviendra ensuite.",
     "signInButton": "Ouvrir mon espace"
+  },
+  "teaser": {
+    "label": "Teaser",
+    "watch": "Voir le teaser : {titre}",
+    "hide": "Masquer le teaser",
+    "close": "Fermer",
+    "seeConcert": "Voir le concert",
+    "via": "Lecture via YouTube"
   }
 }
