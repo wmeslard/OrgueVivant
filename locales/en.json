@@ -329,7 +329,8 @@
     "newsletterEditHelp": "These fields feed the email only. The concert or news item published on the site stays unchanged.",
     "newsletterSubject": "Subject line",
     "newsletterPreview": "Preview",
-    "moments": "Musical Moments"
+    "moments": "Musical Moments",
+    "photos": "Photos"
   },
   "momentsEspace": {
     "dashboardTitle": "My sign-ups",

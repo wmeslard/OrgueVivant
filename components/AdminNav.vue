@@ -7,7 +7,8 @@ const tabs = [
   { to: '/admin/concerts', label: 'admin.concerts' },
   { to: '/admin/news', label: 'admin.news' },
   { to: '/admin/newsletter', label: 'admin.newsletter' },
-  { to: '/admin/moments', label: 'admin.moments' }
+  { to: '/admin/moments', label: 'admin.moments' },
+  { to: '/admin/photos', label: 'admin.photos' }
 ]
 </script>
 

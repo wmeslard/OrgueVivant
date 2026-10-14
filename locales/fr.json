@@ -329,7 +329,8 @@
     "newsletterEditHelp": "Ces champs alimentent uniquement l'email. Le concert ou l'actualité publiée sur le site reste inchangé.",
     "newsletterSubject": "Objet du message",
     "newsletterPreview": "Aperçu",
-    "moments": "Moments musicaux"
+    "moments": "Moments musicaux",
+    "photos": "Photos"
   },
   "momentsEspace": {
     "dashboardTitle": "Mes inscriptions",
