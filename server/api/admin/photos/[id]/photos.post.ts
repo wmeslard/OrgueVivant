@@ -21,6 +21,9 @@ export default defineEventHandler(async (event) => {
   const base = chemin.replace(/\.(webp|jpg)$/, '')
   if (original && !new RegExp(`^${base}-original\\.(${EXT_ORIGINAUX.join('|')})$`).test(original))
     throw createError({ statusCode: 400, statusMessage: 'Fichier d\'origine invalide' })
+  const moyenne = body?.chemin_moyenne ? String(body.chemin_moyenne) : null
+  if (moyenne && !new RegExp(`^${base}-moyenne\\.(webp|jpg)$`).test(moyenne))
+    throw createError({ statusCode: 400, statusMessage: 'Fichier intermédiaire invalide' })
   const dimension = (v: unknown) => (Number.isInteger(v) && (v as number) > 0 && (v as number) < 20000 ? v as number : null)
 
   const client = getServiceClient()
@@ -28,7 +31,7 @@ export default defineEventHandler(async (event) => {
   const nom = chemin.slice(chemin.indexOf('/') + 1)
   const { data: presents, error: l } = await client.storage.from(ESPACE_PHOTOS).list(dossier, { search: nom.replace(/\.(webp|jpg)$/, '') })
   if (l) throw erreurPhotos(l)
-  if ((presents ?? []).length < (original ? 3 : 2)) throw createError({ statusCode: 400, statusMessage: 'Fichiers non reçus : renvoyez la photo' })
+  if ((presents ?? []).length < 2 + (original ? 1 : 0) + (moyenne ? 1 : 0)) throw createError({ statusCode: 400, statusMessage: 'Fichiers non reçus : renvoyez la photo' })
 
   const [{ data: album, error: a }, { data: derniere }] = await Promise.all([
     client.from('photo_albums').select('id, couverture_id, publie').eq('id', id).maybeSingle(),
@@ -41,11 +44,12 @@ export default defineEventHandler(async (event) => {
     album_id: id, chemin, chemin_vignette: vignette,
     largeur: dimension(body?.largeur), hauteur: dimension(body?.hauteur),
     ordre: (derniere?.ordre ?? -1) + 1,
-    ...(original && { chemin_original: original })
+    ...(original && { chemin_original: original }),
+    ...(moyenne && { chemin_moyenne: moyenne })
   }).select().single()
   if (error) {
     // Photo non enregistrée : ses fichiers ne doivent pas rester dans le stockage.
-    await client.storage.from(ESPACE_PHOTOS).remove([chemin, vignette, original].filter(Boolean) as string[])
+    await client.storage.from(ESPACE_PHOTOS).remove([chemin, vignette, moyenne, original].filter(Boolean) as string[])
     if (error.code === 'PGRST204' && /chemin_original/.test(error.message))
       throw createError({ statusCode: 503, statusMessage: 'Exécutez supabase/photos-originaux.sql dans Supabase avant d\'envoyer des photos.' })
     throw erreurPhotos(error)

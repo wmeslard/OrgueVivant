@@ -29,14 +29,22 @@ export default defineEventHandler(async (event) => {
   }
 
   const base = `${id}/${randomUUID()}`
-  const chemins = { chemin: `${base}.${ext}`, chemin_vignette: `${base}-vignette.${ext}`, chemin_original: extOriginal ? `${base}-original.${extOriginal}` : null }
-  const [grande, vignette, orig] = await Promise.all([
-    client.storage.from(ESPACE_PHOTOS).createSignedUploadUrl(chemins.chemin),
-    client.storage.from(ESPACE_PHOTOS).createSignedUploadUrl(chemins.chemin_vignette),
-    chemins.chemin_original ? client.storage.from(ESPACE_PHOTOS).createSignedUploadUrl(chemins.chemin_original) : null
-  ])
-  if (grande.error) throw erreurPhotos(grande.error)
-  if (vignette.error) throw erreurPhotos(vignette.error)
-  if (orig?.error) throw erreurPhotos(orig.error)
-  return { ...chemins, jeton: grande.data.token, jeton_vignette: vignette.data.token, jeton_original: orig?.data.token ?? null }
+  // Taille intermédiaire seulement quand sa colonne existe (supabase/photos-moyenne.sql) :
+  // sans elle, l'envoi continue comme avant.
+  const { error: sansMoyenne } = await client.from('photos').select('chemin_moyenne').limit(1)
+  const chemins = {
+    chemin: `${base}.${ext}`,
+    chemin_vignette: `${base}-vignette.${ext}`,
+    chemin_moyenne: sansMoyenne ? null : `${base}-moyenne.${ext}`,
+    chemin_original: extOriginal ? `${base}-original.${extOriginal}` : null
+  }
+  const signer = (c: string | null) => c ? client.storage.from(ESPACE_PHOTOS).createSignedUploadUrl(c) : null
+  const [grande, vignette, moyenne, orig] = await Promise.all(
+    [chemins.chemin, chemins.chemin_vignette, chemins.chemin_moyenne, chemins.chemin_original].map(signer))
+  for (const r of [grande, vignette, moyenne, orig]) if (r?.error) throw erreurPhotos(r.error)
+  return {
+    ...chemins,
+    jeton: grande!.data!.token, jeton_vignette: vignette!.data!.token,
+    jeton_moyenne: moyenne?.data?.token ?? null, jeton_original: orig?.data?.token ?? null
+  }
 })

@@ -23,6 +23,8 @@ export interface PhotoRow {
   ordre: number
   /** Fichier d'origine ; absent pour les photos envoyées avant qu'on le garde. */
   chemin_original?: string | null
+  /** Taille intermédiaire (1280 px) ; absente pour les premières photos. */
+  chemin_moyenne?: string | null
 }
 
 /** Table ou espace pas encore créés : on dit quoi exécuter plutôt qu'une erreur brute. */

@@ -10,7 +10,7 @@ export default defineEventHandler(async (event) => {
   const { data: photo, error: e } = await client.from('photos').select('*, album:photo_albums!photos_album_id_fkey(publie)').eq('id', id).maybeSingle()
   if (e) throw erreurPhotos(e)
   if (!photo) throw createError({ statusCode: 404, statusMessage: 'Photo introuvable' })
-  const { error: s } = await client.storage.from(ESPACE_PHOTOS).remove([photo.chemin, photo.chemin_vignette, photo.chemin_original].filter(Boolean))
+  const { error: s } = await client.storage.from(ESPACE_PHOTOS).remove([photo.chemin, photo.chemin_vignette, photo.chemin_moyenne, photo.chemin_original].filter(Boolean))
   if (s) throw erreurPhotos(s)
   const { error } = await client.from('photos').delete().eq('id', id)
   if (error) throw erreurPhotos(error)

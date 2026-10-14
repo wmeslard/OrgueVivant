@@ -5,10 +5,13 @@
  * lui-même : Safari lit les HEIC de l'iPhone, Chrome et Firefox non.
  */
 export const COTE_GRANDE = 2000
+/** Taille intermédiaire : couvertures nettes sur écran haute définition. */
+export const COTE_MOYENNE = 1280
 export const COTE_VIGNETTE = 640
 
 export interface PhotoReduite {
   grande: Blob
+  moyenne: Blob
   vignette: Blob
   format: 'webp' | 'jpg'
   largeur: number
@@ -62,8 +65,9 @@ export async function reduirePhoto(fichier: File): Promise<PhotoReduite> {
       format = 'jpg'
       grande = await encoder(img, COTE_GRANDE, format)
     }
+    const moyenne = await encoder(img, COTE_MOYENNE, format)
     const vignette = await encoder(img, COTE_VIGNETTE, format)
-    return { grande: grande.blob, vignette: vignette.blob, format, largeur: grande.w, hauteur: grande.h }
+    return { grande: grande.blob, moyenne: moyenne.blob, vignette: vignette.blob, format, largeur: grande.w, hauteur: grande.h }
   } finally {
     URL.revokeObjectURL(url)
   }

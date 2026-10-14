@@ -113,19 +113,26 @@ async function envoyer(e: Envoi) {
   e.etat = 'reduction'
   const [r, original] = await Promise.all([reduirePhoto(e.fichier), sansPosition(e.fichier)])
   e.etat = 'envoi'
-  const a = await $fetch<{ chemin: string; chemin_vignette: string; chemin_original: string; jeton: string; jeton_vignette: string; jeton_original: string }>(
+  const a = await $fetch<{
+    chemin: string; chemin_vignette: string; chemin_moyenne: string | null; chemin_original: string
+    jeton: string; jeton_vignette: string; jeton_moyenne: string | null; jeton_original: string
+  }>(
     `/api/admin/photos/${albumId}/envoi`, { method: 'POST', body: { format: r.format, original: origine.ext } })
   const type = r.format === 'webp' ? 'image/webp' : 'image/jpeg'
   const espace = supabase.storage.from('photos')
   const envois = await Promise.all([
     espace.uploadToSignedUrl(a.chemin, a.jeton, r.grande, { contentType: type }),
     espace.uploadToSignedUrl(a.chemin_vignette, a.jeton_vignette, r.vignette, { contentType: type }),
-    espace.uploadToSignedUrl(a.chemin_original, a.jeton_original, original, { contentType: origine.type })
+    espace.uploadToSignedUrl(a.chemin_original, a.jeton_original, original, { contentType: origine.type }),
+    ...(a.chemin_moyenne && a.jeton_moyenne ? [espace.uploadToSignedUrl(a.chemin_moyenne, a.jeton_moyenne, r.moyenne, { contentType: type })] : [])
   ])
   for (const { error } of envois) if (error) throw error
   const photo = await $fetch<Photo>(`/api/admin/photos/${albumId}/photos`, {
     method: 'POST',
-    body: { chemin: a.chemin, chemin_vignette: a.chemin_vignette, chemin_original: a.chemin_original, largeur: r.largeur, hauteur: r.hauteur }
+    body: {
+      chemin: a.chemin, chemin_vignette: a.chemin_vignette, chemin_moyenne: a.chemin_moyenne,
+      chemin_original: a.chemin_original, largeur: r.largeur, hauteur: r.hauteur
+    }
   })
   if (choisi.value?.id === albumId) photos.value.push(photo)
   e.etat = 'ok'

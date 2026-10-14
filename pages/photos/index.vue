@@ -46,6 +46,8 @@ useSeoMeta({
           <img
             v-if="a.couverture"
             :src="a.couverture"
+            :srcset="a.couverture_srcset || undefined"
+            sizes="(min-width: 1024px) 33vw, (min-width: 640px) 50vw, 100vw"
             :alt="a.titre"
             loading="lazy"
             decoding="async"

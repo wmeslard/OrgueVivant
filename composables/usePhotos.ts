@@ -11,6 +11,11 @@ export interface AlbumPublic {
   nombre: number
   /** Vignette de couverture ; à défaut, celle de la première photo. */
   couverture: string | null
+  /**
+   * Vignette et taille intermédiaire de la couverture, avec leur largeur réelle :
+   * le navigateur prend la seconde sur un écran haute définition seulement.
+   */
+  couverture_srcset: string | null
 }
 
 export interface PhotoPublique {
@@ -26,7 +31,8 @@ export interface PhotoPublique {
 }
 
 interface LignePhoto {
-  id: string; album_id: string; chemin: string; chemin_vignette: string; chemin_original?: string | null
+  id: string; album_id: string; chemin: string; chemin_vignette: string
+  chemin_original?: string | null; chemin_moyenne?: string | null
   legende: string | null; largeur: number | null; hauteur: number | null; ordre: number
 }
 
@@ -38,17 +44,25 @@ export function usePhotos() {
     const [a, p] = await Promise.all([
       supabase.from('photo_albums').select('id, titre, date, concert_id, couverture_id')
         .order('date', { ascending: false, nullsFirst: false }).order('created_at', { ascending: false }),
-      supabase.from('photos').select('id, album_id, chemin_vignette, ordre').order('ordre')
+      // Toutes les colonnes : chemin_moyenne n'existe qu'une fois supabase/photos-moyenne.sql exécuté.
+      supabase.from('photos').select('*').order('ordre')
     ])
     if (a.error) throw a.error
     if (p.error) throw p.error
-    const photos = (p.data ?? []) as Pick<LignePhoto, 'id' | 'album_id' | 'chemin_vignette' | 'ordre'>[]
+    const photos = (p.data ?? []) as LignePhoto[]
+    const srcset = (x: LignePhoto) => {
+      if (!x.chemin_moyenne) return null
+      const l = x.largeur ?? 1, h = x.hauteur ?? 1, cote = Math.max(l, h)
+      return `${adresse(x.chemin_vignette)} ${Math.round(l * 640 / cote)}w, ${adresse(x.chemin_moyenne)} ${Math.round(l * 1280 / cote)}w`
+    }
     return (a.data ?? []).map((album) => {
       const siennes = photos.filter(x => x.album_id === album.id)
       const couverture = siennes.find(x => x.id === album.couverture_id) ?? siennes[0]
       return {
         id: album.id, titre: album.titre, date: album.date, concert_id: album.concert_id,
-        nombre: siennes.length, couverture: couverture ? adresse(couverture.chemin_vignette) : null
+        nombre: siennes.length,
+        couverture: couverture ? adresse(couverture.chemin_vignette) : null,
+        couverture_srcset: couverture ? srcset(couverture) : null
       }
     }).filter(album => album.nombre > 0)
   }
