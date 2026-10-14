@@ -3,9 +3,14 @@ import type { SupabaseClient } from '@supabase/supabase-js'
 /**
  * Albums photos de l'admin (supabase/photos.sql). Les fichiers vivent dans
  * l'espace « photos », rangés par album : `<album>/<aléatoire>.webp` pour la
- * grande image, `…-vignette.webp` pour la miniature des grilles.
+ * copie d'affichage, `…-vignette.webp` pour la miniature des grilles, et
+ * `…-original.<ext>` pour le fichier d'origine, en pleine définition et dans
+ * son format (supabase/photos-originaux.sql), sans sa position GPS.
  */
 export const ESPACE_PHOTOS = 'photos'
+
+/** Formats d'origine acceptés, comme l'espace de stockage les autorise. */
+export const EXT_ORIGINAUX = ['jpg', 'jpeg', 'png', 'webp', 'heic', 'heif', 'avif', 'tif', 'tiff']
 
 export interface PhotoRow {
   id: string
@@ -16,6 +21,8 @@ export interface PhotoRow {
   hauteur: number | null
   legende: string | null
   ordre: number
+  /** Fichier d'origine ; absent pour les photos envoyées avant qu'on le garde. */
+  chemin_original?: string | null
 }
 
 /** Table ou espace pas encore créés : on dit quoi exécuter plutôt qu'une erreur brute. */
@@ -36,9 +43,14 @@ export function urlPhoto(client: SupabaseClient, chemin: string): string {
   return client.storage.from(ESPACE_PHOTOS).getPublicUrl(chemin).data.publicUrl
 }
 
-/** Une photo telle que l'admin l'affiche : ses deux adresses publiques en plus. */
+/** Une photo telle que l'admin l'affiche : ses adresses publiques en plus. */
 export function avecUrls(client: SupabaseClient, p: PhotoRow) {
-  return { ...p, url: urlPhoto(client, p.chemin), url_vignette: urlPhoto(client, p.chemin_vignette) }
+  return {
+    ...p,
+    url: urlPhoto(client, p.chemin),
+    url_vignette: urlPhoto(client, p.chemin_vignette),
+    url_originale: p.chemin_original ? urlPhoto(client, p.chemin_original) : null
+  }
 }
 
 /** Champs d'album reçus de l'admin, vérifiés. Seuls les champs présents sont renvoyés. */

@@ -26,7 +26,9 @@ const date = computed(() => a.value.date
   : '')
 const description = computed(() => t('photos.albumDesc', { titre: a.value.titre, n: photos.value.length }))
 
-const lienPhoto = (i: number) => lienTelechargement(photos.value[i].url, nomFichierPhoto(a.value.titre, i, photos.value[i].url))
+/** Le fichier d'origine quand on l'a, sinon la copie d'affichage. */
+const fichier = (i: number) => photos.value[i].url_originale ?? photos.value[i].url
+const lienPhoto = (i: number) => lienTelechargement(fichier(i), nomFichierPhoto(a.value.titre, i, fichier(i)))
 
 // ── L'album en .zip ──────────────────────────────────────────────────────────
 // Les photos sont déjà compressées : client-zip les range sans les recompresser.
@@ -36,12 +38,12 @@ async function telechargerAlbum() {
   Object.assign(zip, { enCours: true, fait: 0, erreur: false })
   try {
     const { downloadZip } = await import('client-zip')
-    const fichiers = await Promise.all(photos.value.map(async (p, i) => {
-      const r = await fetch(p.url)
+    const fichiers = await Promise.all(photos.value.map(async (_, i) => {
+      const r = await fetch(fichier(i))
       if (!r.ok) throw new Error(`HTTP ${r.status}`)
       const input = await r.blob()
       zip.fait++
-      return { name: nomFichierPhoto(a.value.titre, i, p.url), lastModified: new Date(), input }
+      return { name: nomFichierPhoto(a.value.titre, i, fichier(i)), lastModified: new Date(), input }
     }))
     const url = URL.createObjectURL(await downloadZip(fichiers).blob())
     const lien = document.createElement('a')

@@ -1,12 +1,14 @@
 <script setup lang="ts">
 /**
  * Albums photos : créer un album, y déposer des photos (plusieurs à la fois),
- * choisir la couverture, ranger, légender, publier. Chaque photo est réduite
- * dans le navigateur (utils/reduirePhoto.ts), puis envoyée directement à
- * Supabase avec une autorisation que délivre le serveur après avoir vérifié le
- * rôle admin.
+ * choisir la couverture, ranger, légender, publier. Chaque photo part en trois
+ * fichiers, directement à Supabase avec une autorisation que délivre le serveur
+ * après avoir vérifié le rôle admin : l'original, en pleine définition et dans
+ * son format, sans sa position GPS (utils/effacerPosition.ts) ; une copie
+ * d'affichage et une vignette, réduites dans le navigateur (utils/reduirePhoto.ts).
  */
 import { reduirePhoto } from '~/utils/reduirePhoto'
+import { formatOriginal, sansPosition } from '~/utils/effacerPosition'
 
 definePageMeta({ middleware: 'auth', layout: 'admin' })
 
@@ -105,22 +107,25 @@ function ajouter(fichiers: FileList | File[] | null | undefined) {
 
 async function envoyer(e: Envoi) {
   const albumId = e.albumId
-  if (e.fichier.size > 60 * 1024 * 1024) throw new Error('Fichier trop lourd (60 Mo au maximum)')
+  if (e.fichier.size > 50 * 1024 * 1024) throw new Error('Fichier trop lourd (50 Mo au maximum)')
+  const origine = formatOriginal(e.fichier)
+  if (!origine) throw new Error('Format non pris en charge (JPEG, PNG, HEIC, WebP, AVIF ou TIFF)')
   e.etat = 'reduction'
-  const r = await reduirePhoto(e.fichier)
+  const [r, original] = await Promise.all([reduirePhoto(e.fichier), sansPosition(e.fichier)])
   e.etat = 'envoi'
-  const a = await $fetch<{ chemin: string; chemin_vignette: string; jeton: string; jeton_vignette: string }>(
-    `/api/admin/photos/${albumId}/envoi`, { method: 'POST', body: { format: r.format } })
+  const a = await $fetch<{ chemin: string; chemin_vignette: string; chemin_original: string; jeton: string; jeton_vignette: string; jeton_original: string }>(
+    `/api/admin/photos/${albumId}/envoi`, { method: 'POST', body: { format: r.format, original: origine.ext } })
   const type = r.format === 'webp' ? 'image/webp' : 'image/jpeg'
   const espace = supabase.storage.from('photos')
-  const [g, v] = await Promise.all([
+  const envois = await Promise.all([
     espace.uploadToSignedUrl(a.chemin, a.jeton, r.grande, { contentType: type }),
-    espace.uploadToSignedUrl(a.chemin_vignette, a.jeton_vignette, r.vignette, { contentType: type })
+    espace.uploadToSignedUrl(a.chemin_vignette, a.jeton_vignette, r.vignette, { contentType: type }),
+    espace.uploadToSignedUrl(a.chemin_original, a.jeton_original, original, { contentType: origine.type })
   ])
-  if (g.error) throw g.error
-  if (v.error) throw v.error
+  for (const { error } of envois) if (error) throw error
   const photo = await $fetch<Photo>(`/api/admin/photos/${albumId}/photos`, {
-    method: 'POST', body: { chemin: a.chemin, chemin_vignette: a.chemin_vignette, largeur: r.largeur, hauteur: r.hauteur }
+    method: 'POST',
+    body: { chemin: a.chemin, chemin_vignette: a.chemin_vignette, chemin_original: a.chemin_original, largeur: r.largeur, hauteur: r.hauteur }
   })
   if (choisi.value?.id === albumId) photos.value.push(photo)
   e.etat = 'ok'
@@ -279,7 +284,7 @@ const dateCourte = (d: string | null) =>
           </span>
           <span class="flex-1">
             <span class="block font-medium">Glissez vos photos ici, ou cliquez pour les choisir</span>
-            <span class="mt-1 block text-sm text-ink-500">Plusieurs à la fois · JPEG, PNG, WebP, et HEIC dans Safari · réduites automatiquement pour le web</span>
+            <span class="mt-1 block text-sm text-ink-500">Plusieurs à la fois, 50 Mo au plus chacune · gardées en pleine qualité et dans leur format, sans leur position GPS · photos HEIC d'iPhone : utilisez Safari</span>
           </span>
           <ul v-if="envoisVisibles.length" class="w-full space-y-1.5 text-xs md:w-72" @click.stop>
             <li v-for="(e, i) in envoisVisibles" :key="i" class="flex items-center gap-3">

@@ -1,10 +1,11 @@
 import { requireAdmin, getServiceClient } from '~/server/utils/superAdminClient'
-import { ESPACE_PHOTOS, avecUrls, erreurPhotos, exigerUuid, type PhotoRow } from '~/server/utils/photos'
+import { ESPACE_PHOTOS, EXT_ORIGINAUX, avecUrls, erreurPhotos, exigerUuid, type PhotoRow } from '~/server/utils/photos'
 import { PHOTOS_ISR_PATHS, revalidatePublicPages } from '~/server/utils/revalidate'
 
 /**
- * Enregistre une photo une fois ses deux fichiers envoyés : à la fin de
- * l'album. La première photo d'un album en devient la couverture.
+ * Enregistre une photo une fois ses fichiers envoyés (copie d'affichage,
+ * vignette et, s'il y a lieu, original) : à la fin de l'album. La première
+ * photo d'un album en devient la couverture.
  */
 export default defineEventHandler(async (event) => {
   await requireAdmin(event)
@@ -16,6 +17,10 @@ export default defineEventHandler(async (event) => {
   const motif = new RegExp(`^${id}/[0-9a-f-]{36}(-vignette)?\\.(webp|jpg)$`)
   if (!motif.test(chemin) || !motif.test(vignette) || chemin.includes('-vignette') || !vignette.includes('-vignette'))
     throw createError({ statusCode: 400, statusMessage: 'Fichier invalide' })
+  const original = body?.chemin_original ? String(body.chemin_original) : null
+  const base = chemin.replace(/\.(webp|jpg)$/, '')
+  if (original && !new RegExp(`^${base}-original\\.(${EXT_ORIGINAUX.join('|')})$`).test(original))
+    throw createError({ statusCode: 400, statusMessage: 'Fichier d\'origine invalide' })
   const dimension = (v: unknown) => (Number.isInteger(v) && (v as number) > 0 && (v as number) < 20000 ? v as number : null)
 
   const client = getServiceClient()
@@ -23,7 +28,7 @@ export default defineEventHandler(async (event) => {
   const nom = chemin.slice(chemin.indexOf('/') + 1)
   const { data: presents, error: l } = await client.storage.from(ESPACE_PHOTOS).list(dossier, { search: nom.replace(/\.(webp|jpg)$/, '') })
   if (l) throw erreurPhotos(l)
-  if ((presents ?? []).length < 2) throw createError({ statusCode: 400, statusMessage: 'Fichiers non reçus : renvoyez la photo' })
+  if ((presents ?? []).length < (original ? 3 : 2)) throw createError({ statusCode: 400, statusMessage: 'Fichiers non reçus : renvoyez la photo' })
 
   const [{ data: album, error: a }, { data: derniere }] = await Promise.all([
     client.from('photo_albums').select('id, couverture_id, publie').eq('id', id).maybeSingle(),
@@ -35,8 +40,11 @@ export default defineEventHandler(async (event) => {
   const { data, error } = await client.from('photos').insert({
     album_id: id, chemin, chemin_vignette: vignette,
     largeur: dimension(body?.largeur), hauteur: dimension(body?.hauteur),
-    ordre: (derniere?.ordre ?? -1) + 1
+    ordre: (derniere?.ordre ?? -1) + 1,
+    ...(original && { chemin_original: original })
   }).select().single()
+  if (error?.code === 'PGRST204' && /chemin_original/.test(error.message))
+    throw createError({ statusCode: 503, statusMessage: 'Exécutez supabase/photos-originaux.sql dans Supabase pour garder les originaux.' })
   if (error) throw erreurPhotos(error)
   if (!album.couverture_id) await client.from('photo_albums').update({ couverture_id: data.id }).eq('id', id)
   // Un album déjà publié change sur le site (nombre de photos, couverture).

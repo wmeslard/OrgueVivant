@@ -15,15 +15,18 @@ export interface AlbumPublic {
 
 export interface PhotoPublique {
   id: string
+  /** Copie d'affichage (WebP, 2000 px). */
   url: string
   url_vignette: string
+  /** Fichier d'origine, en pleine définition : zoom et téléchargement. Absent pour les premières photos. */
+  url_originale: string | null
   legende: string | null
   largeur: number | null
   hauteur: number | null
 }
 
 interface LignePhoto {
-  id: string; album_id: string; chemin: string; chemin_vignette: string
+  id: string; album_id: string; chemin: string; chemin_vignette: string; chemin_original?: string | null
   legende: string | null; largeur: number | null; hauteur: number | null; ordre: number
 }
 
@@ -61,6 +64,7 @@ export function usePhotos() {
     if (!a.data) return null
     const photos: PhotoPublique[] = ((p.data ?? []) as LignePhoto[]).map(x => ({
       id: x.id, url: adresse(x.chemin), url_vignette: adresse(x.chemin_vignette),
+      url_originale: x.chemin_original ? adresse(x.chemin_original) : null,
       legende: x.legende, largeur: x.largeur, hauteur: x.hauteur
     }))
     let concert: { id: string; title: string; title_en?: string | null } | null = null
