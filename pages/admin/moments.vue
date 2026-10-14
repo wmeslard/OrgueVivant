@@ -54,14 +54,17 @@ function quandCourt(d: string | null) {
   return d ? new Date(d).toLocaleDateString('fr-FR', { day: 'numeric', month: 'short', year: 'numeric' }) : 'jamais'
 }
 
-async function action(fn: () => Promise<unknown>, message: string) {
-  busy.value = true; erreur.value = ''
+/** L'action en cours, pour mettre la roue sur le seul bouton cliqué. */
+const enCours = ref<string | null>(null)
+
+async function action(fn: () => Promise<unknown>, message: string, cle?: string) {
+  busy.value = true; erreur.value = ''; enCours.value = cle ?? null
   try {
     await fn(); await refresh(); showToast(message, { type: 'success' })
   } catch (e: any) {
     erreur.value = e?.data?.statusMessage || 'Erreur'
     showToast(erreur.value, { type: 'error' })
-  } finally { busy.value = false }
+  } finally { busy.value = false; enCours.value = null }
 }
 
 // ── Lien à partager ──────────────────────────────────────────────────────────
@@ -84,7 +87,7 @@ async function regenererLien() {
 const email = ref('')
 watch(() => data.value?.emailOrganiste, v => { email.value = v ?? '' }, { immediate: true })
 const enregistrerEmail = () =>
-  action(() => $fetch('/api/admin/moments/reglages', { method: 'POST', body: { email_organiste: email.value } }), 'Adresse enregistrée.')
+  action(() => $fetch('/api/admin/moments/reglages', { method: 'POST', body: { email_organiste: email.value } }), 'Adresse enregistrée.', 'email')
 
 // ── Participants ─────────────────────────────────────────────────────────────
 async function basculerProf(p: Professeur) {
@@ -108,7 +111,7 @@ async function enregistrerProf() {
   if (!f) return
   await action(() => $fetch(`/api/admin/moments/professeurs/${f.id}`, {
     method: 'PATCH', body: { prenom: f.prenom, nom: f.nom, email: f.email, conservatoire: f.conservatoire }
-  }), 'Fiche enregistrée.')
+  }), 'Fiche enregistrée.', 'fiche')
   if (!erreur.value) fiche.value = null
 }
 async function supprimerProf(p: Professeur) {
@@ -186,7 +189,7 @@ async function supprimerProf(p: Professeur) {
         </p>
         <form class="mt-4 flex flex-wrap items-center gap-3" @submit.prevent="enregistrerEmail">
           <input v-model="email" type="email" maxlength="254" class="input min-w-[16rem] flex-1" placeholder="adresse@exemple.fr" aria-label="Adresse email de Louis-Paul Courtois">
-          <button class="btn-primary" :disabled="busy">Enregistrer</button>
+          <button class="btn-primary" :disabled="busy"><Icon v-if="enCours === 'email'" name="heroicons:arrow-path" class="mr-2 h-4 w-4 animate-spin" />Enregistrer</button>
         </form>
       </div>
 
@@ -211,7 +214,7 @@ async function supprimerProf(p: Professeur) {
               <input :id="`pc-${p.id}`" v-model="fiche.conservatoire" maxlength="160" class="input">
             </div>
             <div class="flex gap-3 sm:col-span-2">
-              <button type="submit" class="btn-primary" :disabled="busy">Enregistrer</button>
+              <button type="submit" class="btn-primary" :disabled="busy"><Icon v-if="enCours === 'fiche'" name="heroicons:arrow-path" class="mr-2 h-4 w-4 animate-spin" />Enregistrer</button>
               <button type="button" class="btn-ghost" @click="fiche = null">Annuler</button>
             </div>
           </form>

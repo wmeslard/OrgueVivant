@@ -32,14 +32,17 @@ const legendeEnCours = ref<{ id: string; texte: string } | null>(null)
 
 const messageErreur = (e: any) => e?.data?.statusMessage || e?.message || 'Erreur'
 
-async function action(fn: () => Promise<unknown>, message?: string) {
-  busy.value = true
+/** L'action en cours, pour mettre la roue sur le seul bouton cliqué. */
+const enCours = ref<string | null>(null)
+
+async function action(fn: () => Promise<unknown>, message?: string, cle?: string) {
+  busy.value = true; enCours.value = cle ?? null
   try {
     await fn()
     if (message) showToast(message, { type: 'success' })
   } catch (e) {
     showToast(messageErreur(e), { type: 'error' })
-  } finally { busy.value = false }
+  } finally { busy.value = false; enCours.value = null }
 }
 
 async function ouvrir(id: string) {
@@ -56,7 +59,7 @@ async function creer() {
     nouveauTitre.value = ''
     await refresh()
     await ouvrir(album.id)
-  }, 'Album créé, en brouillon.')
+  }, 'Album créé, en brouillon.', 'creer')
 }
 
 const patch = (body: Record<string, unknown>) =>
@@ -66,14 +69,14 @@ async function enregistrerFiche() {
   await action(async () => {
     await patch({ titre: fiche.titre, date: fiche.date || null, concert_id: fiche.concert_id || null })
     await refresh(); await ouvrir(choisi.value!.id)
-  }, 'Album enregistré.')
+  }, 'Album enregistré.', 'fiche')
 }
 
 async function basculerPublication() {
   const publie = !choisi.value!.publie
   await action(async () => {
     await patch({ publie }); choisi.value!.publie = publie; await refresh()
-  }, publie ? 'Album publié.' : 'Album repassé en brouillon.')
+  }, publie ? 'Album publié.' : 'Album repassé en brouillon.', 'publication')
 }
 
 async function supprimerAlbum() {
@@ -90,7 +93,7 @@ async function supprimerAlbum() {
 const envois = ref<Envoi[]>([])
 const survol = ref(false)
 const champ = ref<HTMLInputElement>()
-let enCours = false
+let fileActive = false
 
 function ajouter(fichiers: FileList | File[] | null | undefined) {
   if (!choisi.value) return
@@ -125,15 +128,15 @@ async function envoyer(e: Envoi) {
 
 /** Une photo après l'autre : la réduction demande de la mémoire, surtout sur téléphone. */
 async function traiter() {
-  if (enCours) return
-  enCours = true
+  if (fileActive) return
+  fileActive = true
   try {
     let e: Envoi | undefined
     while ((e = envois.value.find(x => x.etat === 'attente'))) {
       try { await envoyer(e) } catch (err) { e.etat = 'erreur'; e.message = messageErreur(err) }
     }
   } finally {
-    enCours = false
+    fileActive = false
     await refresh()
     // La première photo d'un album en devient la couverture (côté serveur) : on l'affiche aussitôt.
     if (choisi.value && !choisi.value.couverture_id && photos.value[0]) choisi.value.couverture_id = photos.value[0].id
@@ -200,7 +203,7 @@ const dateCourte = (d: string | null) =>
       <aside>
         <form class="mb-4 flex gap-2" @submit.prevent="creer">
           <input v-model="nouveauTitre" maxlength="160" class="input" placeholder="Titre du nouvel album" aria-label="Titre du nouvel album">
-          <button class="btn-primary shrink-0 !px-4" :disabled="busy || !nouveauTitre.trim()">Créer</button>
+          <button class="btn-primary shrink-0 !px-4" :disabled="busy || !nouveauTitre.trim()"><Icon v-if="enCours === 'creer'" name="heroicons:arrow-path" class="mr-2 h-4 w-4 animate-spin" />Créer</button>
         </form>
         <p v-if="!data?.albums.length" class="text-sm text-ink-500">Aucun album pour le moment.</p>
         <ul class="space-y-2">
@@ -246,8 +249,9 @@ const dateCourte = (d: string | null) =>
             </select>
           </div>
           <div class="flex flex-wrap items-center gap-3 md:col-span-3">
-            <button class="btn-primary" :disabled="busy">Enregistrer</button>
+            <button class="btn-primary" :disabled="busy"><Icon v-if="enCours === 'fiche'" name="heroicons:arrow-path" class="mr-2 h-4 w-4 animate-spin" />Enregistrer</button>
             <button type="button" class="btn-ghost" :disabled="busy" @click="basculerPublication">
+              <Icon v-if="enCours === 'publication'" name="heroicons:arrow-path" class="mr-2 h-4 w-4 animate-spin" />
               {{ choisi.publie ? 'Repasser en brouillon' : 'Publier' }}
             </button>
             <button type="button" class="ml-auto text-sm text-rose-400 hover:text-rose-300" :disabled="busy" @click="supprimerAlbum">Supprimer l'album</button>
