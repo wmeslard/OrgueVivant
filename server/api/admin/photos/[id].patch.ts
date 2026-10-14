@@ -1,5 +1,6 @@
 import { requireAdmin, getServiceClient } from '~/server/utils/superAdminClient'
 import { champsAlbum, erreurPhotos, exigerUuid } from '~/server/utils/photos'
+import { PHOTOS_ISR_PATHS, revalidatePublicPages } from '~/server/utils/revalidate'
 
 /**
  * Modifie un album : titre, date, concert lié, publication, couverture. Avec
@@ -32,5 +33,6 @@ export default defineEventHandler(async (event) => {
       if (error) throw erreurPhotos(error)
     }
   }
+  await revalidatePublicPages(PHOTOS_ISR_PATHS)
   return { ok: true }
 })

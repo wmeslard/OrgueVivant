@@ -165,7 +165,7 @@ toutes ses séances.
 | **Base légale** | Intérêt légitime (art. 6.1.f) ; accord des musiciens photographiés. |
 | **Personnes concernées** | Musiciens, intervenants et, le cas échéant, public des concerts. |
 | **Données** | Photographies, légendes, date et concert de l'album. Les fichiers sont réduits avant l'envoi ; aucune autre métadonnée n'est conservée. |
-| **Destinataires** | Les administrateurs ; le public pour les seuls albums publiés. La rubrique publique n'est pas encore ouverte : aujourd'hui, les albums ne sont visibles que dans l'administration. |
+| **Destinataires** | Les administrateurs ; le public pour les seuls albums publiés, dans la rubrique Photos du site. La politique de confidentialité décrit le traitement et le retrait d'une photo sur demande. |
 | **Sous-traitants** | Supabase Inc. (base et stockage, Londres). |
 | **Durée de conservation** | Tant que l'album est utile à l'association ; une photo est retirée sur simple demande de la personne. |
 | **Mesures de sécurité** | Écriture réservée au serveur après vérification du rôle admin ; chaque envoi passe par une autorisation à usage unique ; un album en brouillon n'est lisible que par l'administration. |

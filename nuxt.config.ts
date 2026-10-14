@@ -196,6 +196,8 @@ export default defineNuxtConfig({
     '/en':          { isr: 3600 },
     '/en/concerts': { isr: 3600 },
     '/en/news':     { isr: 3600 },
+    '/photos':      { isr: 3600 },
+    '/en/photos':   { isr: 3600 },
     // Pages statiques : pré-rendues une fois au build
     '/about':       { prerender: true },
     '/contact':     { prerender: true },

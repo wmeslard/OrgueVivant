@@ -16,6 +16,9 @@ export const PUBLIC_ISR_PATHS = [
   '/en', '/en/concerts', '/en/news', '/en/moments-musicaux'
 ] as const
 
+/** La liste des albums ; la page de chaque album n'est pas mise en cache. */
+export const PHOTOS_ISR_PATHS = ['/photos', '/en/photos'] as const
+
 export async function revalidatePublicPages(paths: readonly string[] = PUBLIC_ISR_PATHS) {
   const config = useRuntimeConfig()
   const token = config.vercelBypassToken as string | undefined

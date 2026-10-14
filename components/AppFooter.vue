@@ -36,6 +36,7 @@ const { placeUrl: stEtienneUrl } = useMapsUrls(ref('saint_etienne'))
           <ul class="space-y-4 text-sm">
             <li><NuxtLink :to="localePath('/concerts')" class="text-text-secondary hover:text-text-primary transition-colors">{{ t('nav.concerts') }}</NuxtLink></li>
             <li><NuxtLink :to="localePath('/moments-musicaux')" class="text-text-secondary hover:text-text-primary transition-colors">{{ t('nav.moments') }}</NuxtLink></li>
+            <li><NuxtLink :to="localePath('/photos')" class="text-text-secondary hover:text-text-primary transition-colors">{{ t('nav.photos') }}</NuxtLink></li>
             <li><NuxtLink :to="localePath('/about')" class="text-text-secondary hover:text-text-primary transition-colors">{{ t('nav.about') }}</NuxtLink></li>
             <li><NuxtLink :to="localePath('/contact')" class="text-text-secondary hover:text-text-primary transition-colors">{{ t('nav.contact') }}</NuxtLink></li>
           </ul>

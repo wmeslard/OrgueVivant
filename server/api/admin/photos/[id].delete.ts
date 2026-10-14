@@ -1,5 +1,6 @@
 import { requireAdmin, getServiceClient } from '~/server/utils/superAdminClient'
 import { ESPACE_PHOTOS, erreurPhotos, exigerUuid } from '~/server/utils/photos'
+import { PHOTOS_ISR_PATHS, revalidatePublicPages } from '~/server/utils/revalidate'
 
 /** Supprime un album, ses photos et leurs fichiers. L'admin confirme avant. */
 export default defineEventHandler(async (event) => {
@@ -15,5 +16,6 @@ export default defineEventHandler(async (event) => {
   }
   const { error } = await client.from('photo_albums').delete().eq('id', id)
   if (error) throw erreurPhotos(error)
+  await revalidatePublicPages(PHOTOS_ISR_PATHS)
   return { ok: true }
 })

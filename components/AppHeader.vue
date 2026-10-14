@@ -10,6 +10,7 @@ const nav = computed(() => [
   { to: '/concerts', label: t('nav.concerts') },
   { to: '/moments-musicaux', label: t('nav.moments') },
   { to: '/news', label: t('nav.news') },
+  { to: '/photos', label: t('nav.photos') },
   { to: '/about', label: t('nav.about') },
   { to: '/contact', label: t('nav.contact') }
 ])

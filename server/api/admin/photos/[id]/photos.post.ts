@@ -1,5 +1,6 @@
 import { requireAdmin, getServiceClient } from '~/server/utils/superAdminClient'
 import { ESPACE_PHOTOS, avecUrls, erreurPhotos, exigerUuid, type PhotoRow } from '~/server/utils/photos'
+import { PHOTOS_ISR_PATHS, revalidatePublicPages } from '~/server/utils/revalidate'
 
 /**
  * Enregistre une photo une fois ses deux fichiers envoyés : à la fin de
@@ -25,7 +26,7 @@ export default defineEventHandler(async (event) => {
   if ((presents ?? []).length < 2) throw createError({ statusCode: 400, statusMessage: 'Fichiers non reçus : renvoyez la photo' })
 
   const [{ data: album, error: a }, { data: derniere }] = await Promise.all([
-    client.from('photo_albums').select('id, couverture_id').eq('id', id).maybeSingle(),
+    client.from('photo_albums').select('id, couverture_id, publie').eq('id', id).maybeSingle(),
     client.from('photos').select('ordre').eq('album_id', id).order('ordre', { ascending: false }).limit(1).maybeSingle()
   ])
   if (a) throw erreurPhotos(a)
@@ -38,5 +39,7 @@ export default defineEventHandler(async (event) => {
   }).select().single()
   if (error) throw erreurPhotos(error)
   if (!album.couverture_id) await client.from('photo_albums').update({ couverture_id: data.id }).eq('id', id)
+  // Un album déjà publié change sur le site (nombre de photos, couverture).
+  if (album.publie) await revalidatePublicPages(PHOTOS_ISR_PATHS)
   return avecUrls(client, data as PhotoRow)
 })
