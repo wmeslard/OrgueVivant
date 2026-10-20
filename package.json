@@ -34,5 +34,8 @@
     "client-zip": "^2.5.1",
     "cropperjs": "^1.6.2",
     "resend": "^6.12.2"
+  },
+  "overrides": {
+    "postcss-selector-parser": "^7.1.6"
   }
 }
