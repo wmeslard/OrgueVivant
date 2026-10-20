@@ -36,6 +36,12 @@ create policy "Public can read concerts"
 -- d'écriture ont été révoqués (voir rls-ecriture.sql). L'administration passe
 -- par /api/admin/**, qui utilise la clé service_role et contourne RLS.
 
+-- Droits explicites : depuis le 30 octobre 2026, Supabase ne les accorde plus
+-- d'office aux tables nouvellement créées. Lecture seule pour les rôles
+-- publics, tout le reste pour la clé service_role des routes serveur.
+grant select on concerts to anon, authenticated;
+grant select, insert, update, delete on concerts to service_role;
+
 -- Seed data (optional)
 insert into concerts (title, date, time, location, artists, instruments, description, image_url, duration, price_type, external_link)
 values
@@ -77,6 +83,8 @@ create policy "Public can read news"
 -- L'écriture passe par les points d'entrée serveur, qui utilisent la clé
 -- `service_role` : celle-ci contourne RLS, aucune politique n'est requise.
 -- Les droits d'écriture des rôles publics sont révoqués (voir rls-ecriture.sql).
+grant select on news to anon, authenticated;
+grant select, insert, update, delete on news to service_role;
 
 -- ─────────────────────────────────────────────────────────────────────────────
 -- Abonnés à la newsletter — DONNÉES PERSONNELLES
@@ -104,5 +112,6 @@ create table if not exists newsletter_subscribers (
 -- fonctionnent sans qu'aucun droit public ne soit nécessaire.
 alter table newsletter_subscribers enable row level security;
 revoke all on newsletter_subscribers from anon, authenticated;
+grant select, insert, update, delete on newsletter_subscribers to service_role;
 
 -- Non-régression : ./supabase/test-fuite-emails.sh

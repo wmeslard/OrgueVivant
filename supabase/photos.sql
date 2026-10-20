@@ -57,6 +57,12 @@ create policy "Lecture des photos des albums publiés" on public.photos
 
 revoke insert, update, delete on public.photo_albums, public.photos from anon, authenticated;
 
+-- Droits explicites (Supabase ne les accorde plus d'office aux tables créées
+-- après le 30 octobre 2026) : lecture pour les rôles publics, filtrée par les
+-- politiques ci-dessus ; écriture pour la clé de service seulement.
+grant select on public.photo_albums, public.photos to anon, authenticated;
+grant select, insert, update, delete on public.photo_albums, public.photos to service_role;
+
 insert into storage.buckets (id, name, public, file_size_limit, allowed_mime_types)
 values ('photos', 'photos', true, 8 * 1024 * 1024, array['image/webp', 'image/jpeg'])
 on conflict (id) do update

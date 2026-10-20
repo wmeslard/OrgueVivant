@@ -202,3 +202,8 @@ revoke all on moments_seances     from anon, authenticated;
 revoke all on moments_horaires    from anon, authenticated;
 revoke all on moments_reglages     from anon, authenticated;
 revoke all on moments_affectations from anon, authenticated;
+
+-- Droits explicites (Supabase ne les accorde plus d'office aux tables créées
+-- après le 30 octobre 2026) : la clé de service des routes serveur seulement.
+grant select, insert, update, delete on moments_lien, moments_professeurs, moments_seances,
+  moments_horaires, moments_reglages, moments_affectations to service_role;

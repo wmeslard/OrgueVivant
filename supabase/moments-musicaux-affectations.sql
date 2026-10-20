@@ -31,3 +31,4 @@ alter table moments_reglages     enable row level security;
 alter table moments_affectations enable row level security;
 revoke all on moments_reglages     from anon, authenticated;
 revoke all on moments_affectations from anon, authenticated;
+grant select, insert, update, delete on moments_reglages, moments_affectations to service_role;

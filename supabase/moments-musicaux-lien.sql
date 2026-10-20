@@ -31,6 +31,7 @@ where not exists (select 1 from moments_lien);
 
 alter table moments_lien enable row level security;
 revoke all on moments_lien from anon, authenticated;
+grant select, insert, update, delete on moments_lien to service_role;
 
 -- ─────────────────────────────────────────────────────────────────────────────
 -- Professeurs sans compte Supabase
