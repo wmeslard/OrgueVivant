@@ -51,8 +51,11 @@ onBeforeUnmount(() => {
       class="absolute bottom-0 left-0 right-0 h-px bg-white/8 transition-opacity duration-700"
       :class="isScrolled ? 'opacity-100' : 'opacity-0'"
     />
-    <div class="container-premium flex h-full items-center justify-between">
-      <NuxtLink :to="localePath('/')" class="group flex items-center gap-3 font-display text-2xl tracking-tight">
+    <!-- Dès xl, grille à trois colonnes égales sur les côtés : les onglets sont
+         centrés sur la page et non entre le logo, large, et la langue, étroite.
+         En dessous, ils ne tiennent plus à côté du logo : menu burger. -->
+    <div class="container-premium flex h-full items-center justify-between xl:grid xl:grid-cols-[1fr_auto_1fr]">
+      <NuxtLink :to="localePath('/')" class="group flex items-center gap-3 justify-self-start font-display text-2xl tracking-tight">
         <img
           src="/img/logo/symbole-128.png"
           alt=""
@@ -68,7 +71,7 @@ onBeforeUnmount(() => {
         </span>
       </NuxtLink>
 
-      <nav class="hidden gap-10 lg:flex">
+      <nav class="hidden gap-8 xl:flex 2xl:gap-10">
         <NuxtLink
           v-for="item in nav"
           :key="item.to"
@@ -81,13 +84,13 @@ onBeforeUnmount(() => {
         </NuxtLink>
       </nav>
 
-      <div class="flex items-center gap-6">
+      <div class="flex items-center gap-6 justify-self-end">
         <div class="hidden items-center gap-4 md:flex">
           <LanguageToggle />
         </div>
-        
+
         <button
-          class="lg:hidden flex flex-col gap-1.5 p-2"
+          class="xl:hidden flex flex-col gap-1.5 p-2"
           :aria-label="t('nav.menu')"
           @click="open = !open"
         >
@@ -111,7 +114,7 @@ onBeforeUnmount(() => {
       leave-from-class="opacity-100"
       leave-to-class="opacity-0"
     >
-      <div v-if="open" class="fixed inset-0 z-[49] bg-background lg:hidden">
+      <div v-if="open" class="fixed inset-0 z-[49] bg-background xl:hidden">
         <nav class="flex h-full flex-col items-center justify-center gap-8 text-center">
           <NuxtLink
             v-for="item in nav"
