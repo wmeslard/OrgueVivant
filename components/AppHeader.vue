@@ -4,6 +4,8 @@ const localePath = useLocalePath()
 const route = useRoute()
 const open = ref(false)
 const isScrolled = ref(false)
+// Symbole animé : les tuyaux respirent au survol du logo et au clic (LogoSymbole.vue).
+const logo = ref<{ survoler: (e: PointerEvent) => void; quitter: () => void; jouer: () => void } | null>(null)
 
 const nav = computed(() => [
   { to: '/', label: t('nav.home') },
@@ -55,15 +57,14 @@ onBeforeUnmount(() => {
          centrés sur la page et non entre le logo, large, et la langue, étroite.
          En dessous, ils ne tiennent plus à côté du logo : menu burger. -->
     <div class="container-premium flex h-full items-center justify-between xl:grid xl:grid-cols-[1fr_auto_1fr]">
-      <NuxtLink :to="localePath('/')" class="group flex items-center gap-3 justify-self-start font-display text-2xl tracking-tight">
-        <img
-          src="/img/logo/symbole-128.png"
-          alt=""
-          aria-hidden="true"
-          width="109"
-          height="128"
-          class="h-8 w-auto shrink-0 md:h-9"
-        >
+      <NuxtLink
+        :to="localePath('/')"
+        class="group flex items-center gap-3 justify-self-start font-display text-2xl tracking-tight"
+        @pointerenter="logo?.survoler($event)"
+        @pointerleave="logo?.quitter()"
+        @click="logo?.jouer()"
+      >
+        <LogoSymbole ref="logo" />
         <span class="flex items-center gap-2">
           <span class="transition-colors duration-300 group-hover:text-gold">Orgue</span>
           <span class="text-gold">·</span>
