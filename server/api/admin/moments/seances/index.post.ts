@@ -54,7 +54,7 @@ export default defineEventHandler(async (event) => {
       html: `
         <h2 style="font-weight:300;font-size:22px;margin:0 0 16px">À vous de jouer !</h2>
         <p>Bonjour ${escapeHtml(musiciens[0].prenom)},</p>
-        <p>Vous êtes inscrit·e pour un Moment musical : <strong>${escapeHtml(moment)}</strong>, à l'orgue de chœur de l'église Saint-Maurice de Lille.</p>
+        <p>Votre inscription à un Moment musical est confirmée : <strong>${escapeHtml(moment)}</strong>, à l'orgue de chœur de l'église Saint-Maurice de Lille.</p>
         ${musiciens.length > 1 ? `<p>Musiciens : <strong>${escapeHtml(nomsComplets(musiciens, true))}</strong>.</p>` : ''}
         ${programme ? `<p><strong>Programme annoncé</strong></p>${paragraphe(programme)}` : ''}
         <p>Une demi-heure de musique, en entrée libre : le public entre et sort comme il veut. Pour toute question : ${escapeHtml(adresseAssociation())}.</p>

@@ -128,7 +128,7 @@ function detail(j: Jeudi, passe = false) {
     return `Sinon ${ORGANISTE_REGULIER}, prévenu le ${fmt(plusJours(j.date, -JOURS_AVANT_AFFECTATION), { weekday: 'long', day: 'numeric', month: 'long' }).toLowerCase()}`
   const s = j.seance!
   const qui = s.pour_soi ? 'Inscription personnelle'
-    : `Inscrit·e par ${s.professeur ? `${s.professeur.prenom} ${s.professeur.nom}` : 'l\'association'}`
+    : `Inscription faite par ${s.professeur ? `${s.professeur.prenom} ${s.professeur.nom}` : 'l\'association'}`
   return [qui, s.eleve_email, s.programme, !passe && s.rappel_at ? 'rappel envoyé' : ''].filter(Boolean).join(' · ')
 }
 const COULEUR: Record<Etat, string> = {

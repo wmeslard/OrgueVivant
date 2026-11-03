@@ -67,8 +67,8 @@ export default defineEventHandler(async (event) => {
         <h2 style="font-weight:300;font-size:22px;margin:0 0 16px">${pourSoi ? 'À vous de jouer !' : 'Inscription confirmée'}</h2>
         <p>Bonjour ${escapeHtml(prof.prenom)},</p>
         <p>${pourSoi
-          ? `Vous êtes inscrit·e pour un Moment musical : <strong>${escapeHtml(moment)}</strong>, à l'orgue de chœur de l'église Saint-Maurice de Lille.`
-          : `<strong>${escapeHtml(composition)}</strong> ${seul ? 'est inscrit·e' : 'sont inscrits'} le <strong>${escapeHtml(moment)}</strong>, à l'orgue de chœur de l'église Saint-Maurice de Lille.`}</p>
+          ? `Votre inscription à un Moment musical est confirmée : <strong>${escapeHtml(moment)}</strong>, à l'orgue de chœur de l'église Saint-Maurice de Lille.`
+          : `Inscription de <strong>${escapeHtml(composition)}</strong> confirmée pour le <strong>${escapeHtml(moment)}</strong>, à l'orgue de chœur de l'église Saint-Maurice de Lille.`}</p>
         ${pourSoi && !seul ? `<p>Musiciens : <strong>${escapeHtml(composition)}</strong>.</p>` : ''}
         ${programmeHtml}
         ${surLeSite}
@@ -80,10 +80,10 @@ export default defineEventHandler(async (event) => {
       html: `
         <h2 style="font-weight:300;font-size:22px;margin:0 0 16px">À vous de jouer !</h2>
         <p>Bonjour ${escapeHtml(premier.prenom)},</p>
-        <p>${escapeHtml(prof.prenom)} ${escapeHtml(prof.nom)} vous a inscrit·e pour un Moment musical : <strong>${escapeHtml(moment)}</strong>, à l'orgue de chœur de l'église Saint-Maurice de Lille.</p>
+        <p>${escapeHtml(prof.prenom)} ${escapeHtml(prof.nom)} vous a réservé un Moment musical : <strong>${escapeHtml(moment)}</strong>, à l'orgue de chœur de l'église Saint-Maurice de Lille.</p>
         ${seul ? '' : `<p>Musiciens : <strong>${escapeHtml(composition)}</strong>.</p>`}
         ${programmeHtml}
-        <p>Une demi-heure de musique, en entrée libre : le public entre et sort comme il veut. Pour toute question, adressez-vous à la personne qui vous a inscrit·e ou à ${escapeHtml(adresseAssociation())}.</p>
+        <p>Une demi-heure de musique, en entrée libre : le public entre et sort comme il veut. Pour toute question, adressez-vous à la personne qui a fait votre inscription ou à ${escapeHtml(adresseAssociation())}.</p>
         <p>À bientôt,<br>l'équipe d'Orgue Vivant</p>`
     }),
     envoyerEmail({
@@ -92,7 +92,7 @@ export default defineEventHandler(async (event) => {
       html: `
         <h2 style="font-weight:300;font-size:22px;margin:0 0 16px">Nouvelle inscription</h2>
         <p><strong>${escapeHtml(composition)}</strong> ${seul ? 'jouera' : 'joueront'} le <strong>${escapeHtml(moment)}</strong>.</p>
-        <p>${pourSoi ? `Inscription personnelle (${escapeHtml(prof.email)}).` : `Inscrit·e par ${escapeHtml(prof.prenom)} ${escapeHtml(prof.nom)} (${escapeHtml(prof.email)}).`}</p>
+        <p>${pourSoi ? `Inscription personnelle (${escapeHtml(prof.email)}).` : `Inscription faite par ${escapeHtml(prof.prenom)} ${escapeHtml(prof.nom)} (${escapeHtml(prof.email)}).`}</p>
         ${programme ? `<p><strong>Programme</strong></p>${paragraphe(programme)}` : ''}`
     }),
     revalidatePublicPages()

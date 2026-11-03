@@ -487,7 +487,7 @@ export function messagesRappel(s: SeanceRow): { to: string; subject: string; htm
       out.push({
         to: prof.email,
         subject: `Rappel : ${nom(premier)} joue demain à Saint-Maurice`,
-        html: corps(prof.prenom, `Petit rappel : ${escapeHtml(nom(premier))}, que vous avez inscrit·e, joue ${moment}.`,
+        html: corps(prof.prenom, `Petit rappel : ${escapeHtml(nom(premier))}, dont vous avez fait l'inscription, joue ${moment}.`,
           `Pensez à lui transmettre ce rappel. ${empechement}`)
       })
     } else {
@@ -495,7 +495,7 @@ export function messagesRappel(s: SeanceRow): { to: string; subject: string; htm
       out.push({
         to: prof.email,
         subject: `Rappel : ${et(musiciens.map(nom))} jouent demain à Saint-Maurice`,
-        html: corps(prof.prenom, `Petit rappel : ${escapeHtml(et(musiciens.map(avecInstrument)))}, que vous avez inscrits, jouent ${moment}.`,
+        html: corps(prof.prenom, `Petit rappel : ${escapeHtml(et(musiciens.map(avecInstrument)))}, dont vous avez fait l'inscription, jouent ${moment}.`,
           `Pensez à leur transmettre ce rappel. ${empechement}`)
       })
     }
@@ -505,7 +505,7 @@ export function messagesRappel(s: SeanceRow): { to: string; subject: string; htm
       to: s.eleve_email,
       subject: 'Rappel : vous jouez demain à Saint-Maurice',
       html: corps(premier.prenom, `Petit rappel : vous jouez ${moment}${jouezAvec}.`,
-        `Un empêchement ? Prévenez au plus vite ${prof ? 'la personne qui vous a inscrit·e, ou ' : ''}l'association à ${contact}.`)
+        `Un empêchement ? Prévenez au plus vite ${prof ? 'la personne qui a fait votre inscription, ou ' : ''}l'association à ${contact}.`)
     })
   }
   return out
