@@ -8,6 +8,7 @@
 export const socialLinks = [
   { id: 'facebook', name: 'Facebook', kind: 'social', url: 'https://www.facebook.com/orguevivant' },
   { id: 'instagram', name: 'Instagram', kind: 'social', url: 'https://www.instagram.com/orgue.vivant' },
+  { id: 'youtube', name: 'YouTube', kind: 'social', url: 'https://www.youtube.com/@OrgueVivant' },
   { id: 'helloasso', name: 'HelloAsso', kind: 'support', url: 'https://www.helloasso.com/associations/orgue-vivant/adhesions/orgue-vivant-adhesion' }
 ] as const
 
