@@ -126,6 +126,7 @@
     "copyLink": "Copy link",
     "copied": "Link copied",
     "book": "Book now",
+    "support": "Support this concert",
     "free": "Free entry",
     "freeLong": "Free entry — pay what you wish",
     "paid": "Paid",
@@ -312,6 +313,8 @@
       "noArtist": "No artist yet.",
       "artistsHelp": "One artist per entry. Those with a photo or a biography get their own tile on the concert page; the others only appear in the list.",
       "teaser": "Teaser (YouTube link)",
+      "supportUrl": "Support link (HelloAsso)",
+      "supportUrlHelp": "This concert's HelloAsso page: the concert page then shows a “Support this concert” button. If empty, no button.",
       "teaserHelp": "Link to a YouTube Short or video. Until the concert day, a “Teaser” bubble shows on the home and Concerts pages; the video only loads when clicked."
     },
     "newsletter": "Newsletter",

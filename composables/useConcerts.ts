@@ -25,6 +25,8 @@ export interface Concert {
   duration: string
   price_type: 'free' | 'paid'
   external_link: string
+  /** Page HelloAsso de soutien du concert : bouton « Soutenir ce concert ». */
+  support_url?: string | null
   created_at?: string
 }
 

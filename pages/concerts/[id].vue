@@ -75,14 +75,17 @@ const formattedDate = computed(() => {
 const location = computed(() => concert.value?.location ?? '')
 const { directionsUrl, placeUrl } = useMapsUrls(location)
 
-const safeExternalLink = computed(() => {
-  const raw = concert.value?.external_link
+// Liens saisis dans l'admin : http(s) seulement, sinon rien.
+function lienSur(raw?: string | null) {
   if (!raw) return ''
   try {
     const u = new URL(raw)
     return u.protocol === 'http:' || u.protocol === 'https:' ? u.toString() : ''
   } catch { return '' }
-})
+}
+const safeExternalLink = computed(() => lienSur(concert.value?.external_link))
+// Page HelloAsso de soutien propre au concert : bouton « Soutenir ce concert ».
+const safeSupportUrl = computed(() => lienSur(concert.value?.support_url))
 
 /**
  * Description pour les moteurs : celle du concert, coupée à la longueur d'un
@@ -263,6 +266,16 @@ if (concert.value) {
             class="btn-premium-primary !h-12 !w-full !px-5 text-sm sm:!w-auto"
           >
             {{ t('modal.book') }}
+          </a>
+          <a
+            v-if="safeSupportUrl"
+            :href="safeSupportUrl"
+            target="_blank"
+            rel="noopener noreferrer"
+            class="btn-premium-primary !h-12 !w-full !px-5 text-sm sm:!w-auto"
+          >
+            <Icon name="heroicons:heart" class="w-4 h-4" />
+            {{ t('modal.support') }}
           </a>
           <button
             class="btn-premium-secondary !h-12 !w-full !px-5 text-sm sm:!w-auto"

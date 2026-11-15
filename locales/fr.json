@@ -126,6 +126,7 @@
     "copyLink": "Copier le lien",
     "copied": "Lien copié",
     "book": "Réserver",
+    "support": "Soutenir ce concert",
     "free": "Entrée libre",
     "freeLong": "Entrée libre — participation libre",
     "paid": "Payant",
@@ -312,6 +313,8 @@
       "noArtist": "Aucun artiste pour l’instant.",
       "artistsHelp": "Un artiste par entrée. Ceux qui ont une photo ou une présentation obtiennent leur propre tuile dans la fiche du concert ; les autres apparaissent seulement dans la liste.",
       "teaser": "Teaser (lien YouTube)",
+      "supportUrl": "Lien de soutien (HelloAsso)",
+      "supportUrlHelp": "La page HelloAsso de ce concert : la fiche du concert affiche alors un bouton « Soutenir ce concert ». Vide, pas de bouton.",
       "teaserHelp": "Lien d'un Short ou d'une vidéo YouTube. Jusqu'au jour du concert, une bulle « Teaser » s'affiche sur l'accueil et la page Concerts ; la vidéo ne se charge que si l'on clique dessus."
     },
     "newsletter": "Newsletter",

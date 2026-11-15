@@ -21,6 +21,8 @@ export default defineEventHandler(async (event) => {
   assertHttpUrl(body.external_link, 'external_link')
   assertHttpUrl(body.image_url, 'image_url')
   assertHttpUrl(body.programme_url, 'programme_url')
+  assertHttpUrl(body.support_url, 'support_url')
+  if (body.support_url === '') body.support_url = null
   normaliserTeaser(body)
 
   const client = getServiceClient()

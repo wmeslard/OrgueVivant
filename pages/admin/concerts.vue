@@ -29,7 +29,7 @@ function blank(): Partial<Concert> {
     title: '', date: '', time: '20:00',
     location: 'saint_maurice', artists: [], instruments: '',
     description: '', image_url: '', duration: '', price_type: 'free',
-    external_link: ''
+    external_link: '', support_url: ''
   }
 }
 
@@ -67,8 +67,9 @@ function snapshot(c?: Partial<Concert> | null) {
 function newOne() { editing.value = blank(); snapshot(editing.value) }
 function edit(c: Concert) { editing.value = { ...c }; snapshot(c) }
 function duplicate(c: Concert) {
-  // Le programme est propre à chaque date : la copie ne le reprend pas.
-  const { id, created_at, programme_url, ...rest } = c
+  // Le programme et la page de soutien sont propres à chaque date : la copie
+  // ne les reprend pas.
+  const { id, created_at, programme_url, support_url, ...rest } = c
   editing.value = { ...rest }
   // Une copie porte le même texte : ses traductions restent valables.
   snapshot(rest)
@@ -88,6 +89,11 @@ async function save() {
       } catch {
         throw new Error('Lien externe invalide')
       }
+    }
+    if (editing.value.support_url) {
+      let ok = false
+      try { ok = ['http:', 'https:'].includes(new URL(editing.value.support_url).protocol) } catch { /* invalide */ }
+      if (!ok) throw new Error('Lien de soutien invalide (http/https uniquement)')
     }
     const traduire = async (texte: string) => {
       const { translated } = await $fetch<{ translated: string }>('/api/translate', {
@@ -213,6 +219,14 @@ async function remove(c: Concert) {
         <div>
           <label class="label">{{ t('admin.fields.externalLink') }}</label>
           <input v-model="editing.external_link" type="url" class="input">
+        </div>
+        <div class="md:col-span-2">
+          <label class="label" for="support-url">
+            {{ t('admin.fields.supportUrl') }}
+            <span class="ml-1 text-ink-400 font-normal">({{ t('admin.optional') }})</span>
+          </label>
+          <input id="support-url" v-model="editing.support_url" type="url" class="input" placeholder="https://www.helloasso.com/associations/orgue-vivant/evenements/…">
+          <p class="mt-1.5 text-xs text-ink-500">{{ t('admin.fields.supportUrlHelp') }}</p>
         </div>
         <div class="md:col-span-2">
           <label class="label" for="teaser-url">
