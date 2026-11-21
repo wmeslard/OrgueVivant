@@ -50,6 +50,12 @@ function onImageLoad() {
       </div>
       <h1 class="heading-section text-text-primary">{{ t('about.title') }}</h1>
       <p class="mt-8 text-2xl leading-relaxed text-text-secondary font-light">{{ t('about.intro') }}</p>
+      <ul class="mt-6 space-y-4 text-xl leading-relaxed text-text-secondary font-light">
+        <li v-for="cle in ['introFestival', 'introMoments']" :key="cle" class="flex gap-4">
+          <span class="mt-[0.8em] h-[1px] w-6 shrink-0 bg-gold" aria-hidden="true"></span>
+          <span>{{ t(`about.${cle}`) }}</span>
+        </li>
+      </ul>
     </div>
 
     <div class="mt-16 grid gap-8 md:grid-cols-2">
